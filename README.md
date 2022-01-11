@@ -1,1 +1,1 @@
-# just_a_testing_repo
+# just_a_test_repo
