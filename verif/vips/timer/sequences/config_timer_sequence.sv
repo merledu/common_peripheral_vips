@@ -182,10 +182,10 @@ class config_timer_sequence extends uvm_sequence #(config_xactn_timer);
 
   function void print_step_scale(config_xactn_timer tx, input string msg, input bit [11:0] prescale, input bit [23:16] step);
     $sformat(msg, {1{"\n%s\n========================================="}}, msg                     );
-    $sformat(msg, "%s\nPRE-SCALE RANDOM___________:: %0b"               , msg, prescale           );
-    $sformat(msg, "%s\nASSIGNED PRE-SCALE_________:: %0b"               , msg, tx.reg_wdata[11:0] );
-    $sformat(msg, "%s\nSTEP RANDOM________________:: %0b"               , msg, step               );
-    $sformat(msg, "%s\nASSIGNED STEP______________:: %0b"               , msg, tx.reg_wdata[23:16]);
+    $sformat(msg, "%s\nPRE-SCALE RANDOM___________:: %0d"               , msg, prescale           );
+    $sformat(msg, "%s\nASSIGNED PRE-SCALE_________:: %0d"               , msg, tx.reg_wdata[11:0] );
+    $sformat(msg, "%s\nSTEP RANDOM________________:: %0d"               , msg, step               );
+    $sformat(msg, "%s\nASSIGNED STEP______________:: %0d"               , msg, tx.reg_wdata[23:16]);
     $sformat(msg, "%s\nWDATA______________________:: %0b\n"             , msg, tx.reg_wdata       );
     $sformat(msg, {1{"%s========================================="}}    , msg                     );
     `uvm_info("CONFIG_TIMER_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)
