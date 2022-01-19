@@ -108,6 +108,18 @@ def find_latest_dir():
     return latest
 
 
+def copy_files(src_dir, dst_dir, copy_file):
+    # os.chdir(latest)
+
+    # For copying the all_args_rand_test.yaml in the latest out/seed directory made for specific test
+    src_file_path = src_dir + "/" + copy_file
+    dst_file_path = dst_dir + "/" + copy_file
+    print("src_file_path = ", src_file_path)
+    print("dst_file_path = ", dst_file_path)
+    shutil.copy(src_file_path, dst_file_path)
+    print("Copied file")
+
+
 def main():
     # make_directory(os.environ.get("OUT"))
     # make_directory(os.environ.get("OUT-SEED"))
@@ -124,6 +136,14 @@ def main():
     make_directory(dir_seed)
     # Finding a latest directory in output directory
     latest_dir = find_latest_dir()
+    # Copy log file in seed direcory
+    src_dir = ROOT_DIR
+    dst_dir = latest_dir
+    copy_file = "xrun.log"
+    print("src_dir=", src_dir)
+    print("dst_dir=", dst_dir)
+    print("copy_file=", copy_file)
+    copy_files(src_dir, dst_dir, copy_file)
 
 
 if __name__ == "__main__":
