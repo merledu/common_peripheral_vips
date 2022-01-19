@@ -30,3 +30,9 @@ run_py:
 	@echo "OUT-SEED=" $(OUT-SEED)
 	@echo "GEN_OPTS=" $(GEN_OPTS)
 	python script.py
+
+target:
+	number=1 ; while [[ $$number -le 1 ]] ; do \
+	   $$number ; \
+    ((number = number + 1)) ; \
+  done
