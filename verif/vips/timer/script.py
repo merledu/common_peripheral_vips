@@ -12,6 +12,8 @@ import sys
 
 # Setting relative path (__file__)
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ""))
+OUT = "out"
+
 print("ROOT_DIR =", ROOT_DIR)
 
 
@@ -66,6 +68,7 @@ def run_test(randon_number):
 
 
 def random_num():
+    # using sys.maxsize
     long_int = sys.maxsize + 1
     # The data type is represented as int
     print("maxint + 1 :" + str(long_int) + " - " + str(type(long_int)))
@@ -83,10 +86,17 @@ def run_make():
 def main():
     # make_directory(os.environ.get("OUT"))
     # make_directory(os.environ.get("OUT-SEED"))
-    # using sys.maxsize
-    rand = random_num()
-    print("Random seed = ", rand)
-    run_test(rand)
+    # Generating random seed
+    seed = random_num()
+    # Printing seed
+    print("Random seed = ", seed)
+    # Running test on random seed
+    run_test(seed)
+    # Creating output directory
+    make_directory(OUT)
+    # Creating directory for a running seed in output directory
+    dir_seed = OUT + "/seed-" + str(seed)
+    make_directory(dir_seed)
 
 
 if __name__ == "__main__":
