@@ -23,10 +23,10 @@ def make_directory(make_dir):
     # Directory to create
     directory = make_dir
     # Create the directory
-    if make_dir == os.environ.get("OUT"):
+    if make_dir == OUT:
         # Complete of directory to be created
         path = os.path.join(parent_dir, directory)
-        print("path=", path)
+        print("path of output directory =", path)
         # Check if directory already exist
         is_dir = os.path.isdir(path)
         print(is_dir)
@@ -120,6 +120,22 @@ def copy_files(src_dir, dst_dir, copy_file):
     print("Copied file")
 
 
+def find_string(string_to_find, in_file):
+    # opening a text file
+    file = open(in_file, "r")
+    # read file content
+    readfile = file.read()
+    # checking condition for string found or not
+    if string_to_find in readfile:
+        print("String", string_to_find, "Found In File")
+        return 1
+    else:
+        print("String", string_to_find, "Not Found")
+        return 0
+    # closing a file
+    file.close()
+
+
 def main():
     # make_directory(os.environ.get("OUT"))
     # make_directory(os.environ.get("OUT-SEED"))
@@ -128,7 +144,7 @@ def main():
     # Printing seed
     print("Random seed = ", seed)
     # Running test on random seed
-    run_test(seed)
+    # run_test(seed)
     # Creating output directory
     make_directory(OUT)
     # Creating directory for a running seed in output directory
@@ -144,6 +160,9 @@ def main():
     print("dst_dir=", dst_dir)
     print("copy_file=", copy_file)
     copy_files(src_dir, dst_dir, copy_file)
+    # Find weather test pass or not by checking TEST PASSED IN xrun.log
+    test_passed = find_string("[TEST PASSED]", dst_dir + "/" + "xrun.log")
+    print("TEST PASSED = ", test_passed)
 
 
 if __name__ == "__main__":
