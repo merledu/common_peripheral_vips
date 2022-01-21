@@ -14,11 +14,13 @@ def run_test():
     os.system(cmd)
 
 
+# Function to list number of sub directories in output directory
 def list_immediate_sub_directories():
-    path = ROOT_DIR + OUT
+    path = ROOT_DIR + "/" + OUT
     print("Path to list the sub directories = ", path)
     directory_contents = os.listdir(path)
     print(directory_contents)
+    return directory_contents
 
 
 if __name__ == "__main__":
@@ -29,3 +31,5 @@ if __name__ == "__main__":
     print("number of test to run = ", num_of_tests)
     for x in range(num_of_tests):
         run_test()
+    # Function to list number of sub directories in output directory
+    sub_directory_list = list_immediate_sub_directories()
