@@ -33,7 +33,9 @@ def process_sub_dir(sub_directorires):
             print("Path to log file in", item, "directory = ", path)
             # file a string in log file to check either test pased or not
             test_status = find_string("[TEST PASSED]", path)
-            # Print Test sattus
+            # Dump results
+            dump_results(item, test_status)
+            # Print Test status
             if test_status == 1:
                 print("TEST PASSED")
             else:
@@ -46,11 +48,15 @@ def process_sub_dir(sub_directorires):
 def dump_results(item, test_status):
     if test_status == 1:
         f = open("test_results.txt", "a")
-        f.write("\nNow the file has more content!")
+        write_data = "Timer   |   Test status: Passed   |   ", item
+        f.write(str(write_data))
+        f.write("\n")
         f.close()
     else:
         f = open("test_results.txt", "a")
-        f.write("\nJust an example")
+        write_data = "Timer   |   Test status: Failed   |   ", item
+        f.write(str(write_data))
+        f.write("\n")
         f.close()
 
 
