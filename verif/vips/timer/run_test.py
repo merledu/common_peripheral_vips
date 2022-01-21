@@ -25,12 +25,33 @@ def list_immediate_sub_directories():
 
 def process_sub_dir(sub_directorires):
     for item in sub_directorires:
-        print("For seed directory =", item)
+        print("\nFor seed directory =", item)
+        # Path to the xrun.log for specific item(seed directory)
         path = ROOT_DIR + "/" + OUT + "/" + item + "/" + "xrun.log"
         if os.path.isfile(path):
+            # Print path to log file
             print("Path to log file in", item, "directory = ", path)
+            # file a string in log file to check either test pased or not
+            test_status = find_string("[TEST PASSED]", path)
+            # Print Test sattus
+            if test_status == 1:
+                print("TEST PASSED")
+            else:
+                print("TEST FAILED")
         else:
             print("Log file in", item, "directory does not exist")
+
+
+# Dump the result in test_result file
+def dump_results(item, test_status):
+    if test_status == 1:
+        f = open("test_results.txt", "a")
+        f.write("\nNow the file has more content!")
+        f.close()
+    else:
+        f = open("test_results.txt", "a")
+        f.write("\nJust an example")
+        f.close()
 
 
 def find_string(string_to_find, in_file):
