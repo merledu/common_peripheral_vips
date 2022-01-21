@@ -144,7 +144,7 @@ def main():
     # Printing seed
     print("Random seed = ", seed)
     # Running test on random seed
-    # run_test(seed)
+    run_test(seed)
     # Creating output directory
     make_directory(OUT)
     # Creating directory for a running seed in output directory
