@@ -23,6 +23,11 @@ def list_immediate_sub_directories():
     return directory_contents
 
 
+def process_sub_dir(sub_directorires):
+    for item in sub_directorires:
+        print("item =", item)
+
+
 if __name__ == "__main__":
     # This is run-time argument, which can be set from command line to instruct how many tests to run
     no_of_tests = sys.argv
@@ -33,3 +38,5 @@ if __name__ == "__main__":
         run_test()
     # Function to list number of sub directories in output directory
     sub_directory_list = list_immediate_sub_directories()
+    # Process sub directories
+    process_sub_dir(sub_directory_list)
