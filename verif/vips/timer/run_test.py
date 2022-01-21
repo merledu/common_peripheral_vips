@@ -3,11 +3,22 @@ import shutil
 import random
 import sys
 
+# Setting relative path (__file__)
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ""))
+OUT = "out"
+
 
 def run_test():
     cmd = "python3 script.py"
     print("Command to run = ", cmd)
     os.system(cmd)
+
+
+def list_immediate_sub_directories():
+    path = ROOT_DIR + OUT
+    print("Path to list the sub directories = ", path)
+    directory_contents = os.listdir(path)
+    print(directory_contents)
 
 
 if __name__ == "__main__":
