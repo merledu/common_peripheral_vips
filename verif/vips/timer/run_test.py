@@ -82,6 +82,10 @@ if __name__ == "__main__":
     dir_path = ROOT_DIR + "/" + OUT
     print("Printing directory path to remove =", dir_path)
     shutil.rmtree(dir_path)
+    # Delete the previous test_results.txt file before dumping the latest tests results
+    file_path = ROOT_DIR + "/" + "test_results.txt"
+    print("Printing file path to remove =", file_path)
+    os.remove(file_path)
 
     # This is run-time argument, which can be set from command line to instruct how many tests to run
     no_of_tests = sys.argv
