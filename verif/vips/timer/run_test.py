@@ -77,6 +77,12 @@ def find_string(string_to_find, in_file):
 
 
 if __name__ == "__main__":
+
+    # Delete the previous output directory before running the latest tests
+    dir_path = ROOT_DIR + "/" + OUT
+    print("Printing directory path to remove =", dir_path)
+    shutil.rmtree(dir_path)
+
     # This is run-time argument, which can be set from command line to instruct how many tests to run
     no_of_tests = sys.argv
     # Converting this list object to integer
