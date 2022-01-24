@@ -16,3 +16,7 @@ Redirect to `path` to test a specific `design` using verification IP. For testin
 
 Excecute the `command`
 > ./command
+
+## OR 
+
+## For running verification IP with different number of contraint random test
