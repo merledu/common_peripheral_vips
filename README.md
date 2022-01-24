@@ -12,7 +12,7 @@ Clone respositaries [common_peripheral_ip](https://github.com/merledu/common_per
 
 
 Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
-> common_peripheral_vips/verif/vips/timer/
+> ../common_peripheral_vips/verif/vips/timer/
 
 Excecute the `command`
 > ./command
