@@ -26,13 +26,4 @@ run_test:
 	xrun $(GEN_OPTS)
 
 run_py:
-	@echo "SEED=" $(SEED)
-	@echo "OUT-SEED=" $(OUT-SEED)
-	@echo "GEN_OPTS=" $(GEN_OPTS)
-	python script.py
-
-target:
-	number=1 ; while [[ $$number -le 1 ]] ; do \
-	   $$number ; \
-    ((number = number + 1)) ; \
-  done
+	python run_test.py
