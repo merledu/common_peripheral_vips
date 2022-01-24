@@ -20,3 +20,11 @@ Excecute the `command`
 ## OR 
 
 ## For running verification IP with different number of contraint random test
+Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
+> common_peripheral_vips/verif/vips/timer/
+
+Excecute the `command` python run_test.py <- enter number of test to run ->
+  
+> python run_test.py 100
+
+In above command `100` means 100 constraint random test will be generated.
