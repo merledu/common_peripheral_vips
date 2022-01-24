@@ -1,7 +1,7 @@
 # common_peripheral_vips
 This repository contains VIPs for generic peripherals.
 
-The verification IPs are UVM (Universal Verification Library) based with some automation with python code
+The verification IPs are UVM (Universal Verification Library) based with test running automation with python code
 
 ## How to run verification IP for a specific design?
 Clone respositaries [common_peripheral_ip](https://github.com/merledu/common_peripheral_ips) and [common_peripheral_vips](https://github.com/merledu/common_peripheral_vips) that contain IP and verification IP respectively. Clone using following couple of `commands`
