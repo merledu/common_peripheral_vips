@@ -12,8 +12,8 @@
 // Language:       SystemVerilog - UVM                                                               //
 //                                                                                                   //
 // Description:                                                                                      //
-// Monitor is parameterize class, as shown here the tx_monitor get and send trasaction of            // 
-// tx_item transaction (monitor is a uvm component)                                                  //
+// Monitor is parameterize component class, as shown here the tx_monitor get transactions from DUT   //
+// and send transaction to other components like scoreboard and coverage collector                   //
 //                                                                                                   //
 // Revision Date:                                                                                    //
 //                                                                                                   //
