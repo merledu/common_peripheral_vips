@@ -27,7 +27,7 @@ python run_test.py 100
 
 In above command `100` means 100 constraint random test will be generated.
 
-Note can observe the test results in `test_result.txt` file
+Note you can observe the test results in `test_result.txt` file
 
 ## OR
 
