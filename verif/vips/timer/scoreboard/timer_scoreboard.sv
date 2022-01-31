@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Company:        MICRO-ELECTRONICS RESEARCH LABORATORY                                             //
+//                                                                                                   //
+// Engineers:      Auringzaib Sabir - Verification                                                   //
+//                                                                                                   //
+// Additional contributions by:                                                                      //
+//                                                                                                   //
+// Create Date:    20-JAN-2022                                                                       //
+// Design Name:    TIMER                                                                             //
+// Module Name:    timer_scoreboard.sv                                                               //
+// Project Name:   VIPs for different peripherals                                                    //
+// Language:       SystemVerilog - UVM                                                               //
+//                                                                                                   //
+// Description:                                                                                      //
+//         The scoreboard will check the correctness of the DUT by comparing the DUT output with the //
+// expected values.                                                                                  //
+//                                                                                                   //
+// Revision Date:                                                                                    //
+//                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class timer_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(timer_scoreboard)
 
