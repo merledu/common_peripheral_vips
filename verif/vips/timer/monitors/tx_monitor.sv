@@ -12,7 +12,7 @@
 // Language:       SystemVerilog - UVM                                                               //
 //                                                                                                   //
 // Description:                                                                                      //
-// Monitor is parameterize component class, as shown here the tx_monitor get transactions from DUT   //
+// Monitor is parameterize component class, as shown here the monitor get transactions from DUT      //
 // and send transaction to other components like scoreboard and coverage collector                   //
 //                                                                                                   //
 // Revision Date:                                                                                    //
