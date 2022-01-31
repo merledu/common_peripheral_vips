@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Company:        MICRO-ELECTRONICS RESEARCH LABORATORY                                             //
+//                                                                                                   //
+// Engineers:      Auringzaib Sabir - Verification                                                   //
+//                                                                                                   //
+// Additional contributions by:                                                                      //
+//                                                                                                   //
+// Create Date:    02-JAN-2022                                                                       //
+// Design Name:    TIMER                                                                             //
+// Module Name:    tx_item.sv                                                                        //
+// Project Name:   VIPs for different peripherals                                                    //
+// Language:       SystemVerilog - UVM                                                               //
+//                                                                                                   //
+// Description:                                                                                      //
+//          Transaction classes are always drivered/extended from uvm_sequence_item base class.      //
+//          Sequence items class are transaction class                                               //
+//          So tx_timer is a basic transaction class for a reference                                 //
+//                                                                                                   //
+// Revision Date:                                                                                    //
+//                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Transaction classes are always drivered/extended from uvm_sequence_item base class.
 // Sequence items class are transaction class
 // So tx_item is a single transaction.
