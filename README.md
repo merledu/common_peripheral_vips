@@ -19,7 +19,7 @@ Redirect to `path` to test a specific `design` using verification IP. For testin
 common_peripheral_vips/verif/vips/timer/
 ```
 
-Excecute the `command` python run_test.py <- enter number of test to run ->
+Excecute the `command` python run_test.py < enter number of test to run >
 
 ```
 python run_test.py 100
