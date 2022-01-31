@@ -1,3 +1,36 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Company:        MICRO-ELECTRONICS RESEARCH LABORATORY                                             //
+//                                                                                                   //
+// Engineers:      Auringzaib Sabir - Verification                                                   //
+//                                                                                                   //
+// Additional contributions by:                                                                      //
+//                                                                                                   //
+// Create Date:    04-JAN-2022                                                                       //
+// Design Name:    TIMER                                                                             //
+// Module Name:    tx_sequence.sv                                                                    //
+// Project Name:   VIPs for different peripherals                                                    //
+// Language:       SystemVerilog - UVM                                                               //
+//                                                                                                   //
+// Description:                                                                                      //
+//       - Sequence can be one or many seqeunce items and the sequence is not the part of            //
+//         component heirarchy                                                                       //
+//       - Note that tx_sequnce is extended from uvm_sequnce base class                              //
+//       - uvm_sequnce is define in uvm_pkg                                                          //
+//       - UVM components are permanent because they are never destroyed, they are created at the    //
+//         start of simulation and exist for the entire simulation                                   //
+//       - Whereas stimulus are temporary because thousands of transactions are created and          //
+//         destroyed during simulation                                                               //
+//       - Components are hierarical i.e. they have fixed location in topology.                      //
+//       - Transactions do not have fixed location because transaction move throught the components. //
+//       - sequnce is parameterize class, as shown here the config_timer_sequence only send          // 
+//         config_xactn_timer transaction                                                            //
+//                                                                                                   //
+//       This reference sequence item                                                                //
+//                                                                                                   //
+// Revision Date:                                                                                    //
+//                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Sequence can be one or many seqeunce items and the sequence is not the part of component heirarchy
 
 // Note that tx_sequnce is extended from uvm_sequnce base class

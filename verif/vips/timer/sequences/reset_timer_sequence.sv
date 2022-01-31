@@ -25,7 +25,7 @@
 //       - sequnce is parameterize class, as shown here the config_timer_sequence only send          // 
 //         config_xactn_timer transaction                                                            //
 //                                                                                                   //
-//       This sequence will reset the timer by setting active low reset
+//       This sequence will reset the timer by setting active low reset                              //
 //                                                                                                   //
 // Revision Date:                                                                                    //
 //                                                                                                   //
