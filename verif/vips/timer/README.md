@@ -26,6 +26,11 @@ Note: Configuration of the timer is completely randomize by UVM testing environm
 ### Configuration
 
 1. First, verification IP generates randomized 64bit `data` that is used to configure the COMPARE_REGISTERS of timer to set the value that timer counts.
-2. If `data` to be counted is less than or equal to 64'h00000000FFFFFFFF then set 32bit register `COMPARE_UPPER_REGISTER` to zero located at address 'h110, and also set 32bit register `COMPARE_LOWER_REGISTER` located at address 'h10c to value to be counted i.e `data`.
-3. If value to be counted is greater than 64'h00000000FFFFFFFF then set 32bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at 'h110 & 'h10c respectively.
-4. Randomize prescale bits and step bits located at register 'h100
+2. If `data` to be counted is less than or equal to 64'h00000000FFFFFFFF then set 32bit register `COMPARE_UPPER_REGISTER` to zero located at address 0x110, and also set 32bit register `COMPARE_LOWER_REGISTER` located at address 0x10c to value to be counted i.e `data`.
+3. If value to be counted is greater than 64'h00000000FFFFFFFF then set 32bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at 0x110 & 0x10c respectively.
+4. Randomize prescale bits and step bits in the register `CFG0` located at address 0x100
+5. Enable interrupt by setting zeroth bit of register `INTR_ENABLE0` located at address 0x114
+
+### Actication of timer
+
+6. Acticate the timer by setting zeroth bit of register `ALERT_TEST` located at address 0x0
