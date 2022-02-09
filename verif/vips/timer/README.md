@@ -15,7 +15,7 @@ The timer module provides a configurable number of 64-bit counters where each co
 Compatibility
 The timer IP provides memory-mapped registers mtime and mtimecmp which can be used as the machine-mode timer registers defined in the RISC-V privileged spec. Additional features such as prescaler, step, and a configurable number of timers and harts have been added.
 
-## Features of a Timer verification IP:
+## Features of a Timer verification IP
 
 The verification IP is build on Universal verification methodology (UVM) that contain `Constrained Random Testbenches`.
 
@@ -42,3 +42,7 @@ Note: Configuration of the timer is completely randomize by UVM testing environm
 9. Waits until `intr_timer_expired_0_0_o` signal is enabled from the DUT (timer), that indicates timer has compeletd the counting
 10. Compare the number of clock cycles after which `intr_timer_expired_0_0_o` signal is enabled with the predicted clock cycle calculated before (mentioned in point 7).
 11. If comparison is succussful then contrained random UVM test is `PASSED`.
+
+## How to run the verification IP?
+
+Follow [this](https://github.com/merledu/common_peripheral_vips) link to run the verification IP.
