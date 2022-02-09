@@ -67,7 +67,7 @@ git clone https://github.com/merledu/common_peripheral_vips
 ```
 
 ### For running verification IP with different number of contraint random test
-Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
+Redirect to the following `path` for testing `timer`
 ```
 common_peripheral_vips/verif/vips/timer/
 ```
@@ -86,7 +86,7 @@ Note you can observe the test results in `test_result.txt` file
 
 #### Can also run the single test by following steps
 
-Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
+Redirect to the following `path` for testing `timer`
 ```
 common_peripheral_vips/verif/vips/timer/
 ```
