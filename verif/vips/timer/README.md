@@ -1,9 +1,13 @@
+# Verification IP of Timer
+
 ## Verification Hierarchy of Timer
 ![uvm_components_of_tx_test](https://user-images.githubusercontent.com/42897240/150805003-e5d2cca9-1e23-4c0e-ba3f-f01f544bb75a.png)
 
 This repository contains the verification IP of a Timer
 
-## Features of a Timer IP
+
+
+# Features of a Timer IP
 
 1. 64-bit timer with 12-bit prescaler and 8-bit step register
 2. Compliant with RISC-V privileged specification v1.11
@@ -16,7 +20,8 @@ The timer module provides a configurable number of 64-bit counters where each co
 The timer IP provides memory-mapped registers mtime and mtimecmp which can be used as the machine-mode timer registers defined in the RISC-V privileged spec. Additional features such as prescaler, step, and a configurable number of timers and harts have been added.
 
 
-## Features of a Timer verification IP
+
+# Features of a Timer verification IP
 
 The verification IP is build on Universal verification methodology (UVM) that contain `Constrained Random Testbenches`.
 
@@ -44,6 +49,48 @@ Note: Configuration of the timer is completely randomize by UVM testing environm
 10. Compare the number of clock cycles after which `intr_timer_expired_0_0_o` signal is enabled with the predicted clock cycle calculated before (mentioned in point 7).
 11. If comparison is succussful then contrained random UVM test is `PASSED`.
 
-## How to run the verification IP?
+
+
+# How to run the verification IP?
 
 Follow [this](https://github.com/merledu/common_peripheral_vips) link to run the verification IP.
+
+## OR
+
+Clone respositaries [common_peripheral_ip](https://github.com/merledu/common_peripheral_ips) and [common_peripheral_vips](https://github.com/merledu/common_peripheral_vips) that contain IP and verification IP respectively. Clone the mentioned repositories parallel to each other using following couple of `commands`
+
+```
+git clone https://github.com/merledu/common_peripheral_ips
+```
+```
+git clone https://github.com/merledu/common_peripheral_vips
+```
+
+### For running verification IP with different number of contraint random test
+Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
+```
+common_peripheral_vips/verif/vips/timer/
+```
+
+Excecute the `command` python run_test.py < enter number of test to run >
+
+```
+python run_test.py 100
+```
+
+In above command `100` means 100 constraint random test will be generated.
+
+Note you can observe the test results in `test_result.txt` file
+
+### OR
+
+#### Can also run the single test by following steps
+
+Redirect to `path` to test a specific `design` using verification IP. For testing `timer` redirect to following path.
+```
+common_peripheral_vips/verif/vips/timer/
+```
+Excecute the `command`
+```
+./command
+```
