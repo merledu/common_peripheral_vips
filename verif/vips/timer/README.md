@@ -23,14 +23,22 @@ The verification IP is build on Universal verification methodology (UVM) that co
 
 Note: Configuration of the timer is completely randomize by UVM testing environment for all internal registers of timer.
 
-### Configuration
+#### Configuration the timer
 
-1. First, verification IP generates randomized 64bit `data` that is used to configure the COMPARE_REGISTERS of timer to set the value that timer counts.
-2. If `data` to be counted is less than or equal to 64'h00000000FFFFFFFF then set 32bit register `COMPARE_UPPER_REGISTER` to zero located at address 0x110, and also set 32bit register `COMPARE_LOWER_REGISTER` located at address 0x10c to value to be counted i.e `data`.
-3. If value to be counted is greater than 64'h00000000FFFFFFFF then set 32bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at 0x110 & 0x10c respectively.
-4. Randomize prescale bits and step bits in the register `CFG0` located at address 0x100
-5. Enable interrupt by setting zeroth bit of register `INTR_ENABLE0` located at address 0x114
+1. Reset the Timer.
+2. First, verification IP generates randomized 64 bit `data` that is used to configure the COMPARE_REGISTERS of timer to set the value that timer counts.
+3. If `data` to be counted is less than or equal to `64'h00000000FFFFFFFF` then set 32 bit register `COMPARE_UPPER_REGISTER` to zero located at address `0x110`, and also set 32 bit register `COMPARE_LOWER_REGISTER` located at address `0x10c` to value to be counted i.e `data`.
+4. If `data` to be counted is greater than `64'h00000000FFFFFFFF` then set 32 bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at `0x110` & `0x10c` respectively.
+5. Randomize prescale bits and step bits in the register `CFG0` located at address `0x100`.
+6. Enable interrupt by setting zeroth bit of register `INTR_ENABLE0` located at address `0x114`.
+7. Verification IP calculates and predicts the number of clock cycles required to complete the counting. The prediction of clock cycle is calculated depening on prescale and step assign in register `0x100` as mentioned in point 4.
 
-### Actication of timer
+#### Activation the timer
 
-6. Acticate the timer by setting zeroth bit of register `ALERT_TEST` located at address 0x0
+8. Acticate the timer by setting zeroth bit of register `ALERT_TEST` located at address `0x0`
+
+#### Result
+
+9. Waits until `intr_timer_expired_0_0_o` signal is enabled from the DUT (timer), that indicates timer has compeletd the counting
+10. Compare the number of clock cycles after which `intr_timer_expired_0_0_o` signal is enabled with the predicted clock cycle calculated before (mentioned in point 7).
+11. If comparison is succussful then contrained random UVM test is `PASSED`.
