@@ -60,16 +60,16 @@ Follow [this](https://github.com/merledu/common_peripheral_vips) link to run the
 Clone respositaries [common_peripheral_ip](https://github.com/merledu/common_peripheral_ips) and [common_peripheral_vips](https://github.com/merledu/common_peripheral_vips) that contain IP and verification IP respectively. Clone the mentioned repositories parallel to each other using following couple of `commands`
 
 ```
-git clone https://github.com/merledu/common_peripheral_ips
+git clone https://github.com/merledu/common_peripheral_ips.git
 ```
 ```
-git clone https://github.com/merledu/common_peripheral_vips
+git clone https://github.com/merledu/common_peripheral_vips.git
 ```
 
 ### For running verification IP with different number of contraint random test
 Redirect to the following `path` for testing `timer`
 ```
-common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/timer/
 ```
 
 Excecute the `command` python run_test.py < enter number of test to run >
@@ -88,7 +88,7 @@ Note you can observe the test results in `test_result.txt` file
 
 Redirect to the following `path` for testing `timer`
 ```
-common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/timer/
 ```
 Excecute the `command`
 ```
