@@ -5,9 +5,9 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    04-MARCH-2022                                                                       //
-// Design Name:    UART                                                                             //
-// Module Name:    tx_test.sv                                                                       //
+// Create Date:    04-MARCH-2022                                                                     //
+// Design Name:    UART                                                                              //
+// Module Name:    tx_test.sv                                                                        //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
 //                                                                                                   //
