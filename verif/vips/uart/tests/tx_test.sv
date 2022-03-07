@@ -5,9 +5,9 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    01-JAN-2022                                                                       //
-// Design Name:    TIMER                                                                             //
-// Module Name:    tx_agent.sv                                                                       //
+// Create Date:    04-MARCH-2022                                                                       //
+// Design Name:    UART                                                                             //
+// Module Name:    tx_test.sv                                                                       //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
 //                                                                                                   //
@@ -68,7 +68,7 @@ class tx_test extends uvm_test;
     env_config_h.tx_agent_config_h = tx_agent_config_h;
   
     // Each test can set configuration values depending upon its needs
-    env_config_h.enable_scoreboard =    0;        // Test overides the default values
+    env_config_h.enable_scoreboard =    1;        // Test overides the default values
     env_config_h.enable_coverage   =    0;        // Test overides the default values
     tx_agent_config_h.base_address = 'hAA;        // Test overides the default values
 
