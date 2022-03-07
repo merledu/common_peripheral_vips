@@ -1,0 +1,47 @@
+////////////////////////////////////////////////////////////////////////////////
+// Company:        IIS @ ETHZ - Federal Institute of Technology               //
+//                                                                            //
+// Engineers:      Lei Li    lile@iis.ee.ethz.ch                              //
+//                                                                            //
+// Additional contributions by:                                               //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+// Create Date:    09/03/2018                                                 //
+// Design Name:    FPU                                                        //
+// Module Name:    norm_div_sqrt_mvp.sv                                       //
+// Project Name:                                                              //
+// Language:       SystemVerilog                                              //
+//                                                                            //
+// Description:    Floating point Normalizer/Rounding unit                    //
+//                 Since this module is design as a combinatinal logic, it can//
+//                 be added arbinary register stages for different frequency  //
+//                 in the wrapper module.                                     //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+// Revision Date:  12/04/2018                                                 //
+//                 Lei Li                                                     //
+//                 To address some requirements by Stefan                     //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+// Download the UVM 1.1 and 1.2 class reference manuals and user guides
+   http://accellera.org/downloads/standards/uvm
+
+// Mentor offers the tool UVM Framework that creates an immediately useful UVM environment, while you are still ramping up on the details of UVM
+
+// Follow a guide to help you navigate the jungle
+   http://VerificationAcedemy.com/cookbook/
+
+
+   // multiple sequences in sequnce calls
+   // Also sequncer can handle or arbitrate between multiple sequences
+
+   // See the paper on verification academy
+   // From simulation to emulation- A fully reusable UVM Famewwork
