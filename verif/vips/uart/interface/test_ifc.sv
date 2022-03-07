@@ -80,17 +80,32 @@ interface test_ifc  #(
 		output                  intr_rx
 	);
 
-	 // Modport for testbench
-	 modport timer_mp_tb (
-	 	output reg_we                  ,
-	 	output reg_re                  ,
-	 	output reg_addr                ,
-	 	output reg_wdata               ,
-	 	output reg_be                  ,
-	 	input	 reg_rdata               ,
-	 	input	 reg_error               ,
-	 	input	 intr_timer_expired_0_0_o
-	 );   
+	//// Modport for testbench
+	//modport timer_mp_tb (
+	//	output reg_we                  ,
+	//	output reg_re                  ,
+	//	output reg_addr                ,
+	//	output reg_wdata               ,
+	//	output reg_be                  ,
+	//	input	 reg_rdata               ,
+	//	input	 reg_error               ,
+	//	input	 intr_timer_expired_0_0_o
+	//);
+
+	// Modport for testbench
+	modport timer_mp_tb (
+    output                  clk_i  ,
+	 	output                  rst_ni ,
+	 	output                  ren    ,
+	 	output                  we     ,
+	 	output [DATA_WIDTH-1:0] wdata  ,
+	 	input  [DATA_WIDTH-1:0] rdata  ,
+	 	output [ADDR_WIDTH-1:0] addr   ,
+	 	input                   tx_o   ,
+	 	output                  rx_i   ,
+	 	input                   intr_tx,
+	 	input                   intr_rx
+	);
 
   string msg;
 	task automatic transfer(config_xactn_timer tx);
