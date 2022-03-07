@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    03-JAN-2022                                                                       //
-// Design Name:    TIMER                                                                             //
+// Create Date:    03-MARCH-2022                                                                     //
+// Design Name:    UART                                                                              //
 // Module Name:    tx_agent_config.sv                                                                //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
