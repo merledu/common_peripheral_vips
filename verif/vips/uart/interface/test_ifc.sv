@@ -19,9 +19,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 interface test_ifc  #(
-		parameter int AW = 9,
-		parameter int DW = 32,
-		localparam int DBW = DW/8
+		parameter int DATA_WIDTH = 32,
+		parameter int ADDR_WIDTH =  8,
 	)(
 		input logic clk_i
 	);
@@ -30,29 +29,57 @@ interface test_ifc  #(
 	import base_test_pkg::*;
 	`include "uvm_macros.svh"    // To make use of macros that are found in uvm libraries
   
-  // Declaration
-  logic           rst_ni                  ;
-	logic           reg_we                  ;
-	logic           reg_re                  ;
-	logic [ AW-1:0] reg_addr                ;
-	logic [ DW-1:0] reg_wdata               ;
-	logic [DBW-1:0] reg_be                  ;
-	logic [ DW-1:0] reg_rdata               ;
-	logic           reg_error               ;
-	logic           intr_timer_expired_0_0_o;
+  //// Declaration
+  //logic           rst_ni                  ;
+	//logic           reg_we                  ;
+	//logic           reg_re                  ;
+	//logic [ AW-1:0] reg_addr                ;
+	//logic [ DW-1:0] reg_wdata               ;
+	//logic [DBW-1:0] reg_be                  ;
+	//logic [ DW-1:0] reg_rdata               ;
+	//logic           reg_error               ;
+	//logic           intr_timer_expired_0_0_o;
 
-	 // Modport for DUT i.e. Timer
-	 modport timer_mp_dut (
-	 	input	  reg_we                  ,
-	 	input	  reg_re                  ,
-	 	input	  reg_addr                ,
-	 	input	  reg_wdata               ,
-	 	input	  reg_be                  ,
-	 	output	reg_rdata               ,
-	 	output	reg_error               ,
-	 	output	intr_timer_expired_0_0_o
-	 );
-   
+	// Declaration
+	logic                  clk_i  ;
+	logic                  rst_ni ;
+	logic                  ren    ;
+	logic                  we     ;
+	logic [DATA_WIDTH-1:0] wdata  ;
+	logic [DATA_WIDTH-1:0] rdata  ;
+	logic [ADDR_WIDTH-1:0] addr   ;
+	logic                  tx_o   ;
+	logic                  rx_i   ;
+	logic                  intr_tx;
+	logic                  intr_rx;
+
+	//// Modport for DUT i.e. Timer
+	//modport timer_mp_dut (
+	//	input	  reg_we                  ,
+	//	input	  reg_re                  ,
+	//	input	  reg_addr                ,
+	//	input	  reg_wdata               ,
+	//	input	  reg_be                  ,
+	//	output	reg_rdata               ,
+	//	output	reg_error               ,
+	//	output	intr_timer_expired_0_0_o
+	//);
+
+	// Modport for DUT i.e. UART
+	modport uart_mp_dut (
+		input                   clk_i  ,
+		input                   rst_ni ,
+		input                   ren    ,
+		input                   we     ,
+		input  [DATA_WIDTH-1:0] wdata  ,
+		output [DATA_WIDTH-1:0] rdata  ,
+		input  [ADDR_WIDTH-1:0] addr   ,
+		output                  tx_o   ,
+		input                   rx_i   ,
+		output                  intr_tx,
+		output                  intr_rx
+	);
+
 	 // Modport for testbench
 	 modport timer_mp_tb (
 	 	output reg_we                  ,
