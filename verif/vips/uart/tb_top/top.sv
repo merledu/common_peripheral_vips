@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    06-JAN-2022                                                                       //
-// Design Name:    TIMER                                                                             //
+// Create Date:    02-MARCH-2022                                                                     //
+// Design Name:    UART                                                                              //
 // Module Name:    top.sv                                                                            //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -26,7 +26,6 @@ module top;
 
 	// Import uvm_package and package for specific protocol that you want to add to the testbench like usb protocol that contain USB uvm objects
 	import uvm_pkg::*;      		 // For using uvm libraries
-	import hello_pkg::*;
 	import base_test_pkg::*;
 	
 	`include "uvm_macros.svh"    // To make use of macros that are found in uvm libraries
@@ -42,18 +41,34 @@ module top;
 	);
 	
 	// Dut instance
-	rv_timer rv_timer_inst (
-		.clk_i                   (clk                                ),
-		.rst_ni                  (test_ifc_h.rst_ni                  ),
-		.reg_we                  (test_ifc_h.reg_we                  ),
-		.reg_re                  (test_ifc_h.reg_re                  ),
-		.reg_addr                (test_ifc_h.reg_addr                ),
-		.reg_wdata               (test_ifc_h.reg_wdata               ),
-		.reg_be                  (test_ifc_h.reg_be                  ),
-		.reg_rdata               (test_ifc_h.reg_rdata               ),
-		.reg_error               (test_ifc_h.reg_error               ),
-		.intr_timer_expired_0_0_o(test_ifc_h.intr_timer_expired_0_0_o)
-	);
+	// rv_timer rv_timer_inst (
+	// 	.clk_i                   (clk                                ),
+	// 	.rst_ni                  (test_ifc_h.rst_ni                  ),
+	// 	.reg_we                  (test_ifc_h.reg_we                  ),
+	// 	.reg_re                  (test_ifc_h.reg_re                  ),
+	// 	.reg_addr                (test_ifc_h.reg_addr                ),
+	// 	.reg_wdata               (test_ifc_h.reg_wdata               ),
+	// 	.reg_be                  (test_ifc_h.reg_be                  ),
+	// 	.reg_rdata               (test_ifc_h.reg_rdata               ),
+	// 	.reg_error               (test_ifc_h.reg_error               ),
+	// 	.intr_timer_expired_0_0_o(test_ifc_h.intr_timer_expired_0_0_o)
+	// );
+  
+  // Dut instance
+	// uart_name uart_inst (
+	// 	.clk_i  (clk               ),
+	// 	.rst_ni (test_ifc_h.rst_ni ),
+	// 	.ren    (test_ifc_h.ren    ),
+	// 	.we     (test_ifc_h.we     ),
+	// 	.wdata  (test_ifc_h.wdata  ),
+	// 	.rdata  (test_ifc_h.rdata  ),
+	// 	.addr   (test_ifc_h.addr   ),
+	// 	.tx_o   (test_ifc_h.tx_o   ),
+	// 	.rx_i   (test_ifc_h.rx_i   ),
+	// 	.intr_tx(test_ifc_h.intr_tx),
+	// 	.intr_rx(test_ifc_h.intr_rx)
+	// );
+
 
 	// Also a top level module contains an initial block which contain a call to the uvm run_test method
 	// At time 0, the run_test creates the uvm_root object
