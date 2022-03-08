@@ -38,6 +38,7 @@ package base_test_pkg;
   // Sequence Items
   `include "./seq_items/tx_item.sv"
   `include "./seq_items/config_xactn_timer.sv"
+  `include "./seq_items/transaction_item.sv"
   
   // Agent configuration
   `include "./config/tx_agent_config.sv"
@@ -65,7 +66,8 @@ package base_test_pkg;
   //`include "./drivers/tx_driver_overriding_driver.sv"
   
   // Scoreboards
-  `include "./scoreboard/timer_scoreboard.sv"
+  //`include "./scoreboard/timer_scoreboard.sv"
+  `include "./scoreboard/uart_scoreboard.sv"
   //`include "./scoreboard/timer_predictor.sv"
   
   // Agents
