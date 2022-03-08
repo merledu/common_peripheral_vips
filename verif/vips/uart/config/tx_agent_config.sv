@@ -44,7 +44,7 @@ class tx_agent_config extends uvm_object;
   // It may also contain some other fields which control weather other sub components classes such as the coverage collector or scoreboards get build at the agent level or not 
   rand bit                     enable_coverage;
   // NOTE the hierarchical path to the sequencer(tx_sequence_h.start(tx_env_h.tx_agent_h.tx_sequencer_h);) in test class is a poor OOP code i.e tx_env_h.tx_agent_h.tx_sequencer_h. What if we have multiple agent we have to change this path, that is not reuseable. So sequencer can be set by configuration classes as follows
-  uvm_sequencer #(config_xactn_timer) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with config_xactn_timer transaction
+  uvm_sequencer #(transaction_item) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
 endclass
 
