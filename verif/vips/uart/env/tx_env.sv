@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    05-JAN-2022                                                                       //
-// Design Name:    TIMER                                                                             //
+// Create Date:    05-MARCH-2022                                                                     //
+// Design Name:    UART                                                                              //
 // Module Name:    tx_env.sv                                                                         //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -45,7 +45,7 @@ class tx_env extends uvm_env;
   
   // Declare handle to the objects agent, scoreboard, env config and agent config.
   tx_agent         tx_agent_h        ;
-  timer_scoreboard timer_scoreboard_h;
+  uart_scoreboard  uart_scoreboard_h ;
   env_config       env_config_h      ;
   tx_agent_config  tx_agent_config_h ;
   // cov_collector   cov_collector_h;
@@ -54,7 +54,7 @@ class tx_env extends uvm_env;
 	// Similar to agent, environment is hierarchical and create components like the agent, scoreboards during the build phase
 	// Build phase (In build phase we have function because components are build at zero time and function are executed at zero time)
 	virtual function void build_phase(uvm_phase phase);
-    `uvm_info("TIMER_ENV::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
+    `uvm_info("UART_ENV::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
     // The environment fetches it config object from uvm_config db
     if (!uvm_config_db#(env_config)::get(this,"", "env_config_h", env_config_h))
       `uvm_fatal("TX_ENV::NO VIF",$sformatf("No virtual interface in db"))
@@ -66,14 +66,14 @@ class tx_env extends uvm_env;
     // if(env_config_h.enable_coverage) TODO
     // 	cov_collector_h    = cov_collector::type_id::create("cov_collector_h",this);
     if(env_config_h.enable_scoreboard)
-      timer_scoreboard_h = timer_scoreboard::type_id::create("timer_scoreboard_h",this);
+      uart_scoreboard_h = uart_scoreboard::type_id::create("uart_scoreboard_h",this);
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
-    `uvm_info("TIMER_ENV::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
+    `uvm_info("UART_ENV::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
     if(env_config_h.enable_scoreboard)
-      tx_agent_h.dut_txn_port.connect(timer_scoreboard_h.ap_imp);
-      //tx_agent_h.tx_monitor_h.dut_tx_port.connect(timer_scoreboard_h.ap_imp);
+      tx_agent_h.dut_txn_port.connect(uart_scoreboard_h.ap_imp);
+      //tx_agent_h.tx_monitor_h.dut_tx_port.connect(uart_scoreboard_h.ap_imp);
   endfunction // connect_phase
 
 endclass // tx_env
