@@ -58,7 +58,6 @@ class transaction_item extends uvm_sequence_item;
 	rand bit        [ 7:0] data  ;
 	rand bit        [31:0] src   ;
 	rand bit        [31:0] dst   ;
-	rand bit        [31:0] addr  ;
 	     logic      [31:0] result;   // The result is also store here
 	//rand command_t         cmd   ;
 	//rand tx_payload        pay_h ;   // tx_payload is also extended from uvm_sequence_item
