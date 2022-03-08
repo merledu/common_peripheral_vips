@@ -39,20 +39,6 @@ module top;
 	test_ifc test_ifc_h (
 		.clk_i(clk)
 	);
-	
-	// Dut instance
-	// rv_timer rv_timer_inst (
-	// 	.clk_i                   (clk                                ),
-	// 	.rst_ni                  (test_ifc_h.rst_ni                  ),
-	// 	.reg_we                  (test_ifc_h.reg_we                  ),
-	// 	.reg_re                  (test_ifc_h.reg_re                  ),
-	// 	.reg_addr                (test_ifc_h.reg_addr                ),
-	// 	.reg_wdata               (test_ifc_h.reg_wdata               ),
-	// 	.reg_be                  (test_ifc_h.reg_be                  ),
-	// 	.reg_rdata               (test_ifc_h.reg_rdata               ),
-	// 	.reg_error               (test_ifc_h.reg_error               ),
-	// 	.intr_timer_expired_0_0_o(test_ifc_h.intr_timer_expired_0_0_o)
-	// );
   
   // Dut instance
 	// uart_name uart_inst (
