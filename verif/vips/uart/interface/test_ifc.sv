@@ -108,7 +108,7 @@ interface test_ifc  #(
 	);
 
   string msg;
-	task automatic transfer(config_xactn_timer tx);
+	task automatic transfer(transaction_item tx);
 	endtask // transfer
 
 	task automatic wait_clks(input int num);
