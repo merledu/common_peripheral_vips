@@ -50,14 +50,14 @@ class tx_v_seq extends uvm_sequence;
 
   task body();
     // Sequence to reset 
-    reset_timer_sequence_h = reset_timer_sequence::type_id::create("reset_timer_sequence_h");                  // Creating a sequences
-    reset_timer_sequence_h.start(get_sequencer(), this);
-  	// Sequence to configuring the timer
-  	config_timer_sequence_h = config_timer_sequence::type_id::create("config_timer_sequence_h");              // Creating a sequences
-  	config_timer_sequence_h.start(get_sequencer(), this);
-    // Sequence for reading the configuration registers to check either timer is configured properly or not
-    read_timer_sequence_h = read_timer_sequence::type_id::create("read_timer_sequence_h");                    // Creating a sequences
-    read_timer_sequence_h.start(get_sequencer(), this);
+    //reset_timer_sequence_h = reset_timer_sequence::type_id::create("reset_timer_sequence_h");                  // Creating a sequences
+    //reset_timer_sequence_h.start(get_sequencer(), this);
+  	//// Sequence to configuring the timer
+  	//config_timer_sequence_h = config_timer_sequence::type_id::create("config_timer_sequence_h");              // Creating a sequences
+  	//config_timer_sequence_h.start(get_sequencer(), this);
+    //// Sequence for reading the configuration registers to check either timer is configured properly or not
+    //read_timer_sequence_h = read_timer_sequence::type_id::create("read_timer_sequence_h");                    // Creating a sequences
+    //read_timer_sequence_h.start(get_sequencer(), this);
   endtask
   
 endclass
