@@ -57,7 +57,7 @@ class tx_test extends uvm_test;
 	// There are no other components apart from environment so no connect phase is required
 	// Build phase (In build phase we have function because components are build at zero time and function are executed at zero time)
 	virtual function void build_phase(uvm_phase phase); 
-    `uvm_info("TIMER_TX_TEST::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
+    `uvm_info("UART_TX_TEST::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
 
     // Create the environment and related configuration objects
     tx_env_h = tx_env::type_id::create("tx_env_h",this);
