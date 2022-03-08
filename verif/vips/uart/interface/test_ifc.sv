@@ -20,7 +20,7 @@
 
 interface test_ifc  #(
 		parameter int DATA_WIDTH = 32,
-		parameter int ADDR_WIDTH =  8,
+		parameter int ADDR_WIDTH =  8
 	)(
 		input logic clk_i
 	);
@@ -41,7 +41,6 @@ interface test_ifc  #(
 	//logic           intr_timer_expired_0_0_o;
 
 	// Declaration
-	logic                  clk_i  ;
 	logic                  rst_ni ;
 	logic                  ren    ;
 	logic                  we     ;
@@ -67,17 +66,16 @@ interface test_ifc  #(
 
 	// Modport for DUT i.e. UART
 	modport uart_mp_dut (
-		input                   clk_i  ,
-		input                   rst_ni ,
-		input                   ren    ,
-		input                   we     ,
-		input  [DATA_WIDTH-1:0] wdata  ,
-		output [DATA_WIDTH-1:0] rdata  ,
-		input  [ADDR_WIDTH-1:0] addr   ,
-		output                  tx_o   ,
-		input                   rx_i   ,
-		output                  intr_tx,
-		output                  intr_rx
+		input  rst_ni ,
+		input  ren    ,
+		input  we     ,
+		input  wdata  ,
+		output rdata  ,
+		input  addr   ,
+		output tx_o   ,
+		input  rx_i   ,
+		output intr_tx,
+		output intr_rx
 	);
 
 	//// Modport for testbench
@@ -94,17 +92,16 @@ interface test_ifc  #(
 
 	// Modport for testbench
 	modport timer_mp_tb (
-    output                  clk_i  ,
-	 	output                  rst_ni ,
-	 	output                  ren    ,
-	 	output                  we     ,
-	 	output [DATA_WIDTH-1:0] wdata  ,
-	 	input  [DATA_WIDTH-1:0] rdata  ,
-	 	output [ADDR_WIDTH-1:0] addr   ,
-	 	input                   tx_o   ,
-	 	output                  rx_i   ,
-	 	input                   intr_tx,
-	 	input                   intr_rx
+	 	output rst_ni ,
+	 	output ren    ,
+	 	output we     ,
+	 	output wdata  ,
+	 	input  rdata  ,
+	 	output addr   ,
+	 	input  tx_o   ,
+	 	output rx_i   ,
+	 	input  intr_tx,
+	 	input  intr_rx
 	);
 
   string msg;
