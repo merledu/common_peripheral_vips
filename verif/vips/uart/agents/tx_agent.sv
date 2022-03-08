@@ -49,10 +49,10 @@ class tx_agent extends uvm_agent;
   tx_driver       tx_driver_h      ;                    // Handle to driver
   tx_monitor      tx_monitor_h     ;                    // Handle to monitor
   tx_agent_config tx_agent_config_h;                    // Declaration of agent configuraton object
-  uvm_sequencer#(config_xactn_timer) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with config_xactn_timer transaction
+  uvm_sequencer#(transaction_item) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
   // Analysis port to connect with the analysis port of monitor
-  uvm_analysis_port #(config_xactn_timer) dut_txn_port;
+  uvm_analysis_port #(transaction_item) dut_txn_port;
   
   // Build phase
   // The agent is hierarchical and create component like the driver, monitor and sequencer during the Build phase
