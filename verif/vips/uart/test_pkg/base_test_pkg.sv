@@ -51,6 +51,7 @@ package base_test_pkg;
   `include "./sequences/config_timer_sequence.sv"
   `include "./sequences/read_timer_sequence.sv"
   `include "./sequences/reset_timer_sequence.sv"
+  `include "./sequences/config_uart_sequence.sv"
   
   // Sequencers
   `include "./sequencers/tx_sequencer.sv"
