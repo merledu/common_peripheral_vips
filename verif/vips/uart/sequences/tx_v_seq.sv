@@ -41,12 +41,15 @@ class tx_v_seq extends uvm_sequence;
 
   // Declaring a sequences
   
-  // Sequence to reset the timer
-  reset_timer_sequence  reset_timer_sequence_h ;
-  // Sequence to configure the timer by writing random values to registers present at different addresses
-  config_timer_sequence config_timer_sequence_h;                      
-  // Sequence to read the timer's register present at different addresses to observe if register are properly configured or not
-  read_timer_sequence   read_timer_sequence_h  ;
+  //// Sequence to reset the timer
+  //reset_timer_sequence  reset_timer_sequence_h ;
+  //// Sequence to configure the timer by writing random values to registers present at different addresses
+  //config_timer_sequence config_timer_sequence_h;                      
+  //// Sequence to read the timer's register present at different addresses to observe if register are properly configured or not
+  //read_timer_sequence   read_timer_sequence_h  ;
+
+  // Sequence to configure the UART
+  config_uart_sequence config_uart_sequence_h;
 
   task body();
     // Sequence to reset 
@@ -58,6 +61,10 @@ class tx_v_seq extends uvm_sequence;
     //// Sequence for reading the configuration registers to check either timer is configured properly or not
     //read_timer_sequence_h = read_timer_sequence::type_id::create("read_timer_sequence_h");                    // Creating a sequences
     //read_timer_sequence_h.start(get_sequencer(), this);
+    
+    // Sequence to configure the UART
+    config_uart_sequence_h = config_uart_sequence::type_id::create("config_uart_sequence_h");                  // Creating a sequences
+    config_uart_sequence_h.start(get_sequencer(), this);
   endtask
   
 endclass
