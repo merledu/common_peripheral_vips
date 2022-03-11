@@ -50,6 +50,8 @@ class tx_v_seq extends uvm_sequence;
 
   // Sequence to configure the UART
   config_uart_sequence config_uart_sequence_h;
+  // Sequence to read the configured values on UART and activate it to transmit the values
+  read_uart_sequence read_uart_sequence_h;
 
   task body();
     // Sequence to reset 
@@ -65,6 +67,9 @@ class tx_v_seq extends uvm_sequence;
     // Sequence to configure the UART
     config_uart_sequence_h = config_uart_sequence::type_id::create("config_uart_sequence_h");                  // Creating a sequences
     config_uart_sequence_h.start(get_sequencer(), this);
+    // Sequence to read the configured values on UART and activate it to transmit the values
+    read_uart_sequence_h = read_uart_sequence::type_id::create("read_uart_sequence_h");                        // Creating a sequences
+    read_uart_sequence_h.start(get_sequencer(), this);
   endtask
   
 endclass
