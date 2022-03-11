@@ -78,6 +78,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // config_uart_sequence is going to generate 4 transactions of type transaction_item
+    // TODO: for data to be send randomly (number of data send to the fifo to be transmit should be randomize depending on fifo depth)
     repeat(4) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");            // Factory creation (body task create transactions using factory creation)
@@ -117,10 +118,10 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
   // Function to print baud rate
   function void print_transaction (transaction_item tx, input string msg);
     $sformat(msg, {1{"\n%s\n========================================="}}, msg          );
-    $sformat(msg, "%s\nREAD_EN___________:: %0h"                        , msg, tx.ren  );
-    $sformat(msg, "%s\nWRITE_EN__________:: %0h"                        , msg, tx.we   );
-    $sformat(msg, "%s\nW_DATA____________:: %0d"                        , msg, tx.wdata);
-    $sformat(msg, "%s\nADDR______________:: %0h"                        , msg, tx.addr );    
+    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.ren  );
+    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.we   );
+    $sformat(msg, "%s\nW_DATA____________:h: %0h"                        , msg, tx.wdata);
+    $sformat(msg, "%s\nADDR______________:h: %0h"                        , msg, tx.addr );    
     $sformat(msg, {1{"%s=========================================\n"}}  , msg          );
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
