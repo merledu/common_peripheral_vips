@@ -22,10 +22,10 @@
 //         destroyed during simulation                                                               //
 //       - Components are hierarical i.e. they have fixed location in topology.                      //
 //       - Transactions do not have fixed location because transaction move throught the components. //
-//       - sequnce is parameterize class, as shown here the config_uart_sequence only send          // 
+//       - sequnce is parameterize class, as shown here the config_uart_sequence only send           // 
 //         transaction_item transaction                                                              //
 //                                                                                                   //
-//        This sequuence is used to configure the timer by passing constraint random values to DUT   //
+//        This sequuence is used to configure the uart by passing constraint random values to DUT    //
 //        via driver and interface                                                                   //
 //                                                                                                   //
 // Revision Date:                                                                                    //
