@@ -85,101 +85,31 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       if(!tx.randomize())                                        // It randomize the transaction
         `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
       // tx.addr=tx_agent_config_h.base_address;                    // For fetching base address from agent configuration "It can be a run time value"
-      
-      // // Declaration and initialization
-      // tx.rst_ni = 1'b1;
-      // tx.reg_we = 1'h1;
-      // tx.reg_be = 4'b1111;
-      // tx.reg_re = 1'h0;
-      // 
-      // if (cycle == 'b01 || cycle =='b10) begin
-      //   //tx.reg_wdata = 64'h000000F0FFFFFFFF;
-      //   `uvm_info("\nCONFIG_TIMER_SEQUENCE::",$sformatf(" [CHECK DATA___________:: %0b", tx.reg_wdata), UVM_LOW)
-      //   // If the data is less than or equal to 64'h00000000FFFFFFFF then put the lower 32bit of data in register at address 'h10c 
-      //   if(tx.reg_wdata <= 64'h00000000FFFFFFFF && cycle == 'b1) begin
-      //     tx.reg_addr = 'h10c;
-      //     data = tx.reg_wdata;
-      //     print_transaction(tx, "Value to be counted is less than 32 bit");
-      //   end
-      //   // If the data is less than or equal to 64'h00000000FFFFFFFF then set 32bit register at address 'h110 to zero 
-      //   else if (cycle == 'b10 && data <= 64'h00000000FFFFFFFF && lower_data_en == 1'b0) begin
-      //     tx.reg_addr = 'h110;
-      //     tx.reg_wdata = 64'h00000000;
-      //     print_transaction(tx, "Setting all bit of upper compare register to zero");
-      //   end
-      //   // If the data is greater than 64'h00000000FFFFFFFF then put the lower 32bit of data in register at address 'h10c 
-      //   else if (lower_data_en == 1) begin
-      //     tx.reg_addr = 'h10c;
-      //     tx.reg_wdata = {32'h00000000 , lower_data};
-      //     lower_data_en = 1'b0;
-      //     print_transaction(tx, "Setting up the lower compare registere as lower_data(lower 32 bit) of input data");
-      //   end
-      //   // If the data is greater than 64'h00000000FFFFFFFF then put the upper 32bit of data in register at address 'h110 
-      //   else begin
-      //     upper_data = tx.reg_wdata[63:32];
-      //     lower_data = tx.reg_wdata[31:0 ];
-      //     tx.reg_addr = 'h110;
-      //     tx.reg_wdata = {32'h00000000 , upper_data};
-      //     lower_data_en = 1'b1; // Enable bit to assign lower bit to respective register i.e. to tx.reg_wdata[31:0 ] at address 0x110
-      //     print_transctn_data(tx, "Value to be counted is greater than 32 bit", upper_data, lower_data);
-      //   end
-      // end
-      // // Configure the timer by writing random values in register at address 'h100 for setting prescale and step value of timer
-      // else if (cycle == 'b11) begin
-      //   tx.reg_addr = 'h100;
-      //   prescale =  /*4*/$urandom();
-      //   step     =  /*6*/$urandom();
-      //   tx.reg_wdata = {8'b11111111, step, 4'b1111, prescale};
-      //   if(step == 0)
-      //     `uvm_fatal("CONFIG_TIMER_SEQUENCE::FATAL ERROR",$sformatf("Step value is set to zero, please re-run the test"))
-      //   //msg = "";
-      //   //$sformat(msg, {2{"%s============================"}}    , msg                     );
-      //   //$sformat(msg, "%s\nPRE-SCALE RANDOM___________:: %0b"  , msg, prescale           );
-      //   //$sformat(msg, "%s\nASSIGNED PRE-SCALE_________:: %0b"  , msg, tx.reg_wdata[11:0] );
-      //   //$sformat(msg, "%s\nSTEP RANDOM________________:: %0b"  , msg, step               );
-      //   //$sformat(msg, "%s\nASSIGNED STEP______________:: %0b"  , msg, tx.reg_wdata[23:16]);
-      //   //$sformat(msg, "%s\nWDATA______________________:: %0b\n", msg, tx.reg_wdata       );
-      //   //$sformat(msg, {2{"%s============================"}}    , msg                     );
-      //   //`uvm_info("CONFIG_TIMER_SEQUENCE::",$sformatf("\n\nSetting prescale and step for the counter\n", msg), UVM_LOW)
-      //   print_step_scale(tx, "Setting prescale and step for the counter", prescale, step);
-      // end
-      // // Enable the interupt pin by writing 1 in register at address 'h114
-      // else if (cycle == 'b100) begin
-      //   tx.reg_we    = 1'h1;
-      //   tx.reg_be    = 4'b1111;
-      //   tx.reg_addr  = 'h114;
-      //   tx.reg_wdata = 32'h00000001;
-      //   print_transaction(tx, "Enabling the interupt");
-      // end
 
-      // clk_i  ;
-      // rst_ni ;
-      // ren    ;
-      // we     ;
-      // wdata  ;
-      // rdata  ;
-      // addr   ;
-      // tx_o   ;
-      // rx_i   ;
-      // intr_tx;
-      // intr_rx;
-      
-
+      // Declaration and initialization
       tx.rst_ni = 1'b1;
       
+      // Configuring the Baud rate
       if (cycle == 'b01) begin
         tx.ren    = 1'b0;
         tx.we     = 1'b1;
         tx.addr   =  'h0;
         print_transaction(tx, "Configuring the Baud rate");
       end
+      // Configuring tx level
       else if (cycle == 'b10) begin
         tx.ren    = 1'b0;
         tx.we     = 1'b1;
         tx.addr   = 'h18;
         print_transaction(tx, "Configuring the tx level rate");
       end
-
+      // Data to be transferred
+      else begin
+        tx.ren    = 1'b0;
+        tx.we     = 1'b1;
+        tx.addr   = 'h04;
+        print_transaction(tx, "Configuring data to be transfered");
+      end
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
   endtask // body
@@ -195,30 +125,5 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
   endfunction : print_transaction
-
-  // function void print_transctn_data(transaction_item tx, input string msg, input bit [31:0] upper_data, input bit [31:0] lower_data);
-  //   $sformat(msg, {1{"\n%s\n========================================="}}, msg              );
-  //   $sformat(msg, "%s\nUPPER-DATA_______:: %0b"                         , msg, upper_data  );
-  //   $sformat(msg, "%s\nLOWER-DATA_______:: %0b"                         , msg, lower_data  );
-  //   $sformat(msg, "%s\nADDRESS__________:: %0h"                         , msg, tx.reg_addr );
-  //   $sformat(msg, "%s\nWRITE_EN_________:: %0b"                         , msg, tx.reg_we   );
-  //   $sformat(msg, "%s\nBYTE_EN__________:: %0b"                         , msg, tx.reg_be   );
-  //   $sformat(msg, "%s\nDATA_____________:: %0b\n"                       , msg, tx.reg_wdata);
-  //   $sformat(msg, {1{"%s========================================="}}    , msg              );
-  //   `uvm_info("CONFIG_TIMER_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
-  //   msg = "";
-  // endfunction : print_transctn_data
-  // 
-  // function void print_step_scale(transaction_item tx, input string msg, input bit [11:0] prescale, input bit [23:16] step);
-  //   $sformat(msg, {1{"\n%s\n========================================="}}, msg                     );
-  //   $sformat(msg, "%s\nPRE-SCALE RANDOM___________:: %0d"               , msg, prescale           );
-  //   $sformat(msg, "%s\nASSIGNED PRE-SCALE_________:: %0d"               , msg, tx.reg_wdata[11:0] );
-  //   $sformat(msg, "%s\nSTEP RANDOM________________:: %0d"               , msg, step               );
-  //   $sformat(msg, "%s\nASSIGNED STEP______________:: %0d"               , msg, tx.reg_wdata[23:16]);
-  //   $sformat(msg, "%s\nWDATA______________________:: %0b\n"             , msg, tx.reg_wdata       );
-  //   $sformat(msg, {1{"%s========================================="}}    , msg                     );
-  //   `uvm_info("CONFIG_TIMER_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)
-  //   msg = "";
-  // endfunction : print_step_scale
 
 endclass // config_uart_sequence
