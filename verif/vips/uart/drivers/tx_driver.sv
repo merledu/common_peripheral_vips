@@ -137,7 +137,42 @@ class tx_driver extends uvm_driver #(transaction_item);
     //  wait (vif.intr_timer_expired_0_0_o == 1'b1);
     //  `uvm_info("UART_DRIVER::",$sformatf("intr_timer_expired_0_0_o is one"), UVM_LOW)
     //end
+
+    // Declaring variables
+    bit [ 31: 0] r_data;
+    
+    // Assigning signals drived to the DUT 
+    @(posedge vif.clk_i);
+    vif.rst_ni = tr.rst_ni ;
+    vif.we     = tr.we     ;
+    vif.wdata  = tr.wdata  ;
+    vif.rdata  = tr.rdata  ;
+    vif.addr   = tr.addr   ;
+    vif.ren    = tr.ren    ;
+    // For Reading signals from DUT via interface
+    r_data = vif.rdata;
+
+    // Print the signals driven on the virtual interface
+    print_tx_fields(vif);
+
   endtask
+
+  function void print_tx_fields(virtual test_ifc vif);
+    msg = "";
+    $sformat(msg, {2{"%s============================"}}, msg             );
+    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, vif.rst_ni );
+    $sformat(msg, "%s\nREAD_EN________________:h: %0h"  , msg, vif.ren    );
+    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, vif.we     );
+    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, vif.addr   );
+    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, vif.wdata  );
+    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, vif.rdata  );
+    $sformat(msg, "%s\nTX_OUT_________________:h: %0h"  , msg, vif.tx_o   );
+    $sformat(msg, "%s\nRX_IN__________________:h: %0h"  , msg, vif.rx_i   );
+    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, vif.intr_tx);
+    $sformat(msg, "%s\nINTR_RX________________:h: %0h\n", msg, vif.intr_rx);
+    $sformat(msg, {2{"%s============================"}}, msg                      );
+    `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
+  endfunction : print_tx_fields
 
   //function void print_tx_fields(virtual test_ifc vif);
   //  msg = "";
