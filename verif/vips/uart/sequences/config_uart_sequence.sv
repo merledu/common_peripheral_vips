@@ -163,28 +163,39 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       // rx_i   ;
       // intr_tx;
       // intr_rx;
+      
 
+      tx.rst_ni = 1'b1;
+      
       if (cycle == 'b01) begin
-        tx.rst_ni = 1'b1;
         tx.ren    = 1'b0;
         tx.we     = 1'b1;
-        print_baud_rate_transaction(tx, "Configuring the Baud rate");
+        tx.addr   =  'h0;
+        print_transaction(tx, "Configuring the Baud rate");
+      end
+      else if (cycle == 'b10) begin
+        tx.ren    = 1'b0;
+        tx.we     = 1'b1;
+        tx.addr   = 'h18;
+        print_transaction(tx, "Configuring the tx level rate");
       end
 
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
   endtask // body
-
-  function void print_baud_rate_transaction(transaction_item tx, input string msg);
+  
+  // Function to print baud rate
+  function void print_transaction (transaction_item tx, input string msg);
     $sformat(msg, {1{"\n%s\n========================================="}}, msg          );
+    $sformat(msg, "%s\nREAD_EN___________:: %0h"                        , msg, tx.ren  );
     $sformat(msg, "%s\nWRITE_EN__________:: %0h"                        , msg, tx.we   );
-    $sformat(msg, "%s\nW_DATA____________:: %0b"                        , msg, tx.wdata);
-    $sformat(msg, "%s\nADDR______________:: %0b"                        , msg, tx.addr );    
+    $sformat(msg, "%s\nW_DATA____________:: %0d"                        , msg, tx.wdata);
+    $sformat(msg, "%s\nADDR______________:: %0h"                        , msg, tx.addr );    
     $sformat(msg, {1{"%s=========================================\n"}}  , msg          );
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
-  endfunction : print_baud_rate_transaction
-  // 
+  endfunction : print_transaction
+
   // function void print_transctn_data(transaction_item tx, input string msg, input bit [31:0] upper_data, input bit [31:0] lower_data);
   //   $sformat(msg, {1{"\n%s\n========================================="}}, msg              );
   //   $sformat(msg, "%s\nUPPER-DATA_______:: %0b"                         , msg, upper_data  );
