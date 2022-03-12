@@ -78,10 +78,10 @@ class read_uart_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // read_uart_sequence is going to generate 6 transactions of type transaction_item
-    repeat(6) begin
+    repeat(3) begin
       cycle = cycle + 1;
       `uvm_info("READ_UART_SEQUENCE::",$sformatf("READ_UART_SEQUENCE"), UVM_LOW)
-      tx = transaction_item::type_id::create("tx");            // Factory creation (body task create transactions using factory creation)
+      tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
         `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
@@ -90,35 +90,33 @@ class read_uart_sequence extends uvm_sequence #(transaction_item);
       // Declaration and Initializatin
       tx.rst_ni = 1'b1;  
       tx.ren    = 1'h1;
-      tx.we     = 1'h0;
-      
+      tx.we     = 1'h0;  
       // Read register at address 'h0
       if (cycle == 'b01)
         tx.addr = 'h0;
-      
       // Read register at address 'h18
       else if (cycle == 'b10)
         tx.addr = 'h18;
-      
       // Read register at address 'h04
       else if (cycle == 'b11)
         tx.addr = 'h04;
-
-      //tx.reg_addr='h110;
+      // Enable the FIFO write to transmit the data
+      else if (cycle == 'b100) begin
+        tx.rst_ni = 1'b1;  
+        tx.ren    = 1'h0;
+        tx.we     = 1'h1;  
+        tx.addr   = 'h14;
+        tx.wdata  =  'h1;
+      end
+      else begin
+        tx.rst_ni = 1'b1;  
+        tx.ren    = 1'h0;
+        tx.we     = 1'h1;  
+        tx.addr   = 'h1c;
+        tx.wdata  =  'h1;
+      end
       finish_item(tx);                                           // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
   endtask // body
-  
-  //function void print_transaction(transaction_item tx, input string msg);
-  //  $sformat(msg, {1{"\n%s\n========================================="}}, msg );
-  //  $sformat(msg, "%s\nADDRESS__________:: %0h"                         , msg, tx.reg_addr     );
-  //  $sformat(msg, "%s\nWRITE_EN_________:: %0b"                         , msg, tx.reg_we       );
-  //  $sformat(msg, "%s\nBYTE_EN__________:: %0b"                         , msg, tx.reg_be       );
-  //  $sformat(msg, "%s\nREAD_EN__________:: %0b"                         , msg, tx.reg_re       );
-  //  $sformat(msg, "%s\nDATA_____________:: %0b\n"                       , msg, tx.reg_wdata    );
-  //  $sformat(msg, {1{"%s=========================================\n"}}  , msg );
-  //  `uvm_info("READ REGISTER TO CHECK THE CONFIGURED UART & ACTIVATE TIMER::",$sformatf("\n", msg), UVM_LOW)
-  //  msg = "";
-  //endfunction : print_transaction
 
 endclass // read_uart_sequence
