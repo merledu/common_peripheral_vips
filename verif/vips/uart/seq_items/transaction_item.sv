@@ -33,17 +33,21 @@ class transaction_item extends uvm_sequence_item;
 		super.new(name);
 	endfunction // new
 
-	rand bit          clk_i  ;
-	rand bit          rst_ni ;
-	rand bit          ren    ;
-	rand bit          we     ;
-	rand bit [32-1:0] wdata  ;
-	rand bit [32-1:0] rdata  ;
-	rand bit [ 8-1:0] addr   ;
-	rand bit          tx_o   ;
-	rand bit          rx_i   ;
-	rand bit          intr_tx;
-	rand bit          intr_rx;
+	rand bit          clk_i    ;
+	rand bit          rst_ni   ;
+	rand bit          ren      ;
+	rand bit          we       ;
+	rand bit [32-1:0] wdata    ;
+	rand bit [32-1:0] rdata    ;
+	rand bit [ 8-1:0] addr     ;
+	rand bit          tx_o     ;
+	rand bit          rx_i     ;
+	rand bit          intr_tx  ;
+	rand bit          intr_rx  ;
+	rand bit [ 15:0 ] baud_rate;
+	rand bit [  3:0 ] tx_level ;
+
+	constraint baud_rate_c { baud_rate inside {'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800, 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
 
   /*
 	constraint reg_addr_c { reg_addr inside {'h118, 'h11c, 'h114, 'h110, 'h10c, 'h108, 'h104, 'h100, 'h000};}
