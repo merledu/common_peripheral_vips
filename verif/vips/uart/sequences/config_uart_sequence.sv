@@ -88,14 +88,23 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error        
     tx_levl = tx.tx_level;
     `uvm_info("CONFIG_UART_SEQUENCE",$sformatf("Value of tx_level is set as %0d", tx_levl), UVM_LOW)
-    repeat(2 + tx_levl) begin
+    
+    ////////////////////////
+    // CONFIGURE THE UART //
+    ////////////////////////
+    /*
+    Note:
+    2 cycles for setting baud rate and tx level
+    tx level times, data will be written in tx fifo at address 'h04   
+    */
+    repeat(2+2+1+(2*tx_levl)) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
         `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
       // tx.addr=tx_agent_config_h.base_address;                 // For fetching base address from agent configuration "It can be a run time value"
-    
+      
       // Declaration and initialization
       tx.rst_ni = 1'b1;
       
@@ -105,7 +114,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.we     = 1'b1;
         tx.addr   =  'h0;
         tx.wdata  = tx.baud_rate;
-        print_transaction(tx, "Configuring the Baud rate");
+        print_transaction(tx, "Configuring the Baud rate", cycle);
       end
       // Configuring tx level
       else if (cycle == 'b10) begin
@@ -113,28 +122,75 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.we     = 1'b1;
         tx.addr   = 'h18;
         tx.wdata  = tx_levl;
-        print_transaction(tx, "Configuring the tx level rate");
+        print_transaction(tx, "Configuring the tx level rate", cycle);
       end
       // Data to be transferred
-      else begin
+      else if ( cycle >= 'd3 && cycle <= 'd2 +tx_levl) begin
         tx.ren    = 1'b0;
         tx.we     = 1'b1;
         tx.addr   = 'h04;
-        print_transaction(tx, "Configuring data to be transfered");
+        print_transaction(tx, "Configuring data to be transfered", cycle);
       end
+
+      /////////////////////////
+      // READ THE CONFIGURED //
+      /////////////////////////
+
+      // Read register at address 'h0
+      else if (cycle == tx_levl+'d3) begin
+        tx.ren    = 1'h1;
+        tx.we     = 1'h0;  
+        tx.addr   = 'h0;
+        print_transaction(tx, "Reading configured baud rate", cycle);
+      end
+      // Read register at address 'h18
+      else if (cycle == tx_levl+'d4) begin
+        tx.ren    = 1'h1;
+        tx.we     = 1'h0;
+        tx.addr   = 'h18;
+        print_transaction(tx, "Reading configured tx level", cycle);
+      end
+      // Read register at address 'h04
+      else if (cycle >= tx_levl+'d5 && cycle <= 2*tx_levl+'d4) begin
+        tx.ren    = 1'h1;
+        tx.we     = 1'h0;
+        tx.addr   = 'h04;
+        print_transaction(tx, "Reading configured data stored in tx level fifo", cycle);
+      end
+
+      ////////////////////////////////////////////////
+      // Enable the FIFO write to transmit the data //
+      ////////////////////////////////////////////////
+      else if (cycle == 2*tx_levl+'d5) begin
+        tx.rst_ni = 1'b1;
+        tx.ren    = 1'h0;
+        tx.we     = 1'h1;
+        tx.addr   = 'h14;
+        tx.wdata  =  'h1;
+        print_transaction(tx, "Enabling tx fifo to transmit the data", cycle);
+      end
+      //else begin
+      //  tx.rst_ni = 1'b1;  
+      //  tx.ren    = 1'h0;
+      //  tx.we     = 1'h1;  
+      //  tx.addr   = 'h1c;
+      //  tx.wdata  =  'h1;
+      //end
+
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
     //end
   endtask // body
   
   // Function to print baud rate
-  function void print_transaction (transaction_item tx, input string msg);
-    $sformat(msg, {1{"\n%s\n========================================="}}, msg           );
-    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.ren  );
-    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.we   );
-    $sformat(msg, "%s\nW_DATA____________:h: %0d"                        , msg, tx.wdata);
-    $sformat(msg, "%s\nADDR______________:d: %0h"                        , msg, tx.addr );    
-    $sformat(msg, {1{"%s\n=========================================\n"}} , msg          );
+  function void print_transaction (transaction_item tx, input string msg, int clk_cycle);
+    $sformat(msg, {1{"\n%s\n========================================="}}, msg            );
+    $sformat(msg, "%s\ncycle_____________:d: %0d"                        , msg, clk_cycle);
+    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.ren   );
+    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.we    );
+    $sformat(msg, "%s\nW_DATA____________:h: %0d"                        , msg, tx.wdata );
+    $sformat(msg, "%s\nADDR______________:d: %0h"                        , msg, tx.addr  );    
+    $sformat(msg, {1{"%s\n=========================================\n"}} , msg           );
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
   endfunction : print_transaction
