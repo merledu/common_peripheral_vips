@@ -167,15 +167,16 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.we     = 1'h1;
         tx.addr   = 'h14;
         tx.wdata  =  'h1;
-        print_transaction(tx, "Enabling tx fifo to transmit the data", cycle);
+        print_transaction(tx, "Enabling tx fifo write", cycle);
       end
-      //else begin
-      //  tx.rst_ni = 1'b1;  
-      //  tx.ren    = 1'h0;
-      //  tx.we     = 1'h1;  
-      //  tx.addr   = 'h1c;
-      //  tx.wdata  =  'h1;
-      //end
+      else begin
+        tx.rst_ni = 1'b1;  
+        tx.ren    = 1'h0;
+        tx.we     = 1'h1;  
+        tx.addr   = 'h1c;
+        tx.wdata  =  'h1;
+        print_transaction(tx, "Enabling tx transfer", cycle);
+      end
 
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
