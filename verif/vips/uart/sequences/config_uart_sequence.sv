@@ -97,7 +97,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     2 cycles for setting baud rate and tx level
     tx level times, data will be written in tx fifo at address 'h04   
     */
-    repeat(2+2+1+(2*tx_levl)) begin
+    repeat(2+2+2+(2*tx_levl)) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
