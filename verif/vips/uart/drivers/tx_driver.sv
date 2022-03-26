@@ -155,6 +155,13 @@ class tx_driver extends uvm_driver #(transaction_item);
     // Print the signals driven on the virtual interface
     print_tx_fields(vif);
 
+    // When the uart tx transfer is activated, following logic waits untils intr_tx is enabled from the DUT, that indicates tx uart has compeletd the count
+    if ((tr.rst_ni == 1'b1) && (tr.we == 1'h1) && (tr.addr=='h1c) && (tr.wdata == 'h1)) begin
+      `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_tx to be high"), UVM_LOW)
+      //wait (vif.intr_tx == 1'b0);
+      `uvm_info("UART_DRIVER::",$sformatf("intr_tx is high"), UVM_LOW)
+    end
+
   endtask
 
   function void print_tx_fields(virtual test_ifc vif);
@@ -173,34 +180,5 @@ class tx_driver extends uvm_driver #(transaction_item);
     $sformat(msg, {2{"%s============================"}}, msg                      );
     `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
   endfunction : print_tx_fields
-
-  //function void print_tx_fields(virtual test_ifc vif);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}, msg                      );
-  //  $sformat(msg, "%s\nRESRT__________________:: %0h"  , msg, vif.rst_ni          );
-  //  $sformat(msg, "%s\nADDRESS________________:: %0h"  , msg, vif.reg_addr        );
-  //  $sformat(msg, "%s\nWRITE_EN_______________:: %0b"  , msg, vif.reg_we          );
-  //  $sformat(msg, "%s\nBYTE_EN________________:: %0b"  , msg, vif.reg_be          );
-  //  $sformat(msg, "%s\nW_DATA_________________:: %0b"  , msg, vif.reg_wdata       );
-  //  $sformat(msg, "%s\nREAD_EN________________:: %0b"  , msg, vif.reg_re          );
-  //  $sformat(msg, "%s\nR_DATA_________________:: %0b"  , msg, vif.reg_rdata       );
-  //  $sformat(msg, "%s\nASSIGNED PRE-SCALE_____:: %0d"  , msg, vif.reg_wdata[11:0] );
-  //  $sformat(msg, "%s\nASSIGNED STEP__________:: %0d\n", msg, vif.reg_wdata[23:16]);
-  //  $sformat(msg, {2{"%s============================"}}, msg                      );
-  //  `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
-  //endfunction : print_tx_fields
-  //
-  //function void print_num_of_cycles_req(input bit[11:0] prescale, input bit [63:0] data, input bit [23:16] step, input bit [31:0] div_q, input bit [4:0] div_r, input bit [76:0] cycle_to_get_result);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nPRE-SCALE_VALUE___________:: %0d"  , msg, prescale           );
-  //  $sformat(msg, "%s\nDATA VALUE________________:: %0d"  , msg, data               );
-  //  $sformat(msg, "%s\nSTEP VALUE________________:: %0d"  , msg, step               );
-  //  $sformat(msg, "%s\nDIV QUOTIENT______________:: %0d"  , msg, div_q              );
-  //  $sformat(msg, "%s\nDIV REMINDER______________:: %0d"  , msg, div_r              );
-  //  $sformat(msg, "%s\nCYCLE TO GET RESULT_______:: %0d\n", msg, cycle_to_get_result);
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the number of cycles to complete the count and related field\n", msg), UVM_LOW)
-  //endfunction : print_num_of_cycles_req
 
 endclass
