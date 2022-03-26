@@ -72,6 +72,30 @@ class tx_monitor extends uvm_monitor;
   int         set                    ;
 
   virtual task get_transaction();
+    // Transaction Handle declaration
+    transaction_item tx;
+    forever begin
+      @(posedge vif.clk_i)
+        tx = transaction_item::type_id::create("tx");
+      tx.rst_ni  = vif.rst_ni ;
+      tx.ren     = vif.ren    ;
+      tx.we      = vif.we     ;
+      tx.wdata   = vif.wdata  ;
+      tx.rdata   = vif.rdata  ;
+      tx.addr    = vif.addr   ;
+      tx.tx_o    = vif.tx_o   ;
+      tx.rx_i    = vif.rx_i   ;
+      tx.intr_tx = vif.intr_tx;
+      tx.intr_rx = vif.intr_rx;
+      // Print the transactions
+      print_transaction(tx);
+      // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
+      dut_tx_port.write(tx);
+      // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
+    end // forever
+  endtask
+
+  //virtual task get_transaction();
     //// Transaction Handle declaration
     //transaction_item tx;
     //forever begin
@@ -129,27 +153,27 @@ class tx_monitor extends uvm_monitor;
     //    end // if (set==0)
     //  end // if (tx.intr_timer_expired_0_0_o == 1)
     //end // forever
-  endtask
+  //endtask
 
-  //function void print_transaction(transaction_item tx);
-  //  msg = "";
-  //  cycle_num = ++cycle_num;
-  //  $sformat(msg, {2{"%s============================"}}, msg                             );
-  //  $sformat(msg, "%s\nCYCLE_NUMBER___________:: %0d"  , msg, cycle_num                  );
-  //  $sformat(msg, "%s\nRESRT__________________:: %0h"  , msg, tx.rst_ni                  );
-  //  $sformat(msg, "%s\nADDRESS________________:: %0h"  , msg, tx.reg_addr                );
-  //  $sformat(msg, "%s\nWRITE_EN_______________:: %0b"  , msg, tx.reg_we                  );
-  //  $sformat(msg, "%s\nBYTE_EN________________:: %0b"  , msg, tx.reg_be                  );
-  //  $sformat(msg, "%s\nW_DATA_________________:: %0d"  , msg, tx.reg_wdata               );
-  //  $sformat(msg, "%s\nREAD_EN________________:: %0b"  , msg, tx.reg_re                  );
-  //  $sformat(msg, "%s\nR_DATA_________________:: %0d"  , msg, tx.reg_rdata               );
-  //  $sformat(msg, "%s\nERROR__________________:: %0d"  , msg, tx.reg_error               );
-  //  $sformat(msg, "%s\nTIMER EXPIRED__________:: %0d\n", msg, tx.intr_timer_expired_0_0_o);
-  //  $sformat(msg, "%s\nASSIGNED PRE-SCALE_____:: %0d"  , msg, tx.reg_wdata[11:0]         );
-  //  $sformat(msg, "%s\nASSIGNED STEP__________:: %0d\n", msg, tx.reg_wdata[23:16]        );
-  //  $sformat(msg, {2{"%s============================"}}, msg                             );
-  //  `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
-  //endfunction : print_transaction
+  function void print_transaction(transaction_item tx);
+    msg = "";
+    cycle_num = ++cycle_num;
+    $sformat(msg, {2{"%s============================"}}, msg             );
+    $sformat(msg, "%s\nCYCLE_NUMBER___________:d: %0d"  , msg, cycle_num  );
+    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, tx.rst_ni  );
+    $sformat(msg, "%s\nR_EN___________________:h: %0h"  , msg, tx.ren     );
+    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, tx.we      );
+    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, tx.wdata   );
+    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, tx.rdata   );
+    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, tx.addr    );
+    $sformat(msg, "%s\nTX_O___________________:h: %0d"  , msg, tx.tx_o    );
+    $sformat(msg, "%s\nRX_I___________________:h: %0h"  , msg, tx.rx_i    );
+    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, tx.intr_tx );
+    $sformat(msg, "%s\nINTR_RX________________:h: %0h\n", msg, tx.intr_rx );
+    $sformat(msg, {2{"%s============================"}}, msg                             );
+    `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
+  endfunction : print_transaction
+  
   //
   //function void print_num_of_cycles_req(input bit[11:0] prescale, input bit [63:0] data, input bit [23:16] step, input bit [31:0] div_q, input bit [4:0] div_r, input bit [76:0] cycle_to_get_result);
   //  msg = "";
