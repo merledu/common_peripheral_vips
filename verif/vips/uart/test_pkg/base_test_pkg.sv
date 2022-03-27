@@ -36,6 +36,7 @@ package base_test_pkg;
   ///////////////////////////////////////////////////////
   
   // Sequence Items
+  `include "./object/test_object.sv"
   `include "./seq_items/tx_item.sv"
   `include "./seq_items/config_xactn_timer.sv"
   `include "./seq_items/transaction_item.sv"
