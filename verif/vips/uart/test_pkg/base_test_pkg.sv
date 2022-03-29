@@ -35,6 +35,8 @@ package base_test_pkg;
   // Include UVM objects that are involved in the test //
   ///////////////////////////////////////////////////////
   
+  typedef mailbox s_mbox_t;
+
   // Sequence Items
   `include "./object/test_object.sv"
   `include "./seq_items/tx_item.sv"
