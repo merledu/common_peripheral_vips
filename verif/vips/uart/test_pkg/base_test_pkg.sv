@@ -34,11 +34,9 @@ package base_test_pkg;
   ///////////////////////////////////////////////////////
   // Include UVM objects that are involved in the test //
   ///////////////////////////////////////////////////////
-  
-  typedef mailbox s_mbox_t;
+  `define CLOCK_PERIOD 100
 
   // Sequence Items
-  `include "./object/test_object.sv"
   `include "./seq_items/tx_item.sv"
   `include "./seq_items/config_xactn_timer.sv"
   `include "./seq_items/transaction_item.sv"
