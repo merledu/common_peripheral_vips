@@ -61,12 +61,15 @@ class tx_monitor extends uvm_monitor;
   
   // Declaration
   string msg ="";
-  bit [76:0] cycle_num = 0; // NOTE: Change the width w.r.t. uart max cycle
-  bit [15:0] baud_rate    ;
-  bit [ 3:0] tx_level     ;
-  bit [ 3:0] temp_var     ;
-  bit [31:0] wdata_in_d[] ;
-  bit [31:0] rdata_in_d[] ;
+  bit [76:0] cycle_num = 0     ; // NOTE: Change the width w.r.t. uart max cycle
+  bit [15:0] baud_rate         ;
+  bit [ 3:0] tx_level          ;
+  bit [ 3:0] temp_var          ;
+  bit [31:0] wdata_in_d[]      ;
+  bit [31:0] rdata_in_d[]      ;
+  int        frequency         ;
+  int        clock_per_bit     ;
+  int        clock_per_bit_half;
 
   //bit [ 63:0] data                   ;
   //bit [ 76:0] cycle_to_get_result    ;
@@ -130,7 +133,21 @@ class tx_monitor extends uvm_monitor;
         else
           `uvm_info("TX_MONITOR::",$sformatf("Content of array is not same"), UVM_LOW)
       end
-      
+        
+      // Calculating variables
+      else if (tx.rst_ni == 1'b1 && tx.ren == 1'h0 && tx.we == 1'h1 && tx.addr == 'h14) begin
+        frequency = 1/(`CLOCK_PERIOD * 0.000000001);
+        if (frequency%baud_rate == 0)
+          clock_per_bit = frequency/baud_rate;
+        else
+          clock_per_bit = (frequency/baud_rate)+1;
+        if (clock_per_bit%2 == 0)
+          clock_per_bit_half = clock_per_bit/2;
+        else
+          clock_per_bit_half = (clock_per_bit/2)+1;
+        `uvm_info("TX_MONITOR::",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
+                                                        frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
+      end
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
       dut_tx_port.write(tx);
       // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
@@ -138,11 +155,13 @@ class tx_monitor extends uvm_monitor;
   endtask
 
   function void print_input_array(bit [31:0] wdata_in_d[]);
-    `uvm_info("TX_MONITOR::",$sformatf("\nInput array size = %0d\nContent of array are = %p", wdata_in_d.size(), wdata_in_d), UVM_LOW)    
+    `uvm_info("TX_MONITOR::",$sformatf("\nInput array size = %0d\nContent of array are = %p",
+                                                     wdata_in_d.size(), wdata_in_d), UVM_LOW)    
   endfunction : print_input_array
 
   function void print_read_array(bit [31:0] rdata_in_d[]);
-    `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", rdata_in_d.size(), rdata_in_d), UVM_LOW)    
+    `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", 
+                                                    rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
 
   //virtual task get_transaction();
