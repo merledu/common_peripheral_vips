@@ -39,10 +39,9 @@ class tx_monitor extends uvm_monitor;
   // Note tx_agent_config object with virtual interface is present(set) in uvm_config_db
   virtual test_ifc vif;
   tx_agent_config tx_agent_config_h; // Declaration of agent configuraton object
-  
   // TLM analysis port
   uvm_analysis_port #(transaction_item) dut_tx_port;
-
+  
   function void build_phase(uvm_phase phase);
     `uvm_info("UART_MONITOR::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
     // Creating analysis port TLM analysis ports are not created with factory
@@ -54,7 +53,7 @@ class tx_monitor extends uvm_monitor;
     // Display the base address from config object
     `uvm_info(get_type_name(), $sformatf("config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
   endfunction : build_phase
-
+  
   virtual task run_phase(uvm_phase phase);
     // Function to get transaction from virtual interface
     get_transaction();
@@ -62,19 +61,23 @@ class tx_monitor extends uvm_monitor;
   
   // Declaration
   string msg ="";
-  bit [ 63:0] data                   ;
-  bit [ 76:0] cycle_to_get_result    ;
-  bit [ 11:0] prescale            = 0;
-  bit [23:16] step                = 0;
-  bit [ 31:0] div_q               = 0;
-  bit [  4:0] div_r               = 0;
-  bit [ 76:0] cycle_num           = 0;
-  int         set                    ;
+  bit [76:0] cycle_num = 0; // NOTE: Change the width w.r.t. uart max cycle
+  bit [15:0] baud_rate    ;
+  bit [ 3:0] tx_level     ;
+
+  //bit [ 63:0] data                   ;
+  //bit [ 76:0] cycle_to_get_result    ;
+  //bit [ 11:0] prescale            = 0;
+  //bit [23:16] step                = 0;
+  //bit [ 31:0] div_q               = 0;
+  //bit [  4:0] div_r               = 0;
+  //int         set                    ;
 
   virtual task get_transaction();
     // Transaction Handle declaration
     transaction_item tx;
     forever begin
+      //`uvm_info(get_type_name(), $sformatf("I am printing frequency = %0d", s_mbox_m.get(freq)), UVM_LOW)
       @(posedge vif.clk_i)
         tx = transaction_item::type_id::create("tx");
       tx.rst_ni  = vif.rst_ni ;
@@ -88,7 +91,18 @@ class tx_monitor extends uvm_monitor;
       tx.intr_tx = vif.intr_tx;
       tx.intr_rx = vif.intr_rx;
       // Print the transactions
+
       print_transaction(tx);
+
+      if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h0) begin
+        baud_rate = tx.wdata;
+      end
+      else if (tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h18) begin
+        tx_level = tx.wdata;
+      end
+      else if (tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h04) begin
+      end
+      
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
       dut_tx_port.write(tx);
       // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
