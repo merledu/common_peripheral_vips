@@ -67,7 +67,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
   // Note: Driver limits how fast the stimulus can be applied to the driver by sequence, since the sequence is connected to driver it can send a new transaction when driver is ready
   virtual task body();
     // transaction of type transaction_item
-    transaction_item tx               ;
+    transaction_item tx                 ;
     int                cycle            ;
     bit [ 63:0]        data             ;
     bit                lower_data_en    ;
