@@ -123,6 +123,12 @@ class tx_monitor extends uvm_monitor;
           print_read_array(rdata_in_d);
           temp_var = 0;
         end
+        // Check if input and read array are same
+        if(wdata_in_d == rdata_in_d) begin
+          `uvm_info("TX_MONITOR::",$sformatf("Content of array are same"), UVM_LOW)
+        end
+        else
+          `uvm_info("TX_MONITOR::",$sformatf("Content of array is not same"), UVM_LOW)
       end
       
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
@@ -135,8 +141,8 @@ class tx_monitor extends uvm_monitor;
     `uvm_info("TX_MONITOR::",$sformatf("\nInput array size = %0d\nContent of array are = %p", wdata_in_d.size(), wdata_in_d), UVM_LOW)    
   endfunction : print_input_array
 
-  function void print_read_array(bit [31:0] wdata_in_d[]);
-    `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", wdata_in_d.size(), wdata_in_d), UVM_LOW)    
+  function void print_read_array(bit [31:0] rdata_in_d[]);
+    `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
 
   //virtual task get_transaction();
