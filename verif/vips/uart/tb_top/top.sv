@@ -33,8 +33,9 @@ module top;
   // Signal declaration
 	bit clk;
 	// Clock generation
-	always #50 clk <= ~clk;
-	
+	always #(`CLOCK_PERIOD/2) clk <= ~clk;
+	int frequency = 1/(`CLOCK_PERIOD * 0.000000001);
+
 	// Inetrface instance
 	test_ifc test_ifc_h (
 		.clk_i(clk)
@@ -55,7 +56,6 @@ module top;
 	// 	.intr_rx(test_ifc_h.intr_rx)
 	// );
 
-
 	// Also a top level module contains an initial block which contain a call to the uvm run_test method
 	// At time 0, the run_test creates the uvm_root object
 	//   - This fetches the test class name from the command line
@@ -64,10 +64,13 @@ module top;
 	// In general run_test method starts the execution of the uvm phases which controls the order in which the components are build
 	// Test is run and simulation report are generated
   // run_test instantiates the test components(tx_test components) and starts execution of phases which will cause the test to run and print 
-  // the informational message	
+  // the informational message
+	
 	initial begin
 		// Pass virtual interface test_ifc_h in uvm_test_top
 	  uvm_config_db#(virtual test_ifc/*data_type*/)::set(null/*Handle to the uvm_componemt that is calling the uvm_db*/, "uvm_test_top"/*relative path where you are writting or get this*/, "test_ifc_h"/*interface name*/, test_ifc_h/*Interface handle*/);
+		//uvm_config_db#(s_mbox_t/*data_type*/)::set(null, "uvm_test_top", "test_ifc_h", test_ifc_h);
+    $display("Value of clock_period = %0d, Value of frequency = %0d", `CLOCK_PERIOD, frequency);
 		run_test();
 	end
 endmodule // top
