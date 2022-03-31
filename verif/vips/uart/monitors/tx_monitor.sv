@@ -64,6 +64,8 @@ class tx_monitor extends uvm_monitor;
   bit [76:0] cycle_num = 0; // NOTE: Change the width w.r.t. uart max cycle
   bit [15:0] baud_rate    ;
   bit [ 3:0] tx_level     ;
+  bit [ 3:0] temp_var     ;
+  bit [31:0] wdata_in_d[] ;
 
   //bit [ 63:0] data                   ;
   //bit [ 76:0] cycle_to_get_result    ;
@@ -97,10 +99,15 @@ class tx_monitor extends uvm_monitor;
       if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h0) begin
         baud_rate = tx.wdata;
       end
-      else if (tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h18) begin
+      else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h18) begin
         tx_level = tx.wdata;
+        wdata_in_d = new[tx_level];
       end
-      else if (tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h04) begin
+      else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h04) begin
+        wdata_in_d[temp_var] = tx.wdata;
+        temp_var++;
+        if(temp_var == tx_level)
+          print_array(wdata_in_d);
       end
       
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
@@ -108,6 +115,10 @@ class tx_monitor extends uvm_monitor;
       // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
     end // forever
   endtask
+
+  function void print_array(bit [31:0] wdata_in_d[]);
+    `uvm_info("TX_MONITOR::",$sformatf("\nInput array size = %0d\nContent of Array are = %p", wdata_in_d.size(), wdata_in_d), UVM_LOW)    
+  endfunction : print_array
 
   //virtual task get_transaction();
     //// Transaction Handle declaration
