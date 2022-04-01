@@ -67,6 +67,8 @@ class tx_monitor extends uvm_monitor;
   bit [ 3:0] temp_var          ;
   bit [31:0] wdata_in_d[]      ;
   bit [31:0] rdata_in_d[]      ;
+  bit [ 7:0] tx_o_data_d[]     ;
+  bit [ 7:0] tx_o_data         ;
   int        frequency         ;
   int        clock_per_bit     ;
   int        clock_per_bit_half;
@@ -108,6 +110,8 @@ class tx_monitor extends uvm_monitor;
       else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h18) begin
         tx_level = tx.wdata;
         wdata_in_d = new[tx_level];
+        rdata_in_d = new[tx_level];
+        tx_o_data_d = new[tx_level];
       end
       // Storing input data to be transferred in the dynamic array
       else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h04) begin
@@ -133,7 +137,6 @@ class tx_monitor extends uvm_monitor;
         else
           `uvm_info("TX_MONITOR::",$sformatf("Content of array is not same"), UVM_LOW)
       end
-        
       // Calculating variables
       else if (tx.rst_ni == 1'b1 && tx.ren == 1'h0 && tx.we == 1'h1 && tx.addr == 'h14) begin
         frequency = 1/(`CLOCK_PERIOD * 0.000000001);
@@ -148,6 +151,19 @@ class tx_monitor extends uvm_monitor;
         `uvm_info("TX_MONITOR::",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
                                                         frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
       end
+
+      else if (tx.rst_ni == 1'b1 && tx.ren == 1'h0 && tx.we == 1'h1 && tx.addr == 'h1c) begin
+        for (int temp_var=0; temp_var < tx_level; temp_var++) begin
+          for(int index=0; index<8;index++)
+            tx_o_data[index] = tx.tx_o;        
+          tx_o_data_d[temp_var] = tx_o_data;
+          if(temp_var == (tx_level-1)) begin
+            print_tx_o_data_array(tx_o_data_d);
+          end
+        end
+        temp_var = 0;
+      end
+
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
       dut_tx_port.write(tx);
       // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
@@ -163,6 +179,11 @@ class tx_monitor extends uvm_monitor;
     `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", 
                                                     rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
+
+  function void print_tx_o_data_array(bit [7:0] tx_o_data_d[]);
+    `uvm_info("TX_MONITOR::",$sformatf("\nTX Out data array size = %0d\nContent of array are = %p", 
+                                                    tx_o_data_d.size(), tx_o_data_d), UVM_LOW)    
+  endfunction : print_tx_o_data_array
 
   //virtual task get_transaction();
     //// Transaction Handle declaration
