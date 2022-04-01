@@ -129,6 +129,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.ren    = 1'b0;
         tx.we     = 1'b1;
         tx.addr   = 'h04;
+        tx.wdata  = {24'h000000 , tx.wdata[7:0]};
         print_transaction(tx, "Configuring data to be transfered", cycle);
       end
 
