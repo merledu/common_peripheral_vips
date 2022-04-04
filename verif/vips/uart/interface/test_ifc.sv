@@ -20,7 +20,7 @@
 
 interface test_ifc  #(
 		parameter int DATA_WIDTH = 32,
-		parameter int ADDR_WIDTH =  8
+		parameter int ADDR_WIDTH =  12
 	)(
 		input logic clk_i
 	);
@@ -41,16 +41,34 @@ interface test_ifc  #(
 	//logic           intr_timer_expired_0_0_o;
 
 	// Declaration
-	logic                  rst_ni ;
-	logic                  ren    ;
-	logic                  we     ;
-	logic [DATA_WIDTH-1:0] wdata  ;
-	logic [DATA_WIDTH-1:0] rdata  ;
-	logic [ADDR_WIDTH-1:0] addr   ;
-	logic                  tx_o   ;
-	logic                  rx_i   ;
-	logic                  intr_tx;
-	logic                  intr_rx;
+	logic                  rst_ni   			;
+	logic [DATA_WIDTH-1:0] reg_wdata			;
+	logic [ADDR_WIDTH-1:0] reg_addr 			;
+	logic        					 reg_we   			;
+	logic        					 reg_re   			;
+	logic        					 rx_i     			;
+	logic [DATA_WIDTH-1:0] reg_rdata			;
+	logic 								 tx_o           ;
+	logic 								 intr_tx        ;
+	logic 								 intr_rx        ;
+	logic 								 intr_tx_level  ;
+	logic 								 intr_rx_timeout;
+	logic 								 intr_tx_full   ;
+	logic 								 intr_tx_empty  ;
+	logic 								 intr_rx_full   ;
+	logic 								 intr_rx_empty  ;
+	
+	// logic                  rst_ni ;
+	// logic                  ren    ;
+	// logic                  we     ;
+	// logic [DATA_WIDTH-1:0] wdata  ;
+	// logic [DATA_WIDTH-1:0] rdata  ;
+	// logic [ADDR_WIDTH-1:0] addr   ;
+	// logic                  tx_o   ;
+	// logic                  rx_i   ;
+	// logic                  intr_tx;
+	// logic                  intr_rx;
+
 
 	//// Modport for DUT i.e. Timer
 	//modport timer_mp_dut (
@@ -65,18 +83,18 @@ interface test_ifc  #(
 	//);
 
 	// Modport for DUT i.e. UART
-	modport uart_mp_dut (
-		input  rst_ni ,
-		input  ren    ,
-		input  we     ,
-		input  wdata  ,
-		output rdata  ,
-		input  addr   ,
-		output tx_o   ,
-		input  rx_i   ,
-		output intr_tx,
-		output intr_rx
-	);
+	//modport uart_mp_dut (
+	//	input  rst_ni ,
+	//	input  ren    ,
+	//	input  we     ,
+	//	input  wdata  ,
+	//	output rdata  ,
+	//	input  addr   ,
+	//	output tx_o   ,
+	//	input  rx_i   ,
+	//	output intr_tx,
+	//	output intr_rx
+	//);
 
 	//// Modport for testbench
 	//modport timer_mp_tb (
@@ -91,18 +109,18 @@ interface test_ifc  #(
 	//);
 
 	// Modport for testbench
-	modport timer_mp_tb (
-	 	output rst_ni ,
-	 	output ren    ,
-	 	output we     ,
-	 	output wdata  ,
-	 	input  rdata  ,
-	 	output addr   ,
-	 	input  tx_o   ,
-	 	output rx_i   ,
-	 	input  intr_tx,
-	 	input  intr_rx
-	);
+	//modport timer_mp_tb (
+	// 	output rst_ni ,
+	// 	output ren    ,
+	// 	output we     ,
+	// 	output wdata  ,
+	// 	input  rdata  ,
+	// 	output addr   ,
+	// 	input  tx_o   ,
+	// 	output rx_i   ,
+	// 	input  intr_tx,
+	// 	input  intr_rx
+	//);
 
   string msg;
 	task automatic transfer(transaction_item tx);
