@@ -40,7 +40,26 @@ module top;
 	test_ifc test_ifc_h (
 		.clk_i(clk)
 	);
-  
+    
+	uart_core uart_inst (
+		.rst_ni         (test_ifc_h.rst_ni         ),
+		.reg_wdata      (test_ifc_h.reg_wdata      ),
+		.reg_addr       (test_ifc_h.reg_addr       ),
+		.reg_we         (test_ifc_h.reg_we         ),
+		.reg_re         (test_ifc_h.reg_re         ),
+		.rx_i           (test_ifc_h.rx_i           ),
+		.reg_rdata      (test_ifc_h.reg_rdata      ),
+		.tx_o           (test_ifc_h.tx_o           ),
+		.intr_tx        (test_ifc_h.intr_tx        ),
+		.intr_rx        (test_ifc_h.intr_rx        ),
+		.intr_tx_level  (test_ifc_h.intr_tx_level  ),
+		.intr_rx_timeout(test_ifc_h.intr_rx_timeout),
+		.intr_tx_full   (test_ifc_h.intr_tx_full   ),
+		.intr_tx_empty  (test_ifc_h.intr_tx_empty  ),
+		.intr_rx_full   (test_ifc_h.intr_rx_full   ),
+		.intr_rx_empty  (test_ifc_h.intr_rx_empty  )
+	);
+
   // Dut instance
 	// uart_name uart_inst (
 	// 	.clk_i  (clk               ),
