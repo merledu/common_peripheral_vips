@@ -33,19 +33,26 @@ class transaction_item extends uvm_sequence_item;
 		super.new(name);
 	endfunction // new
 
-	rand bit          clk_i    ;
-	rand bit          rst_ni   ;
-	rand bit          ren      ;
-	rand bit          we       ;
-	rand bit [32-1:0] wdata    ;
-	rand bit [32-1:0] rdata    ;
-	rand bit [ 8-1:0] addr     ;
-	rand bit          tx_o     ;
-	rand bit          rx_i     ;
-	rand bit          intr_tx  ;
-	rand bit          intr_rx  ;
-	rand bit [ 15:0 ] baud_rate;
-	rand bit [  3:0 ] tx_level ;
+
+	rand bit        clk_i          ;
+	rand bit        rst_ni         ;
+	rand bit [31:0] reg_wdata      ;
+	rand bit [11:0] reg_addr       ;
+	rand bit        reg_we         ;
+	rand bit        reg_re         ;
+	rand bit        rx_i           ;
+	rand bit [31:0] reg_rdata      ;
+	rand bit        tx_o           ;
+	rand bit 				intr_tx        ;
+	rand bit 				intr_rx        ;
+	rand bit 				intr_tx_level  ;
+	rand bit 				intr_rx_timeout;
+	rand bit 				intr_tx_full   ;
+	rand bit 				intr_tx_empty  ;
+	rand bit 				intr_rx_full   ;
+	rand bit 				intr_rx_empty  ;
+	rand bit [15:0] baud_rate      ;
+	rand bit [ 3:0] tx_level       ;
 
 	constraint baud_rate_c { baud_rate inside {'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800, 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
 
@@ -104,16 +111,25 @@ class transaction_item extends uvm_sequence_item;
 		super.do_copy(rhs);     // Copy the base class properties
 		// STEP 3a: This step is used to copy the objects properties. You are copying from another object into this one (this one means where this function is called)
 	  //          "this" is this not nessasary in following lines
-		this.rst_ni  = tx_rhs.rst_ni ;
-		this.ren     = tx_rhs.ren    ;
-		this.we      = tx_rhs.we     ;
-		this.wdata   = tx_rhs.wdata  ;
-		this.rdata   = tx_rhs.rdata  ;
-		this.addr    = tx_rhs.addr   ;
-		this.tx_o    = tx_rhs.tx_o   ;
-		this.rx_i    = tx_rhs.rx_i   ;
-		this.intr_tx = tx_rhs.intr_tx;
-		this.intr_rx = tx_rhs.intr_rx;
+		this.clk_i           = tx_rhs.clk_i          ;
+		this.rst_ni          = tx_rhs.rst_ni         ;
+		this.reg_wdata       = tx_rhs.reg_wdata      ;
+		this.reg_addr        = tx_rhs.reg_addr       ;
+		this.reg_we          = tx_rhs.reg_we         ;
+		this.reg_re          = tx_rhs.reg_re         ;
+		this.rx_i            = tx_rhs.rx_i           ;
+		this.reg_rdata       = tx_rhs.reg_rdata      ;
+		this.tx_o            = tx_rhs.tx_o           ;
+		this.intr_tx         = tx_rhs.intr_tx        ;
+		this.intr_rx         = tx_rhs.intr_rx        ;
+		this.intr_tx_level   = tx_rhs.intr_tx_level  ;
+		this.intr_rx_timeout = tx_rhs.intr_rx_timeout;
+		this.intr_tx_full    = tx_rhs.intr_tx_full   ;
+		this.intr_tx_empty   = tx_rhs.intr_tx_empty  ;
+		this.intr_rx_full    = tx_rhs.intr_rx_full   ;
+		this.intr_rx_empty   = tx_rhs.intr_rx_empty  ;
+		this.baud_rate       = tx_rhs.baud_rate      ;
+		this.tx_level        = tx_rhs.tx_level       ;		
 
     // STEP 3b: Now for the deep copy, uptil this line you copy properties in this object which is just a shallow copy 
     // if ((pay_h != null) && (tx_rhs.pay_h != null))
