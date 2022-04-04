@@ -97,6 +97,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     2 cycles for setting baud rate and tx level
     tx level times, data will be written in tx fifo at address 'h04   
     */
+
     repeat(2+2+2+(2*tx_levl)) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
@@ -110,26 +111,26 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       
       // Configuring the Baud rate
       if (cycle == 'b01) begin
-        tx.ren    = 1'b0;
-        tx.we     = 1'b1;
-        tx.addr   =  'h0;
-        tx.wdata  = tx.baud_rate;
+        tx.reg_re    = 1'b0;
+        tx.reg_we    = 1'b1;
+        tx.reg_addr  =  'h0;
+        tx.reg_wdata = tx.baud_rate;
         print_transaction(tx, "Configuring the Baud rate", cycle);
       end
       // Configuring tx level
       else if (cycle == 'b10) begin
-        tx.ren    = 1'b0;
-        tx.we     = 1'b1;
-        tx.addr   = 'h18;
-        tx.wdata  = tx_levl;
+        tx.reg_re    = 1'b0;
+        tx.reg_we    = 1'b1;
+        tx.reg_addr  = 'h18;
+        tx.reg_wdata = tx_levl;
         print_transaction(tx, "Configuring the tx level rate", cycle);
       end
       // Data to be transferred
       else if ( cycle >= 'd3 && cycle <= 'd2 +tx_levl) begin
-        tx.ren    = 1'b0;
-        tx.we     = 1'b1;
-        tx.addr   = 'h04;
-        tx.wdata  = {24'h000000 , tx.wdata[7:0]};
+        tx.reg_re    = 1'b0;
+        tx.reg_we    = 1'b1;
+        tx.reg_addr  = 'h04;
+        tx.reg_wdata = {24'h000000 , tx.reg_wdata[7:0]};
         print_transaction(tx, "Configuring data to be transfered", cycle);
       end
 
@@ -139,23 +140,23 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
 
       // Read register at address 'h0
       else if (cycle == tx_levl+'d3) begin
-        tx.ren    = 1'h1;
-        tx.we     = 1'h0;  
-        tx.addr   = 'h0;
+        tx.reg_re   = 1'h1;
+        tx.reg_we   = 1'h0;  
+        tx.reg_addr = 'h0;
         print_transaction(tx, "Reading configured baud rate", cycle);
       end
       // Read register at address 'h18
       else if (cycle == tx_levl+'d4) begin
-        tx.ren    = 1'h1;
-        tx.we     = 1'h0;
-        tx.addr   = 'h18;
+        tx.reg_re   = 1'h1;
+        tx.reg_we   = 1'h0;
+        tx.reg_addr = 'h18;
         print_transaction(tx, "Reading configured tx level", cycle);
       end
       // Read register at address 'h04
       else if (cycle >= tx_levl+'d5 && cycle <= 2*tx_levl+'d4) begin
-        tx.ren    = 1'h1;
-        tx.we     = 1'h0;
-        tx.addr   = 'h04;
+        tx.reg_re   = 1'h1;
+        tx.reg_we   = 1'h0;
+        tx.reg_addr = 'h04;
         print_transaction(tx, "Reading configured data stored in tx level fifo", cycle);
       end
 
@@ -163,19 +164,19 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       // Enable the FIFO write to transmit the data //
       ////////////////////////////////////////////////
       else if (cycle == 2*tx_levl+'d5) begin
-        tx.rst_ni = 1'b1;
-        tx.ren    = 1'h0;
-        tx.we     = 1'h1;
-        tx.addr   = 'h14;
-        tx.wdata  =  'h1;
+        tx.rst_ni    = 1'b1;
+        tx.reg_re    = 1'h0;
+        tx.reg_we    = 1'h1;
+        tx.reg_addr  = 'h14;
+        tx.reg_wdata =  'h1;
         print_transaction(tx, "Enabling tx fifo write", cycle);
       end
       else begin
-        tx.rst_ni = 1'b1;  
-        tx.ren    = 1'h0;
-        tx.we     = 1'h1;  
-        tx.addr   = 'h1c;
-        tx.wdata  =  'h1;
+        tx.rst_ni    = 1'b1;  
+        tx.reg_re    = 1'h0;
+        tx.reg_we    = 1'h1;  
+        tx.reg_addr  = 'h1c;
+        tx.reg_wdata =  'h1;
         print_transaction(tx, "Enabling tx transfer", cycle);
       end
 
@@ -186,13 +187,13 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
   
   // Function to print baud rate
   function void print_transaction (transaction_item tx, input string msg, int clk_cycle);
-    $sformat(msg, {1{"\n%s\n========================================="}}, msg            );
-    $sformat(msg, "%s\ncycle_____________:d: %0d"                        , msg, clk_cycle);
-    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.ren   );
-    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.we    );
-    $sformat(msg, "%s\nW_DATA____________:h: %0d"                        , msg, tx.wdata );
-    $sformat(msg, "%s\nADDR______________:d: %0h"                        , msg, tx.addr  );    
-    $sformat(msg, {1{"%s\n=========================================\n"}} , msg           );
+    $sformat(msg, {1{"\n%s\n========================================="}}, msg               );
+    $sformat(msg, "%s\ncycle_____________:d: %0d"                        , msg, clk_cycle   );
+    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.reg_re   );
+    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.reg_we   );
+    $sformat(msg, "%s\nW_DATA____________:h: %0d"                        , msg, tx.reg_wdata);
+    $sformat(msg, "%s\nADDR______________:d: %0h"                        , msg, tx.reg_addr );    
+    $sformat(msg, {1{"%s\n=========================================\n"}} , msg              );
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
   endfunction : print_transaction
