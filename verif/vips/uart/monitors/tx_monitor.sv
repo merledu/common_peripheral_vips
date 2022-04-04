@@ -67,8 +67,8 @@ class tx_monitor extends uvm_monitor;
   bit [ 3:0] temp_var          ;
   bit [31:0] wdata_in_d[]      ;
   bit [31:0] rdata_in_d[]      ;
-  bit [ 7:0] tx_o_data_d[]     ;
-  bit [ 7:0] tx_o_data         ;
+  bit [31:0] tx_o_data_d[]     ;
+  bit [31:0] tx_o_data         ;
   int        frequency         ;
   int        clock_per_bit     ;
   int        clock_per_bit_half;
@@ -88,34 +88,41 @@ class tx_monitor extends uvm_monitor;
       //`uvm_info(get_type_name(), $sformatf("I am printing frequency = %0d", s_mbox_m.get(freq)), UVM_LOW)
       @(posedge vif.clk_i)
         tx = transaction_item::type_id::create("tx");
-      tx.rst_ni  = vif.rst_ni ;
-      tx.ren     = vif.ren    ;
-      tx.we      = vif.we     ;
-      tx.wdata   = vif.wdata  ;
-      tx.rdata   = vif.rdata  ;
-      tx.addr    = vif.addr   ;
-      tx.tx_o    = vif.tx_o   ;
-      tx.rx_i    = vif.rx_i   ;
-      tx.intr_tx = vif.intr_tx;
-      tx.intr_rx = vif.intr_rx;
+      tx.rst_ni          = vif.rst_ni         ;
+      tx.reg_wdata       = vif.reg_wdata      ;
+      tx.reg_addr        = vif.reg_addr       ;
+      tx.reg_we          = vif.reg_we         ;
+      tx.reg_re          = vif.reg_re         ;
+      tx.rx_i            = vif.rx_i           ;
+      tx.reg_rdata       = vif.reg_rdata      ;
+      tx.tx_o            = vif.tx_o           ;
+      tx.intr_tx         = vif.intr_tx        ;
+      tx.intr_rx         = vif.intr_rx        ;
+      tx.intr_tx_level   = vif.intr_tx_level  ;
+      tx.intr_rx_timeout = vif.intr_rx_timeout;
+      tx.intr_tx_full    = vif.intr_tx_full   ;
+      tx.intr_tx_empty   = vif.intr_tx_empty  ;
+      tx.intr_rx_full    = vif.intr_rx_full   ;
+      tx.intr_rx_empty   = vif.intr_rx_empty  ;
+
       // Print the transactions
 
       print_transaction(tx);
       
       // Setting baud rate
-      if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h0) begin
-        baud_rate = tx.wdata;
+      if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h0) begin
+        baud_rate = tx.reg_wdata;
       end
       // Setting tx_level
-      else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h18) begin
-        tx_level = tx.wdata;
+      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h18) begin
+        tx_level = tx.reg_wdata;
         wdata_in_d = new[tx_level];
         rdata_in_d = new[tx_level];
         tx_o_data_d = new[tx_level];
       end
       // Storing input data to be transferred in the dynamic array
-      else if (tx.rst_ni == 1'b1 && tx.ren == 1'b0 && tx.we == 1'b1 && tx.addr == 'h04) begin
-        wdata_in_d[temp_var] = tx.wdata;
+      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h04) begin
+        wdata_in_d[temp_var] = tx.reg_wdata;
         temp_var++;
         if(temp_var == tx_level) begin
           print_input_array(wdata_in_d);
@@ -123,8 +130,8 @@ class tx_monitor extends uvm_monitor;
         end
       end
       // Storing the read data from the tx_fifo in the dynamic array
-      else if (tx.rst_ni == 1'b1 && tx.ren == 1'h1 && tx.we == 1'h0 && tx.addr == 'h04) begin
-        rdata_in_d[temp_var] = tx.rdata;
+      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h1 && tx.reg_we == 1'h0 && tx.reg_addr == 'h04) begin
+        rdata_in_d[temp_var] = tx.reg_rdata;
         temp_var++;
         if(temp_var == tx_level) begin
           print_read_array(rdata_in_d);
@@ -138,7 +145,7 @@ class tx_monitor extends uvm_monitor;
           `uvm_info("TX_MONITOR::",$sformatf("Content of array is not same"), UVM_LOW)
       end
       // Calculating variables
-      else if (tx.rst_ni == 1'b1 && tx.ren == 1'h0 && tx.we == 1'h1 && tx.addr == 'h14) begin
+      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h14) begin
         frequency = 1/(`CLOCK_PERIOD * 0.000000001);
         if (frequency%baud_rate == 0)
           clock_per_bit = frequency/baud_rate;
@@ -152,16 +159,26 @@ class tx_monitor extends uvm_monitor;
                                                         frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
       end
 
-      else if (tx.rst_ni == 1'b1 && tx.ren == 1'h0 && tx.we == 1'h1 && tx.addr == 'h1c) begin
+      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h1c) begin
         for (int temp_var=0; temp_var < tx_level; temp_var++) begin
           for(int index=0; index<8;index++)
-            tx_o_data[index] = tx.tx_o;        
-          tx_o_data_d[temp_var] = tx_o_data;
+            tx_o_data[index] = tx.tx_o; 
+          tx_o_data_d[temp_var] = {24'h000000, tx_o_data};
           if(temp_var == (tx_level-1)) begin
             print_tx_o_data_array(tx_o_data_d);
           end
         end
         temp_var = 0;
+      end
+
+      if(tx.intr_tx == 1) begin
+        if((tx_o_data_d == wdata_in_d)) begin
+          `uvm_info("TX_MONITOR::",$sformatf("\nCOMPARISON PASSED::Contents of 'input data array' are equal to 'tx out array'\nTx input data array = %p \nTx output data array = %p"
+                                                                                                                                               , wdata_in_d, tx_o_data_d), UVM_LOW)
+        end
+        else
+          `uvm_info("TX_MONITOR::",$sformatf("\nCOMPARISON FAILED::Contents of 'input data array' are not equal to 'tx out array\nTx input data array = %p \nTx output data array = %p"
+                                                                                                                                               , wdata_in_d, tx_o_data_d), UVM_LOW)
       end
 
       // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
@@ -180,7 +197,7 @@ class tx_monitor extends uvm_monitor;
                                                     rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
 
-  function void print_tx_o_data_array(bit [7:0] tx_o_data_d[]);
+  function void print_tx_o_data_array(bit [31:0] tx_o_data_d[]);
     `uvm_info("TX_MONITOR::",$sformatf("\nTX Out data array size = %0d\nContent of array are = %p", 
                                                     tx_o_data_d.size(), tx_o_data_d), UVM_LOW)    
   endfunction : print_tx_o_data_array
@@ -248,19 +265,25 @@ class tx_monitor extends uvm_monitor;
   function void print_transaction(transaction_item tx);
     msg = "";
     cycle_num = ++cycle_num;
-    $sformat(msg, {2{"%s============================"}}, msg             );
-    $sformat(msg, "%s\nCYCLE_NUMBER___________:d: %0d"  , msg, cycle_num  );
-    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, tx.rst_ni  );
-    $sformat(msg, "%s\nR_EN___________________:h: %0h"  , msg, tx.ren     );
-    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, tx.we      );
-    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, tx.wdata   );
-    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, tx.rdata   );
-    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, tx.addr    );
-    $sformat(msg, "%s\nTX_O___________________:h: %0d"  , msg, tx.tx_o    );
-    $sformat(msg, "%s\nRX_I___________________:h: %0h"  , msg, tx.rx_i    );
-    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, tx.intr_tx );
-    $sformat(msg, "%s\nINTR_RX________________:h: %0h\n", msg, tx.intr_rx );
-    $sformat(msg, {2{"%s============================"}}, msg                             );
+    $sformat(msg, {2{"%s============================"}} , msg                    );
+    $sformat(msg, "%s\nCYCLE_NUMBER___________:d: %0d"  , msg, cycle_num         );
+    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, tx.rst_ni         );
+    $sformat(msg, "%s\nR_EN___________________:h: %0h"  , msg, tx.reg_re         );
+    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, tx.reg_we         );
+    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, tx.reg_wdata      );
+    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, tx.reg_rdata      );
+    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, tx.reg_addr       );
+    $sformat(msg, "%s\nTX_O___________________:h: %0d"  , msg, tx.tx_o           );
+    $sformat(msg, "%s\nRX_I___________________:h: %0h"  , msg, tx.rx_i           );
+    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, tx.intr_tx        );
+    $sformat(msg, "%s\nINTR_RX________________:h: %0h"  , msg, tx.intr_rx        );
+    $sformat(msg, "%s\nINTR_TX_LEVEL__________:h: %0h"  , msg, tx.intr_tx_level  );
+    $sformat(msg, "%s\nINTR_RX_TIMEOUT________:h: %0h"  , msg, tx.intr_rx_timeout);
+    $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, tx.intr_tx_full   );
+    $sformat(msg, "%s\nINTR_TX_EMPTY__________:h: %0h"  , msg, tx.intr_tx_empty  );
+    $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, tx.intr_rx_full   );
+    $sformat(msg, "%s\nINTR_RX_EMPTY__________:h: %0h\n", msg, tx.intr_rx_empty  );
+    $sformat(msg, {2{"%s============================"}} , msg                    );
     `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
   endfunction : print_transaction
   
