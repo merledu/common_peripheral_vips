@@ -143,20 +143,21 @@ class tx_driver extends uvm_driver #(transaction_item);
     
     // Assigning signals drived to the DUT 
     @(posedge vif.clk_i);
-    vif.rst_ni = tr.rst_ni ;
-    vif.we     = tr.we     ;
-    vif.wdata  = tr.wdata  ;
-    vif.rdata  = tr.rdata  ;
-    vif.addr   = tr.addr   ;
-    vif.ren    = tr.ren    ;
+    vif.rst_ni    = tr.rst_ni;
+    vif.reg_we    = tr.reg_we;
+    vif.reg_wdata = tr.reg_wdata;
+    vif.reg_rdata = tr.reg_rdata;
+    vif.reg_addr  = tr.reg_addr;
+    vif.reg_re    = tr.reg_re;
+    vif.rx_i      = tr.rx_i;
     // For Reading signals from DUT via interface
-    r_data = vif.rdata;
+    r_data        = vif.reg_rdata;
 
     // Print the signals driven on the virtual interface
     print_tx_fields(vif);
 
     // When the uart tx transfer is activated, following logic waits untils intr_tx is enabled from the DUT, that indicates tx uart has compeletd the count
-    if ((tr.rst_ni == 1'b1) && (tr.we == 1'h1) && (tr.addr=='h1c) && (tr.wdata == 'h1)) begin
+    if ((tr.rst_ni == 1'b1) && (tr.reg_we == 1'h1) && (tr.reg_addr=='h1c) && (tr.reg_wdata == 'h1)) begin
       `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_tx to be high"), UVM_LOW)
       //wait (vif.intr_tx == 1'b0);
       `uvm_info("UART_DRIVER::",$sformatf("intr_tx is high"), UVM_LOW)
@@ -166,17 +167,23 @@ class tx_driver extends uvm_driver #(transaction_item);
 
   function void print_tx_fields(virtual test_ifc vif);
     msg = "";
-    $sformat(msg, {2{"%s============================"}}, msg             );
-    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, vif.rst_ni );
-    $sformat(msg, "%s\nREAD_EN________________:h: %0h"  , msg, vif.ren    );
-    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, vif.we     );
-    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, vif.addr   );
-    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, vif.wdata  );
-    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, vif.rdata  );
-    $sformat(msg, "%s\nTX_OUT_________________:h: %0h"  , msg, vif.tx_o   );
-    $sformat(msg, "%s\nRX_IN__________________:h: %0h"  , msg, vif.rx_i   );
-    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, vif.intr_tx);
-    $sformat(msg, "%s\nINTR_RX________________:h: %0h\n", msg, vif.intr_rx);
+    $sformat(msg, {2{"%s============================"}}, msg                      );
+    $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, vif.rst_ni         );
+    $sformat(msg, "%s\nREAD_EN________________:h: %0h"  , msg, vif.reg_re         );
+    $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, vif.reg_we         );
+    $sformat(msg, "%s\nADDRESS________________:h: %0h"  , msg, vif.reg_addr       );
+    $sformat(msg, "%s\nW_DATA_________________:h: %0h"  , msg, vif.reg_wdata      );
+    $sformat(msg, "%s\nR_DATA_________________:h: %0h"  , msg, vif.reg_rdata      );
+    $sformat(msg, "%s\nTX_OUT_________________:h: %0h"  , msg, vif.tx_o           );
+    $sformat(msg, "%s\nRX_IN__________________:h: %0h"  , msg, vif.rx_i           );
+    $sformat(msg, "%s\nINTR_TX________________:h: %0h"  , msg, vif.intr_tx        );
+    $sformat(msg, "%s\nINTR_RX________________:h: %0h"  , msg, vif.intr_rx        );
+    $sformat(msg, "%s\nINTR_TX_LEVEL__________:h: %0h"  , msg, vif.intr_tx_level  );
+    $sformat(msg, "%s\nINTR_RX_TIMEOUT________:h: %0h"  , msg, vif.intr_rx_timeout);
+    $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, vif.intr_tx_full   );
+    $sformat(msg, "%s\nINTR_TX_EMPTY__________:h: %0h"  , msg, vif.intr_tx_empty  );
+    $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, vif.intr_rx_full   );
+    $sformat(msg, "%s\nINTR_RX_EMPTY__________:h: %0h\n", msg, vif.intr_rx_empty  );
     $sformat(msg, {2{"%s============================"}}, msg                      );
     `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
   endfunction : print_tx_fields
