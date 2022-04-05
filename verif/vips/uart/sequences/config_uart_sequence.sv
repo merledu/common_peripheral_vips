@@ -81,6 +81,8 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     // TODO: for data to be send randomly (number of data send to the fifo to be transmit should be randomize depending on fifo depth)
     
     int tx_levl;
+    int frequency = 1/(`CLOCK_PERIOD * 0.000000001);
+    int clock_per_bit;
 
     //repeat (1) begin
     tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
@@ -114,7 +116,13 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.reg_re    = 1'b0;
         tx.reg_we    = 1'b1;
         tx.reg_addr  =  'h0;
-        tx.reg_wdata = tx.baud_rate;
+        //tx.reg_wdata = tx.baud_rate;        
+        if (frequency%tx.baud_rate == 0)
+          clock_per_bit = frequency/tx.baud_rate;
+        else
+          clock_per_bit = (frequency/tx.baud_rate)+1;
+        tx.reg_wdata = clock_per_bit;
+        `uvm_info("CONFIG_UART_SEQUENCE",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nCPB = %0d",frequency, tx.baud_rate, clock_per_bit), UVM_LOW)
         print_transaction(tx, "Configuring the Baud rate", cycle);
       end
       // Configuring tx level
@@ -187,13 +195,14 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
   
   // Function to print baud rate
   function void print_transaction (transaction_item tx, input string msg, int clk_cycle);
-    $sformat(msg, {1{"\n%s\n========================================="}}, msg               );
-    $sformat(msg, "%s\ncycle_____________:d: %0d"                        , msg, clk_cycle   );
-    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.reg_re   );
-    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.reg_we   );
-    $sformat(msg, "%s\nW_DATA____________:h: %0d"                        , msg, tx.reg_wdata);
-    $sformat(msg, "%s\nADDR______________:d: %0h"                        , msg, tx.reg_addr );    
-    $sformat(msg, {1{"%s\n=========================================\n"}} , msg              );
+    $sformat(msg, {1{"\n%s\n========================================="}}, msg                    );
+    $sformat(msg, "%s\ncycle_____________:d: %0d"                        , msg, clk_cycle        );
+    $sformat(msg, "%s\nREAD_EN___________:h: %0h"                        , msg, tx.reg_re        );
+    $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                        , msg, tx.reg_we        );
+    $sformat(msg, "%s\nW_DATA____________:h: %0h"                        , msg, tx.reg_wdata     );
+    $sformat(msg, "%s\nR_DATA____________:h: %0h"                        , msg, tx.reg_rdata[7:0]);
+    $sformat(msg, "%s\nADDR______________:h: %0h"                        , msg, tx.reg_addr      );    
+    $sformat(msg, {1{"%s\n=========================================\n"}} , msg                   );
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n", msg), UVM_LOW)  
     msg = "";
   endfunction : print_transaction
