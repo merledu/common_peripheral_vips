@@ -72,6 +72,7 @@ class tx_monitor extends uvm_monitor;
   int        frequency         ;
   int        clock_per_bit     ;
   int        clock_per_bit_half;
+  bit [31:0] rdata             ;
 
   //bit [ 63:0] data                   ;
   //bit [ 76:0] cycle_to_get_result    ;
@@ -111,7 +112,8 @@ class tx_monitor extends uvm_monitor;
       
       // Setting baud rate
       if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h0) begin
-        baud_rate = tx.reg_wdata;
+        //baud_rate = tx.reg_wdata;
+        clock_per_bit = tx.reg_wdata;
       end
       // Setting tx_level
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h18) begin
@@ -131,7 +133,8 @@ class tx_monitor extends uvm_monitor;
       end
       // Storing the read data from the tx_fifo in the dynamic array
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h1 && tx.reg_we == 1'h0 && tx.reg_addr == 'h04) begin
-        rdata_in_d[temp_var] = tx.reg_rdata;
+        rdata = tx.reg_rdata;
+        rdata_in_d[temp_var] = {24'h000000 , rdata[7:0]};
         temp_var++;
         if(temp_var == tx_level) begin
           print_read_array(rdata_in_d);
@@ -146,17 +149,19 @@ class tx_monitor extends uvm_monitor;
       end
       // Calculating variables
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h14) begin
-        frequency = 1/(`CLOCK_PERIOD * 0.000000001);
-        if (frequency%baud_rate == 0)
-          clock_per_bit = frequency/baud_rate;
-        else
-          clock_per_bit = (frequency/baud_rate)+1;
+        //frequency = 1/(`CLOCK_PERIOD * 0.000000001);
+        //if (frequency%baud_rate == 0)
+        //  clock_per_bit = frequency/baud_rate;
+        //else
+        //  clock_per_bit = (frequency/baud_rate)+1;
         if (clock_per_bit%2 == 0)
           clock_per_bit_half = clock_per_bit/2;
         else
           clock_per_bit_half = (clock_per_bit/2)+1;
-        `uvm_info("TX_MONITOR::",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
-                                                        frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
+        //`uvm_info("TX_MONITOR::",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
+        //                                                frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
+        `uvm_info("TX_MONITOR::",$sformatf("\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
+                                                 clock_per_bit, clock_per_bit_half), UVM_LOW)
       end
 
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h1c) begin
