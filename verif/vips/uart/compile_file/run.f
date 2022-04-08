@@ -22,5 +22,3 @@
 
 # Add top modules
 ./tb_top/top.sv
-
-
