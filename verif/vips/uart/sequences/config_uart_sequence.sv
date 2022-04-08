@@ -122,7 +122,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         else
           clock_per_bit = (frequency/tx.baud_rate)+1;
         tx.reg_wdata = clock_per_bit;
-        `uvm_info("CONFIG_UART_SEQUENCE",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nCPB = %0d",frequency, tx.baud_rate, clock_per_bit), UVM_LOW)
+        `uvm_info("CONFIG_UART_SEQUENCE",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nCPB = %0d",frequency, tx.baud_rate, tx.reg_wdata), UVM_LOW)
         print_transaction(tx, "Configuring the Baud rate", cycle);
       end
       // Configuring tx level
