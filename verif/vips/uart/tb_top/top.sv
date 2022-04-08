@@ -42,6 +42,7 @@ module top;
 	);
     
 	uart_core uart_inst (
+		.clk_i          (clk                       ),
 		.rst_ni         (test_ifc_h.rst_ni         ),
 		.reg_wdata      (test_ifc_h.reg_wdata      ),
 		.reg_addr       (test_ifc_h.reg_addr       ),
