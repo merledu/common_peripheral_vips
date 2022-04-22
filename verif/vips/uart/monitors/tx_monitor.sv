@@ -65,23 +65,20 @@ class tx_monitor extends uvm_monitor;
   bit [15:0] baud_rate         ;
   bit [ 3:0] tx_level          ;
   bit [ 3:0] temp_var          ;
-  bit [31:0] wdata_in_d[]      ;
-  bit [31:0] rdata_in_d[]      ;
-  bit [31:0] tx_o_data_d[]     ;
+  bit [ 7:0] wdata_in_d[]      ;
+  bit [ 7:0] tx_data_in_d[]    ;
+  bit [ 7:0] tx_o_data_d[]     ;
   bit [31:0] tx_o_data         ;
   int        frequency         ;
   int        clock_per_bit     ;
   int        clock_per_bit_half;
   bit [31:0] rdata             ;
-
-  //bit [ 63:0] data                   ;
-  //bit [ 76:0] cycle_to_get_result    ;
-  //bit [ 11:0] prescale            = 0;
-  //bit [23:16] step                = 0;
-  //bit [ 31:0] div_q               = 0;
-  //bit [  4:0] div_r               = 0;
-  //int         set                    ;
-
+  bit        transfer_en       ;
+  int index=0;
+  int sig_bit=0;
+  int counter=0;
+  int counter_cpb =0;
+  
   virtual task get_transaction();
     // Transaction Handle declaration
     transaction_item tx;
@@ -118,154 +115,74 @@ class tx_monitor extends uvm_monitor;
       // Setting tx_level
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h18) begin
         tx_level = tx.reg_wdata;
-        wdata_in_d = new[tx_level];
-        rdata_in_d = new[tx_level];
-        tx_o_data_d = new[tx_level];
+        wdata_in_d = new[tx_level+1];
+        tx_data_in_d = new[tx_level+1];
+        tx_o_data_d = new[tx_level+1];
       end
       // Storing input data to be transferred in the dynamic array
-      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h04) begin
-        wdata_in_d[temp_var] = tx.reg_wdata;
+      else if (tx.rst_ni == 1'b1 /*&& tx.reg_re == 1'b0*/ && tx.reg_we == 1'b1 && tx.reg_addr == 'h04) begin
+        wdata_in_d[temp_var] = tx.reg_wdata[7:0];
         temp_var++;
-        if(temp_var == tx_level) begin
+        if(temp_var == tx_level+1) begin
           print_input_array(wdata_in_d);
           temp_var = 0;
         end
       end
-      // Storing the read data from the tx_fifo in the dynamic array
-      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h1 && tx.reg_we == 1'h0 && tx.reg_addr == 'h04) begin
-        rdata = tx.reg_rdata;
-        rdata_in_d[temp_var] = {24'h000000 , rdata[7:0]};
-        temp_var++;
-        if(temp_var == tx_level) begin
-          print_read_array(rdata_in_d);
-          temp_var = 0;
+
+      else if (tx.tx_o == 1'b0) begin
+        counter_cpb = counter_cpb +1;
+        if (counter_cpb == clock_per_bit) begin
+          `uvm_info(get_type_name(), $sformatf("Counter_cpb == clock_per_bit"), UVM_LOW)
+          transfer_en = 1;
         end
-        // Check if input and read array are same
-        if(wdata_in_d == rdata_in_d) begin
-          `uvm_info("TX_MONITOR::",$sformatf("Content of array are same"), UVM_LOW)
-        end
-        else
-          `uvm_info("TX_MONITOR::",$sformatf("Content of array is not same"), UVM_LOW)
-      end
-      // Calculating variables
-      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h14) begin
-        //frequency = 1/(`CLOCK_PERIOD * 0.000000001);
-        //if (frequency%baud_rate == 0)
-        //  clock_per_bit = frequency/baud_rate;
-        //else
-        //  clock_per_bit = (frequency/baud_rate)+1;
-        if (clock_per_bit%2 == 0)
-          clock_per_bit_half = clock_per_bit/2;
-        else
-          clock_per_bit_half = (clock_per_bit/2)+1;
-        //`uvm_info("TX_MONITOR::",$sformatf("\nFrequency = %0d,\nBaud rate = %0d,\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
-        //                                                frequency, baud_rate, clock_per_bit, clock_per_bit_half), UVM_LOW)
-        `uvm_info("TX_MONITOR::",$sformatf("\nclock_per_bit = %0d,\nclock_per_bit_half = %0d", 
-                                                 clock_per_bit, clock_per_bit_half), UVM_LOW)
       end
 
-      else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'h0 && tx.reg_we == 1'h1 && tx.reg_addr == 'h1c) begin
-        for (int temp_var=0; temp_var < tx_level; temp_var++) begin
-          for(int index=0; index<8;index++)
-            tx_o_data[index] = tx.tx_o; 
-          tx_o_data_d[temp_var] = {24'h000000, tx_o_data};
-          if(temp_var == (tx_level-1)) begin
-            print_tx_o_data_array(tx_o_data_d);
+      if (transfer_en == 1'b1) begin
+        bit tx_out = tx.tx_o;
+        `uvm_info(get_type_name(), $sformatf("printing tx_o %0d", tx_out), UVM_LOW)
+      end
+
+      if (transfer_en == 1'b1) begin
+        // Populating tx out fifo (To be compared afterwards)
+        tx_data_in_d[index][sig_bit] = tx.tx_o;
+        counter = counter+1;
+        if (counter == clock_per_bit) begin
+          sig_bit = sig_bit+1;
+          counter = 0;
+          if (sig_bit == 8) begin
+            sig_bit = 0;
+            index = index+1;
+            counter_cpb = 0;
+            transfer_en = 0;
+            if ((index == tx_level+1))
+               print_tx_out_data_array(tx_data_in_d);
           end
         end
-        temp_var = 0;
-      end
 
-      if(tx.intr_tx == 1) begin
-        if((tx_o_data_d == wdata_in_d)) begin
-          `uvm_info("TX_MONITOR::",$sformatf("\nCOMPARISON PASSED::Contents of 'input data array' are equal to 'tx out array'\nTx input data array = %p \nTx output data array = %p"
-                                                                                                                                               , wdata_in_d, tx_o_data_d), UVM_LOW)
-        end
-        else
-          `uvm_info("TX_MONITOR::",$sformatf("\nCOMPARISON FAILED::Contents of 'input data array' are not equal to 'tx out array\nTx input data array = %p \nTx output data array = %p"
-                                                                                                                                               , wdata_in_d, tx_o_data_d), UVM_LOW)
-      end
-
-      // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
+      end // else if (tx.tx_o == 1'b0)
       dut_tx_port.write(tx);
-      // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
     end // forever
   endtask
 
-  function void print_input_array(bit [31:0] wdata_in_d[]);
+  function void print_input_array(bit [7:0] wdata_in_d[]);
     `uvm_info("TX_MONITOR::",$sformatf("\nInput array size = %0d\nContent of array are = %p",
                                                      wdata_in_d.size(), wdata_in_d), UVM_LOW)    
   endfunction : print_input_array
 
-  function void print_read_array(bit [31:0] rdata_in_d[]);
+  function void print_tx_out_data_array(bit [7:0] tx_data_in_d[]);
+    `uvm_info("TX_MONITOR::",$sformatf("\nTX OUT array size = %0d\nContent of TX out data array are = %p",
+                                                     tx_data_in_d.size(), tx_data_in_d), UVM_LOW)    
+  endfunction : print_tx_out_data_array
+
+  function void print_read_array(bit [7:0] rdata_in_d[]);
     `uvm_info("TX_MONITOR::",$sformatf("\nRead array size = %0d\nContent of array are = %p", 
                                                     rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
 
-  function void print_tx_o_data_array(bit [31:0] tx_o_data_d[]);
+  function void print_tx_o_data_array(bit [7:0] tx_o_data_d[]);
     `uvm_info("TX_MONITOR::",$sformatf("\nTX Out data array size = %0d\nContent of array are = %p", 
                                                     tx_o_data_d.size(), tx_o_data_d), UVM_LOW)    
   endfunction : print_tx_o_data_array
-
-  //virtual task get_transaction();
-    //// Transaction Handle declaration
-    //transaction_item tx;
-    //forever begin
-    //  @(posedge vif.clk_i)
-    //    tx = transaction_item::type_id::create("tx");
-    //  tx.rst_ni                   = vif.rst_ni                  ;
-    //  tx.reg_we                   = vif.reg_we                  ;
-    //  tx.reg_re                   = vif.reg_re                  ;
-    //  tx.reg_addr                 = vif.reg_addr                ;
-    //  tx.reg_wdata                = vif.reg_wdata               ;
-    //  tx.reg_be                   = vif.reg_be                  ;
-    //  tx.reg_rdata                = vif.reg_rdata               ;
-    //  tx.reg_error                = vif.reg_error               ;
-    //  tx.intr_timer_expired_0_0_o = vif.intr_timer_expired_0_0_o;
-    //  // Print the transactions
-    //  print_transaction(tx);
-    //  // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
-    //  dut_tx_port.write(tx);
-    //  // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
-    //  if (tx.reg_wdata <= 64'h00000000FFFFFFFF && tx.reg_addr == 'h10c && tx.reg_we == 1'b1) begin
-    //    data = tx.reg_wdata;
-    //    `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //  end
-    //  // Following is the logic to get data to which counter will count, when data is greater than 64'h00000000FFFFFFFF
-    //  if (tx.reg_wdata > 64'h00000000FFFFFFFF && tx.reg_addr == 'h110 && tx.reg_we == 1'b1) begin
-    //    data = tx.reg_wdata;
-    //    `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //  end
-    //  // Following logic is used to find the number of clock cycles required to complete the count depening on prescale and step
-    //  // set during the configuratiuon period
-    //  else if (tx.reg_addr == 'h100 && tx.reg_we == 1'b1) begin
-    //    prescale = tx.reg_wdata[11:0] ;
-    //    step     = tx.reg_wdata[23:16];
-    //    div_q    = data/step;
-    //    div_r    = data%step;
-    //    // Logic to predict number of cycles required to complete the count.
-    //    if(div_r == 0)
-    //      cycle_to_get_result = ( (div_q) * (prescale + 1) ) + 2;
-    //    else
-    //      cycle_to_get_result = ( (div_q + 1) * (prescale + 1) ) + 2;
-    //    // Printing the number of cycles required to complete the count and its related fields
-    //    print_num_of_cycles_req(prescale, data, step, div_q, div_r, cycle_to_get_result);
-    //  end
-    //  // When intr_timer_expired_0_0_o is enabled from the DUT, that indicates timer has compeletd the count.
-    //  // Following logic will check if the timer enabled the intr_timer_expired_0_0_o after correct number of cycle
-    //  else if (tx.intr_timer_expired_0_0_o == 1) begin
-    //    `uvm_info("UART_MONITOR::",$sformatf("TIMER EXPIRED SIGNAL IS SET = %0d", tx.intr_timer_expired_0_0_o), UVM_LOW)
-    //    if((cycle_to_get_result == (cycle_num-12-1)) && set==0) begin // Note initial 12 cycles are for reseting and configuring the timer (3 cycle to reset amd 8 to configure the timer)
-    //      print_test_passed(cycle_to_get_result, cycle_num);
-    //      set=1;
-    //    end  // if((cycle_to_get_result == (cycle_num-12-1)) && set==0)
-    //    else if (set==0) begin
-    //      print_test_failed(cycle_to_get_result, cycle_num);
-    //      set=1;
-    //    end // if (set==0)
-    //  end // if (tx.intr_timer_expired_0_0_o == 1)
-    //end // forever
-  //endtask
 
   function void print_transaction(transaction_item tx);
     msg = "";
