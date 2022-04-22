@@ -15,9 +15,8 @@
 # Design
 ../../../../common_peripheral_ips/Uart_ip/rtl/uart_tx.sv
 ../../../../common_peripheral_ips/Uart_ip/rtl/uart_rx.sv
-../../../../common_peripheral_ips/Uart_ip/rtl/uart_fifo_tx.sv
-../../../../common_peripheral_ips/Uart_ip/rtl/uart_fifo_rx.sv
 ../../../../common_peripheral_ips/Uart_ip/rtl/timer_rx.sv
+../../../../common_peripheral_ips/Uart_ip/rtl/gen_fifo.sv
 ../../../../common_peripheral_ips/Uart_ip/rtl/uart_core.sv
 
 # Add top modules
