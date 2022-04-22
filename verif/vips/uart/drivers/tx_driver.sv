@@ -157,9 +157,9 @@ class tx_driver extends uvm_driver #(transaction_item);
     print_tx_fields(vif);
 
     // When the uart tx transfer is activated, following logic waits untils intr_tx is enabled from the DUT, that indicates tx uart has compeletd the count
-    if ((tr.rst_ni == 1'b1) && (tr.reg_we == 1'h1) && (tr.reg_addr=='h1c) && (tr.reg_wdata == 'h1)) begin
+    if ((tr.rst_ni == 1'b1) && (tr.reg_we == 1'h1) && (tr.reg_addr=='h1c) && (tr.reg_wdata == 'h0)) begin
       `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_tx to be high"), UVM_LOW)
-      //wait (vif.intr_tx == 1'b0);
+      wait (vif.intr_tx == 1'b1);
       `uvm_info("UART_DRIVER::",$sformatf("intr_tx is high"), UVM_LOW)
     end
 
