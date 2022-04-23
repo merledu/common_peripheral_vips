@@ -37,7 +37,7 @@ class tx_monitor extends uvm_monitor;
   
   // Declaring a virtual interface which connects DUT and testbench. Virtual interfaces in system verilog virtual means something is a reference to something else
   // Note tx_agent_config object with virtual interface is present(set) in uvm_config_db
-  virtual test_ifc vif;
+  virtual test_ifc vif_tx;
   tx_agent_config tx_agent_config_h; // Declaration of agent configuraton object
   // TLM analysis port
   uvm_analysis_port #(transaction_item) dut_tx_port;
@@ -47,9 +47,9 @@ class tx_monitor extends uvm_monitor;
     // Creating analysis port TLM analysis ports are not created with factory
     dut_tx_port = new ("dut_tx_port",this);
     if(!uvm_config_db#(tx_agent_config)::get(this/*Handle to this component*/, ""/*an empty instance name*/, "tx_agent_config_h"/*Name of the object in db*/, tx_agent_config_h/*Handle that the db writes to*/))
-      `uvm_fatal("TX_MONITOR::NO VIF",$sformatf("No virtual interface in db"))
+      `uvm_fatal("TX_MONITOR::NO vif_tx",$sformatf("No virtual interface in db"))
     // Note now you can read the values from config object
-    vif = tx_agent_config_h.vif;
+    vif_tx = tx_agent_config_h.vif_tx;
     // Display the base address from config object
     `uvm_info(get_type_name(), $sformatf("config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
   endfunction : build_phase
@@ -84,24 +84,24 @@ class tx_monitor extends uvm_monitor;
     transaction_item tx;
     forever begin
       //`uvm_info(get_type_name(), $sformatf("I am printing frequency = %0d", s_mbox_m.get(freq)), UVM_LOW)
-      @(posedge vif.clk_i)
+      @(posedge vif_tx.clk_i)
         tx = transaction_item::type_id::create("tx");
-      tx.rst_ni          = vif.rst_ni         ;
-      tx.reg_wdata       = vif.reg_wdata      ;
-      tx.reg_addr        = vif.reg_addr       ;
-      tx.reg_we          = vif.reg_we         ;
-      tx.reg_re          = vif.reg_re         ;
-      tx.rx_i            = vif.rx_i           ;
-      tx.reg_rdata       = vif.reg_rdata      ;
-      tx.tx_o            = vif.tx_o           ;
-      tx.intr_tx         = vif.intr_tx        ;
-      tx.intr_rx         = vif.intr_rx        ;
-      tx.intr_tx_level   = vif.intr_tx_level  ;
-      tx.intr_rx_timeout = vif.intr_rx_timeout;
-      tx.intr_tx_full    = vif.intr_tx_full   ;
-      tx.intr_tx_empty   = vif.intr_tx_empty  ;
-      tx.intr_rx_full    = vif.intr_rx_full   ;
-      tx.intr_rx_empty   = vif.intr_rx_empty  ;
+      tx.rst_ni          = vif_tx.rst_ni         ;
+      tx.reg_wdata       = vif_tx.reg_wdata      ;
+      tx.reg_addr        = vif_tx.reg_addr       ;
+      tx.reg_we          = vif_tx.reg_we         ;
+      tx.reg_re          = vif_tx.reg_re         ;
+      tx.rx_i            = vif_tx.rx_i           ;
+      tx.reg_rdata       = vif_tx.reg_rdata      ;
+      tx.tx_o            = vif_tx.tx_o           ;
+      tx.intr_tx         = vif_tx.intr_tx        ;
+      tx.intr_rx         = vif_tx.intr_rx        ;
+      tx.intr_tx_level   = vif_tx.intr_tx_level  ;
+      tx.intr_rx_timeout = vif_tx.intr_rx_timeout;
+      tx.intr_tx_full    = vif_tx.intr_tx_full   ;
+      tx.intr_tx_empty   = vif_tx.intr_tx_empty  ;
+      tx.intr_rx_full    = vif_tx.intr_rx_full   ;
+      tx.intr_rx_empty   = vif_tx.intr_rx_empty  ;
 
       // Print the transactions
 
