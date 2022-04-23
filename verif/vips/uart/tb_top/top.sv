@@ -36,45 +36,58 @@ module top;
 	always #(`CLOCK_PERIOD/2) clk <= ~clk;
 	int frequency = 1/(`CLOCK_PERIOD * 0.000000001);
 
-	// Inetrface instance
-	test_ifc test_ifc_h (
+	// Interface instance
+	// TX
+	test_ifc test_ifc_tx (
+		.clk_i(clk)
+	);
+  
+  // RX
+	test_ifc test_ifc_rx (
 		.clk_i(clk)
 	);
     
-	uart_core uart_inst (
-		.clk_i          (clk                       ),
-		.rst_ni         (test_ifc_h.rst_ni         ),
-		.reg_wdata      (test_ifc_h.reg_wdata      ),
-		.reg_addr       (test_ifc_h.reg_addr       ),
-		.reg_we         (test_ifc_h.reg_we         ),
-		.reg_re         (test_ifc_h.reg_re         ),
-		.rx_i           (test_ifc_h.rx_i           ),
-		.reg_rdata      (test_ifc_h.reg_rdata      ),
-		.tx_o           (test_ifc_h.tx_o           ),
-		.intr_tx        (test_ifc_h.intr_tx        ),
-		.intr_rx        (test_ifc_h.intr_rx        ),
-		.intr_tx_level  (test_ifc_h.intr_tx_level  ),
-		.intr_rx_timeout(test_ifc_h.intr_rx_timeout),
-		.intr_tx_full   (test_ifc_h.intr_tx_full   ),
-		.intr_tx_empty  (test_ifc_h.intr_tx_empty  ),
-		.intr_rx_full   (test_ifc_h.intr_rx_full   ),
-		.intr_rx_empty  (test_ifc_h.intr_rx_empty  )
+  // UART TX instance
+	uart_core uart_inst_tx (
+		.clk_i          (clk                        ),
+		.rst_ni         (test_ifc_tx.rst_ni         ),
+		.reg_wdata      (test_ifc_tx.reg_wdata      ),
+		.reg_addr       (test_ifc_tx.reg_addr       ),
+		.reg_we         (test_ifc_tx.reg_we         ),
+		.reg_re         (test_ifc_tx.reg_re         ),
+		.rx_i           (test_ifc_tx.rx_i           ),
+		.reg_rdata      (test_ifc_tx.reg_rdata      ),
+		.tx_o           (test_ifc_tx.tx_o           ),
+		.intr_tx        (test_ifc_tx.intr_tx        ),
+		.intr_rx        (test_ifc_tx.intr_rx        ),
+		.intr_tx_level  (test_ifc_tx.intr_tx_level  ),
+		.intr_rx_timeout(test_ifc_tx.intr_rx_timeout),
+		.intr_tx_full   (test_ifc_tx.intr_tx_full   ),
+		.intr_tx_empty  (test_ifc_tx.intr_tx_empty  ),
+		.intr_rx_full   (test_ifc_tx.intr_rx_full   ),
+		.intr_rx_empty  (test_ifc_tx.intr_rx_empty  )
 	);
 
-  // Dut instance
-	// uart_name uart_inst (
-	// 	.clk_i  (clk               ),
-	// 	.rst_ni (test_ifc_h.rst_ni ),
-	// 	.ren    (test_ifc_h.ren    ),
-	// 	.we     (test_ifc_h.we     ),
-	// 	.wdata  (test_ifc_h.wdata  ),
-	// 	.rdata  (test_ifc_h.rdata  ),
-	// 	.addr   (test_ifc_h.addr   ),
-	// 	.tx_o   (test_ifc_h.tx_o   ),
-	// 	.rx_i   (test_ifc_h.rx_i   ),
-	// 	.intr_tx(test_ifc_h.intr_tx),
-	// 	.intr_rx(test_ifc_h.intr_rx)
-	// );
+	  // UART TX instance
+	uart_core uart_inst_rx (
+		.clk_i          (clk                        ),
+		.rst_ni         (test_ifc_rx.rst_ni         ),
+		.reg_wdata      (test_ifc_rx.reg_wdata      ),
+		.reg_addr       (test_ifc_rx.reg_addr       ),
+		.reg_we         (test_ifc_rx.reg_we         ),
+		.reg_re         (test_ifc_rx.reg_re         ),
+		.rx_i           (test_ifc_rx.rx_i           ),
+		.reg_rdata      (test_ifc_rx.reg_rdata      ),
+		.tx_o           (test_ifc_rx.tx_o           ),
+		.intr_tx        (test_ifc_rx.intr_tx        ),
+		.intr_rx        (test_ifc_rx.intr_rx        ),
+		.intr_tx_level  (test_ifc_rx.intr_tx_level  ),
+		.intr_rx_timeout(test_ifc_rx.intr_rx_timeout),
+		.intr_tx_full   (test_ifc_rx.intr_tx_full   ),
+		.intr_tx_empty  (test_ifc_rx.intr_tx_empty  ),
+		.intr_rx_full   (test_ifc_rx.intr_rx_full   ),
+		.intr_rx_empty  (test_ifc_rx.intr_rx_empty  )
+	);
 
 	// Also a top level module contains an initial block which contain a call to the uvm run_test method
 	// At time 0, the run_test creates the uvm_root object
@@ -87,9 +100,9 @@ module top;
   // the informational message
 	
 	initial begin
-		// Pass virtual interface test_ifc_h in uvm_test_top
-	  uvm_config_db#(virtual test_ifc/*data_type*/)::set(null/*Handle to the uvm_componemt that is calling the uvm_db*/, "uvm_test_top"/*relative path where you are writting or get this*/, "test_ifc_h"/*interface name*/, test_ifc_h/*Interface handle*/);
-		//uvm_config_db#(s_mbox_t/*data_type*/)::set(null, "uvm_test_top", "test_ifc_h", test_ifc_h);
+		// Pass virtual interface test_ifc_tx in uvm_test_top
+	  uvm_config_db#(virtual test_ifc/*data_type*/)::set(null/*Handle to the uvm_componemt that is calling the uvm_db*/, "uvm_test_top"/*relative path where you are writting or get this*/, "test_ifc_tx"/*interface name*/, test_ifc_tx/*Interface handle*/);
+	  uvm_config_db#(virtual test_ifc)::set(null, "uvm_test_top", "test_ifc_rx", test_ifc_rx);
     $display("Value of clock_period = %0d, Value of frequency = %0d", `CLOCK_PERIOD, frequency);
 		run_test();
 	end
