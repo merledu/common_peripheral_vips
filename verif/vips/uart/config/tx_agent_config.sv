@@ -36,7 +36,8 @@ class tx_agent_config extends uvm_object;
   
   // When agent needs virtual interface or any configuaration variable it just read from this object instead of config db get. It is a huge performance boost rather the * appraoch mentioned in the test class which set more than 1000 entries in config db.
   // Each agent should also constain a reference to a virtual interface which the driver and monitor use to connect to the system verilog interface and so to the device under test (DUT)
-  virtual test_ifc vif;
+  virtual test_ifc vif_tx;
+  virtual test_ifc vif_rx;
   // Agent is active or passive
   rand uvm_active_passive_enum active = UVM_ACTIVE;
   // The base address for the master or slave when sending transaction from the driver
