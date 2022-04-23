@@ -48,7 +48,7 @@ class tx_test extends uvm_test;
   tx_agent_config tx_agent_config_h; // Declaration of agent configuraton object
   
   // Note that virtual interface is directly store in agent config object so no need to declare it here.
-  // virtual test_ifc        vif;                // Declare the local variable in test to hold virtual interface
+  // virtual test_ifc        vif_tx;                // Declare the local variable in test to hold virtual interface
   
   // tx_driver_overriding_driver tx_driver_overriding_driver_h;  // this driver will override the tx_driver in present in tx_agent    
   
@@ -82,14 +82,16 @@ class tx_test extends uvm_test;
    `uvm_info(get_type_name(), $sformatf("TX_TEST::config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
    
     // Call uvm_config_db to get the virtual interface from top
-    if(!uvm_config_db#(virtual test_ifc)::get(this,""/*this field is mostly empty in get phase*/, "test_ifc_h",tx_agent_config_h.vif))
-      `uvm_fatal("NO VIF",$sformatf("No virtual interface in db"))
+    if(!uvm_config_db#(virtual test_ifc)::get(this,""/*this field is mostly empty in get phase*/, "test_ifc_tx",tx_agent_config_h.vif_tx))
+      `uvm_fatal("NO vif_tx",$sformatf("No virtual interface in db"))
+    if(!uvm_config_db#(virtual test_ifc)::get(this,""/*this field is mostly empty in get phase*/, "test_ifc_rx",tx_agent_config_h.vif_rx))
+      `uvm_fatal("NO vif_tx",$sformatf("No virtual interface in db"))
     // Now set the environment config object in the config database (uvm_config_db)
     uvm_config_db#(env_config)::set(this, "tx_env_h", "env_config_h", env_config_h);
 
-    // Pass virtual interface vif to agent. You need to pass virtual interface to agent, monitor and driver, * in below lines is setting vif in mentioned agent and their respective driver and monitor
+    // Pass virtual interface vif_tx to agent. You need to pass virtual interface to agent, monitor and driver, * in below lines is setting vif_tx in mentioned agent and their respective driver and monitor
     // This is a good approach (* approach) if a database is of 100 or a 1000 entries but if testbench is large then this is not a good approach.(if large testbench puts every configuration variable in db creating 1000 entries more then it is a series performance problem)
-    // TODO, uvm_config_db#(virtual test_ifc)::set(this, "env_h.tx_agent_h*", "vif",vif);*/ // DB scope + name is "uvm_test_top.env_h.tx_agent_h.vif"
+    // TODO, uvm_config_db#(virtual test_ifc)::set(this, "env_h.tx_agent_h*", "vif_tx",vif_tx);*/ // DB scope + name is "uvm_test_top.env_h.tx_agent_h.vif_tx"
     
     // Using the following command, one component will override the other respective component, here tx_driver_overriding_driver driver overrides the tx_driver present in tx_agent
     // tx_driver_overriding_driver is extended from tx_driver
