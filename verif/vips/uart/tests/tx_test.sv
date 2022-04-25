@@ -85,7 +85,7 @@ class tx_test extends uvm_test;
     if(!uvm_config_db#(virtual test_ifc)::get(this,""/*this field is mostly empty in get phase*/, "test_ifc_tx",tx_agent_config_h.vif_tx))
       `uvm_fatal("NO vif_tx",$sformatf("No virtual interface in db"))
     if(!uvm_config_db#(virtual test_ifc)::get(this,""/*this field is mostly empty in get phase*/, "test_ifc_rx",tx_agent_config_h.vif_rx))
-      `uvm_fatal("NO vif_tx",$sformatf("No virtual interface in db"))
+      `uvm_fatal("NO vif_rx",$sformatf("No virtual interface in db"))
     // Now set the environment config object in the config database (uvm_config_db)
     uvm_config_db#(env_config)::set(this, "tx_env_h", "env_config_h", env_config_h);
 
