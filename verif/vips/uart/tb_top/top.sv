@@ -76,7 +76,7 @@ module top;
 		.reg_addr       (test_ifc_rx.reg_addr       ),
 		.reg_we         (test_ifc_rx.reg_we         ),
 		.reg_re         (test_ifc_rx.reg_re         ),
-		.rx_i           (test_ifc_rx.rx_i           ),
+		.rx_i           (test_ifc_tx.tx_o           ),
 		.reg_rdata      (test_ifc_rx.reg_rdata      ),
 		.tx_o           (test_ifc_rx.tx_o           ),
 		.intr_tx        (test_ifc_rx.intr_tx        ),
