@@ -45,7 +45,8 @@ class tx_driver extends uvm_driver #(transaction_item);
     super.new(name, parent);
   endfunction // new
 
-  virtual test_ifc vif_tx;                      // Declaring a virtual interface which connects DUT and testbench. Virtual interfaces. In system verilog virtual means something is a reference to something else
+  virtual test_ifc vif_tx;                   // Declaring a virtual interface which connects DUT and testbench. Virtual interfaces. In system verilog virtual means something is a reference to something else
+  virtual test_ifc vif_rx;                   // Declaring a virtual interface which connects DUT and testbench. Virtual interfaces. In system verilog virtual means something is a reference to something else
   tx_agent_config tx_agent_config_h;         // Declaration of agent configuraton object
 
   function void build_phase(uvm_phase phase);
@@ -56,6 +57,7 @@ class tx_driver extends uvm_driver #(transaction_item);
 
     // Assigning the virtual interface declared in this class with the one from agent config class
     vif_tx = tx_agent_config_h.vif_tx;
+    vif_rx = tx_agent_config_h.vif_rx;
     // Display the base address from config object
     `uvm_info(get_type_name(), $sformatf("config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
   endfunction : build_phase
@@ -84,65 +86,13 @@ class tx_driver extends uvm_driver #(transaction_item);
   bit [ 76 : 0] cycle_to_get_result;
   // Function to transfer the transaction to DUT via interface that is recieved in run phase
   virtual task transfer(transaction_item tr);
-    //uvm_event ev = uvm_event_pool::get_global("ev_ab");
-    //
-    //// Declaring variables
-    //bit [ 31: 0] r_data      ;
-    //bit [ 11: 0] prescale = 0;
-    //bit [ 23:16] step     = 0;
-    //bit [ 31:0 ] div_q    = 0;
-    //bit [ 4:0 ]  div_r    = 0;  
-    //
-    //@(posedge vif_tx.clk_i);
-    //// For driving signals to DUT via interface
-    //vif_tx.rst_ni    = tr.rst_ni   ;
-    //vif_tx.reg_we    = tr.reg_we   ;
-    //vif_tx.reg_re    = tr.reg_re   ;
-    //vif_tx.reg_addr  = tr.reg_addr ;
-    //vif_tx.reg_wdata = tr.reg_wdata;
-    //vif_tx.reg_be    = tr.reg_be   ;
-    //// For Reading signals from DUT via interface
-    //r_data        = vif_tx.reg_rdata;
-    //
-    //// Print the signals driven on the virtual interface
-    //print_tx_fields(vif_tx);
-    //// Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
-    //if (tr.reg_wdata <= 64'h00000000FFFFFFFF && tr.reg_addr == 'h10c && tr.reg_we == 1'b1) begin
-    //  data = tr.reg_wdata;
-    //  `uvm_info("UART_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //end
-    //// Following is the logic to get data to which counter will count, when data is greater than 64'h00000000FFFFFFFF
-    //if (tr.reg_wdata > 64'h00000000FFFFFFFF && tr.reg_addr == 'h110 && tr.reg_we == 1'b1) begin
-    //  data = tr.reg_wdata;
-    //  `uvm_info("UART_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //end
-    //// Following logic is used to find the number of clock cycles required to complete the count depening on prescale and step
-    //// set during the configuratiuon period
-    //else if (tr.reg_addr == 'h100 && tr.reg_we == 1'b1) begin
-    //  prescale = tr.reg_wdata[11:0] ;
-    //  step     = tr.reg_wdata[23:16];
-    //  div_q    = data/step;
-    //  div_r    = data%step;
-    //  // Logic to predict number of cycles required to complete the count.
-    //  if(div_r == 0)
-    //    cycle_to_get_result = ( (div_q) * (prescale + 1) ) + 2;
-    //  else
-    //    cycle_to_get_result = ( (div_q + 1) * (prescale + 1) ) + 2;
-    //  // Printing the number of cycles required to complete the count and its related fields
-    //  print_num_of_cycles_req(prescale, data, step, div_q, div_r, cycle_to_get_result);
-    //end
-    //// When the timer is activated, following logic waits untils intr_timer_expired_0_0_o is enabled from the DUT, that indicates timer has compeletd the count
-    //else if (vif_tx.reg_addr == 'h000 && tr.reg_we == 1'b1) begin
-    //  `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_timer_expired_0_0_o to be set"), UVM_LOW)
-    //  wait (vif_tx.intr_timer_expired_0_0_o == 1'b1);
-    //  `uvm_info("UART_DRIVER::",$sformatf("intr_timer_expired_0_0_o is one"), UVM_LOW)
-    //end
 
     // Declaring variables
     bit [ 31: 0] r_data;
     
     // Assigning signals drived to the DUT 
     @(posedge vif_tx.clk_i);
+    // For tx
     vif_tx.rst_ni    = tr.rst_ni;
     vif_tx.reg_we    = tr.reg_we;
     vif_tx.reg_wdata = tr.reg_wdata;
@@ -151,23 +101,34 @@ class tx_driver extends uvm_driver #(transaction_item);
     vif_tx.reg_re    = tr.reg_re;
     vif_tx.rx_i      = tr.rx_i;
     // For Reading signals from DUT via interface
-    r_data        = vif_tx.reg_rdata;
+    r_data           = vif_tx.reg_rdata;
+    // For rx
+    vif_rx.rst_ni    = tr.rst_ni;
+    vif_rx.reg_we    = tr.reg_we;
+    vif_rx.reg_wdata = tr.reg_wdata;
+    vif_rx.reg_rdata = tr.reg_rdata;
+    vif_rx.reg_addr  = tr.reg_addr;
+    vif_rx.reg_re    = tr.reg_re;
+    vif_rx.rx_i      = tr.rx_i;
+    // For Reading signals from DUT via interface
+    r_data           = vif_rx.reg_rdata;
 
     // Print the signals driven on the virtual interface
-    print_tx_fields(vif_tx);
+    print_tx_fields(vif_tx, "Printing the values on the tx virtual interface");
+    print_tx_fields(vif_rx, "Printing the values on the rx virtual interface");
 
     // When the uart tx transfer is activated, following logic waits untils intr_tx is enabled from the DUT, that indicates tx uart has compeletd the count
     if ((tr.rst_ni == 1'b1) && (tr.reg_we == 1'h1) && (tr.reg_addr=='h1c) && (tr.reg_wdata == 'h0)) begin
       `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_tx to be high"), UVM_LOW)
-      wait (vif_tx.intr_tx == 1'b1);
+      wait (vif_tx.intr_tx == 1'b1 && vif_rx.intr_rx == 1'b1);
       `uvm_info("UART_DRIVER::",$sformatf("intr_tx is high"), UVM_LOW)
     end
 
   endtask
 
-  function void print_tx_fields(virtual test_ifc vif_tx);
+  function void print_tx_fields(virtual test_ifc vif_tx, input string msg);
     msg = "";
-    $sformat(msg, {2{"%s============================"}}, msg                      );
+    $sformat(msg, {2{"%s============================"}}, msg                         );
     $sformat(msg, "%s\nRESRT__________________:h: %0h"  , msg, vif_tx.rst_ni         );
     $sformat(msg, "%s\nREAD_EN________________:h: %0h"  , msg, vif_tx.reg_re         );
     $sformat(msg, "%s\nWRITE_EN_______________:h: %0h"  , msg, vif_tx.reg_we         );
@@ -184,8 +145,9 @@ class tx_driver extends uvm_driver #(transaction_item);
     $sformat(msg, "%s\nINTR_TX_EMPTY__________:h: %0h"  , msg, vif_tx.intr_tx_empty  );
     $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, vif_tx.intr_rx_full   );
     $sformat(msg, "%s\nINTR_RX_EMPTY__________:h: %0h\n", msg, vif_tx.intr_rx_empty  );
-    $sformat(msg, {2{"%s============================"}}, msg                      );
-    `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
+    $sformat(msg, {2{"%s============================"}} , msg                        );
+    `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n"   , msg), UVM_LOW)  
+    //`uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
   endfunction : print_tx_fields
 
 endclass
