@@ -38,6 +38,7 @@ class tx_monitor extends uvm_monitor;
   // Declaring a virtual interface which connects DUT and testbench. Virtual interfaces in system verilog virtual means something is a reference to something else
   // Note tx_agent_config object with virtual interface is present(set) in uvm_config_db
   virtual test_ifc vif_tx;
+  virtual test_ifc vif_rx;
   tx_agent_config tx_agent_config_h; // Declaration of agent configuraton object
   // TLM analysis port
   uvm_analysis_port #(transaction_item) dut_tx_port;
@@ -50,6 +51,7 @@ class tx_monitor extends uvm_monitor;
       `uvm_fatal("TX_MONITOR::NO vif_tx",$sformatf("No virtual interface in db"))
     // Note now you can read the values from config object
     vif_tx = tx_agent_config_h.vif_tx;
+    vif_rx = tx_agent_config_h.vif_rx;
     // Display the base address from config object
     `uvm_info(get_type_name(), $sformatf("config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
   endfunction : build_phase
@@ -67,8 +69,7 @@ class tx_monitor extends uvm_monitor;
   bit [ 3:0] temp_var          ;
   bit [ 7:0] wdata_in_d[]      ;
   bit [ 7:0] tx_data_in_d[]    ;
-  bit [ 7:0] tx_o_data_d[]     ;
-  bit [31:0] tx_o_data         ;
+  bit [ 7:0] rx_read_data_d[]  ;
   int        frequency         ;
   int        clock_per_bit     ;
   int        clock_per_bit_half;
@@ -78,14 +79,18 @@ class tx_monitor extends uvm_monitor;
   int sig_bit=0;
   int counter=0;
   int counter_cpb =0;
-  
+  int indx;
+
   virtual task get_transaction();
     // Transaction Handle declaration
     transaction_item tx;
+    transaction_item rx;
     forever begin
       //`uvm_info(get_type_name(), $sformatf("I am printing frequency = %0d", s_mbox_m.get(freq)), UVM_LOW)
       @(posedge vif_tx.clk_i)
         tx = transaction_item::type_id::create("tx");
+        rx = transaction_item::type_id::create("rx");
+      // tx
       tx.rst_ni          = vif_tx.rst_ni         ;
       tx.reg_wdata       = vif_tx.reg_wdata      ;
       tx.reg_addr        = vif_tx.reg_addr       ;
@@ -102,11 +107,28 @@ class tx_monitor extends uvm_monitor;
       tx.intr_tx_empty   = vif_tx.intr_tx_empty  ;
       tx.intr_rx_full    = vif_tx.intr_rx_full   ;
       tx.intr_rx_empty   = vif_tx.intr_rx_empty  ;
+      // rx
+      rx.rst_ni          = vif_rx.rst_ni         ;
+      rx.reg_wdata       = vif_rx.reg_wdata      ;
+      rx.reg_addr        = vif_rx.reg_addr       ;
+      rx.reg_we          = vif_rx.reg_we         ;
+      rx.reg_re          = vif_rx.reg_re         ;
+      rx.rx_i            = vif_rx.rx_i           ;
+      rx.reg_rdata       = vif_rx.reg_rdata      ;
+      rx.tx_o            = vif_rx.tx_o           ;
+      rx.intr_tx         = vif_rx.intr_tx        ;
+      rx.intr_rx         = vif_rx.intr_rx        ;
+      rx.intr_tx_level   = vif_rx.intr_tx_level  ;
+      rx.intr_rx_timeout = vif_rx.intr_rx_timeout;
+      rx.intr_tx_full    = vif_rx.intr_tx_full   ;
+      rx.intr_tx_empty   = vif_rx.intr_tx_empty  ;
+      rx.intr_rx_full    = vif_rx.intr_rx_full   ;
+      rx.intr_rx_empty   = vif_rx.intr_rx_empty  ;
 
       // Print the transactions
 
-      print_transaction(tx);
-      
+      print_transaction(tx, "Capturing the signals from the tx interface");
+      print_transaction(rx, "Capturing the signals from the rx interface");
       // Setting baud rate
       if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h0) begin
         //baud_rate = tx.reg_wdata;
@@ -117,7 +139,7 @@ class tx_monitor extends uvm_monitor;
         tx_level = tx.reg_wdata;
         wdata_in_d = new[tx_level+1];
         tx_data_in_d = new[tx_level+1];
-        tx_o_data_d = new[tx_level+1];
+        rx_read_data_d = new[tx_level+1];
       end
       // Storing input data to be transferred in the dynamic array
       else if (tx.rst_ni == 1'b1 /*&& tx.reg_re == 1'b0*/ && tx.reg_we == 1'b1 && tx.reg_addr == 'h04) begin
@@ -158,8 +180,25 @@ class tx_monitor extends uvm_monitor;
                print_tx_out_data_array(tx_data_in_d);
           end
         end
-
       end // else if (tx.tx_o == 1'b0)
+
+      if (rx.rst_ni == 1'b1 && rx.reg_re == 1'h1 && rx.reg_we == 1'h0 && rx.reg_addr == 'h8) begin
+        rx_read_data_d[indx-2] = rx.reg_rdata;
+        `uvm_info("TX_MONITOR::",$sformatf("\nRX data read= %0h at address %0h",rx.reg_rdata,rx.reg_addr), UVM_LOW) 
+        if (indx == 'd9) begin
+          print_rx_read_data_array(rx_read_data_d);
+          if((rx_read_data_d == wdata_in_d) && (wdata_in_d == tx_data_in_d)) begin
+            `uvm_info("TEST PASSED",$sformatf("\nComparison Successful\nInput TX = %p\nTX FIFO = %p\nRX FIFO = %p", wdata_in_d, tx_data_in_d, rx_read_data_d), UVM_LOW)
+            tp();
+          end
+          else begin
+            `uvm_info("TEST FAILED",$sformatf("\nComparison Failed\nInput TX = %p\nTX FIFO = %p\nRX FIFO = %p", wdata_in_d, tx_data_in_d, rx_read_data_d), UVM_LOW)
+            tf();
+          end
+        end
+        indx = indx +1;
+      end
+      
       dut_tx_port.write(tx);
     end // forever
   endtask
@@ -179,12 +218,12 @@ class tx_monitor extends uvm_monitor;
                                                     rdata_in_d.size(), rdata_in_d), UVM_LOW)    
   endfunction : print_read_array
 
-  function void print_tx_o_data_array(bit [7:0] tx_o_data_d[]);
-    `uvm_info("TX_MONITOR::",$sformatf("\nTX Out data array size = %0d\nContent of array are = %p", 
-                                                    tx_o_data_d.size(), tx_o_data_d), UVM_LOW)    
-  endfunction : print_tx_o_data_array
+  function void print_rx_read_data_array(bit [7:0] rx_read_data_d[]);
+    `uvm_info("TX_MONITOR::",$sformatf("\nRX read stored dataa of array size = %0d\nContent of array are = %p", 
+                                                    rx_read_data_d.size(), rx_read_data_d), UVM_LOW)    
+  endfunction : print_rx_read_data_array
 
-  function void print_transaction(transaction_item tx);
+  function void print_transaction(transaction_item tx, input string msg);
     msg = "";
     cycle_num = ++cycle_num;
     $sformat(msg, {2{"%s============================"}} , msg                    );
@@ -206,7 +245,8 @@ class tx_monitor extends uvm_monitor;
     $sformat(msg, "%s\nINTR_TX_FULL___________:h: %0h"  , msg, tx.intr_rx_full   );
     $sformat(msg, "%s\nINTR_RX_EMPTY__________:h: %0h\n", msg, tx.intr_rx_empty  );
     $sformat(msg, {2{"%s============================"}} , msg                    );
-    `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
+    `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n"   , msg), UVM_LOW)  
+    //`uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
   endfunction : print_transaction
   
   //
@@ -242,28 +282,28 @@ class tx_monitor extends uvm_monitor;
   //  `uvm_info("TEST FAILED::",$sformatf("\n\nTimer failed to count the configured value\n", msg), UVM_LOW)
   //  tf();
   //endfunction : print_test_failed
-  //
-  //function void tp();
-  //  msg = "";
-  //  $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
-  //  $sformat(msg, "%s\n╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗ ", msg);
-  //  $sformat(msg, "%s\n   ██║   █████╗  ███████╗   ██║       ██████╔╝███████║███████╗███████╗█████╗  ██║  ██║ ", msg);
-  //  $sformat(msg, "%s\n   ██║   ██╔══╝  ╚════██║   ██║       ██╔═══╝ ██╔══██║╚════██║╚════██║██╔══╝  ██║  ██║ ", msg);
-  //  $sformat(msg, "%s\n   ██║   ███████╗███████║   ██║       ██║     ██║  ██║███████║███████║███████╗██████╔╝ ", msg);
-  //  $sformat(msg, "%s\n   ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═════╝  \n", msg);
-  //  `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)
-  //endfunction : tp
-  //
-  //function void tf();
-  //  msg = "";
-  //  $sformat(msg, "%s\n\n ████████╗███████╗███████╗████████╗    ███████╗ █████╗ ██╗██╗     ███████╗██████╗ ", msg);
-  //  $sformat(msg, "%s\n ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔════╝██╔══██╗██║██║     ██╔════╝██╔══██╗", msg);
-  //  $sformat(msg, "%s\n    ██║   █████╗  ███████╗   ██║       █████╗  ███████║██║██║     █████╗  ██║  ██║", msg);
-  //  $sformat(msg, "%s\n    ██║   ██╔══╝  ╚════██║   ██║       ██╔══╝  ██╔══██║██║██║     ██╔══╝  ██║  ██║", msg);
-  //  $sformat(msg, "%s\n    ██║   ███████╗███████║   ██║       ██║     ██║  ██║██║███████╗███████╗██████╔╝", msg);
-  //  $sformat(msg, "%s\n    ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝ \n", msg);
-  //   `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)                     
-  //endfunction : tf
+
+  function void tp();
+    msg = "";
+    $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
+    $sformat(msg, "%s\n╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗ ", msg);
+    $sformat(msg, "%s\n   ██║   █████╗  ███████╗   ██║       ██████╔╝███████║███████╗███████╗█████╗  ██║  ██║ ", msg);
+    $sformat(msg, "%s\n   ██║   ██╔══╝  ╚════██║   ██║       ██╔═══╝ ██╔══██║╚════██║╚════██║██╔══╝  ██║  ██║ ", msg);
+    $sformat(msg, "%s\n   ██║   ███████╗███████║   ██║       ██║     ██║  ██║███████║███████║███████╗██████╔╝ ", msg);
+    $sformat(msg, "%s\n   ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═════╝  \n", msg);
+    `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)
+  endfunction : tp
+  
+  function void tf();
+    msg = "";
+    $sformat(msg, "%s\n\n ████████╗███████╗███████╗████████╗    ███████╗ █████╗ ██╗██╗     ███████╗██████╗ ", msg);
+    $sformat(msg, "%s\n ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔════╝██╔══██╗██║██║     ██╔════╝██╔══██╗", msg);
+    $sformat(msg, "%s\n    ██║   █████╗  ███████╗   ██║       █████╗  ███████║██║██║     █████╗  ██║  ██║", msg);
+    $sformat(msg, "%s\n    ██║   ██╔══╝  ╚════██║   ██║       ██╔══╝  ██╔══██║██║██║     ██╔══╝  ██║  ██║", msg);
+    $sformat(msg, "%s\n    ██║   ███████╗███████║   ██║       ██║     ██║  ██║██║███████╗███████╗██████╔╝", msg);
+    $sformat(msg, "%s\n    ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝ \n", msg);
+     `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)                     
+  endfunction : tf
 
 endclass
 
