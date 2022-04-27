@@ -80,6 +80,8 @@ class tx_monitor extends uvm_monitor;
   int counter=0;
   int counter_cpb =0;
   int indx;
+  int timer_count=0;
+  int start_timer=0;
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -133,6 +135,8 @@ class tx_monitor extends uvm_monitor;
       if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h0) begin
         //baud_rate = tx.reg_wdata;
         clock_per_bit = tx.reg_wdata;
+        start_timer=1;
+        `uvm_info(get_type_name(), $sformatf("CLOCK PER BIT = %0d", clock_per_bit), UVM_LOW)
       end
       // Setting tx_level
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h18) begin
@@ -198,7 +202,12 @@ class tx_monitor extends uvm_monitor;
         end
         indx = indx +1;
       end
-      
+
+      // Timer
+      timer_count= timer_count+1;
+      if ( (timer_count >= 2*64*clock_per_bit) && (start_timer == 1))
+        `uvm_fatal("TX_MONITOR::UART TEST",$sformatf("TIME OUT!!\nExpected output should in %0d clock cycles\n Current clock cycle is %0d",8*(tx_level+1)*clock_per_bit, 2*64*clock_per_bit))
+
       dut_tx_port.write(tx);
     end // forever
   endtask
