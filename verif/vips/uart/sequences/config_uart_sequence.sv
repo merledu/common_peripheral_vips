@@ -100,7 +100,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
     tx level times, data will be written in tx fifo at address 'h04   
     */
 
-    repeat(2+2+2+(2*tx_levl)) begin
+    repeat(2+2+4+9+3+(tx_levl+1)) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
@@ -134,11 +134,11 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         print_transaction(tx, "Configuring the tx level rate", cycle);
       end
       // Data to be transferred
-      else if ( cycle >= 'd3 && cycle <= 'd2 +tx_levl) begin
+      else if ( cycle >= 'd3 && cycle <= 'd2 +tx_levl+1) begin
         tx.reg_re    = 1'b0;
         tx.reg_we    = 1'b1;
         tx.reg_addr  = 'h04;
-        tx.reg_wdata = {24'h000000 , tx.reg_wdata[7:0]};
+        //tx.reg_wdata = {24'h000000 , tx.reg_wdata[7:0]};
         print_transaction(tx, "Configuring data to be transfered", cycle);
       end
 
@@ -147,39 +147,31 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
       /////////////////////////
 
       // Read register at address 'h0
-      else if (cycle == tx_levl+'d3) begin
+      else if (cycle == tx_levl+'d4) begin
         tx.reg_re   = 1'h1;
         tx.reg_we   = 1'h0;  
         tx.reg_addr = 'h0;
         print_transaction(tx, "Reading configured baud rate", cycle);
       end
       // Read register at address 'h18
-      else if (cycle == tx_levl+'d4) begin
+      else if (cycle == tx_levl+'d5) begin
         tx.reg_re   = 1'h1;
         tx.reg_we   = 1'h0;
         tx.reg_addr = 'h18;
         print_transaction(tx, "Reading configured tx level", cycle);
       end
-      // Read register at address 'h04
-      else if (cycle >= tx_levl+'d5 && cycle <= 2*tx_levl+'d4) begin
-        tx.reg_re   = 1'h1;
-        tx.reg_we   = 1'h0;
-        tx.reg_addr = 'h04;
-        print_transaction(tx, "Reading configured data stored in tx level fifo", cycle);
+
+      // Read register at address 'hc
+      else if (cycle == tx_levl+'d6) begin
+        tx.rst_ni    = 1'b1;  
+        tx.reg_re    = 1'h0;
+        tx.reg_we    = 1'h1;  
+        tx.reg_addr  =  'hc;
+        tx.reg_wdata =  'h1;
+        print_transaction(tx, "Enabling uart to receive the data", cycle);
       end
 
-      ////////////////////////////////////////////////
-      // Enable the FIFO write to transmit the data //
-      ////////////////////////////////////////////////
-      else if (cycle == 2*tx_levl+'d5) begin
-        tx.rst_ni    = 1'b1;
-        tx.reg_re    = 1'h0;
-        tx.reg_we    = 1'h1;
-        tx.reg_addr  = 'h14;
-        tx.reg_wdata =  'h1;
-        print_transaction(tx, "Enabling tx fifo write", cycle);
-      end
-      else begin
+      else if (cycle == tx_levl+'d7) begin
         tx.rst_ni    = 1'b1;  
         tx.reg_re    = 1'h0;
         tx.reg_we    = 1'h1;  
@@ -187,6 +179,57 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.reg_wdata =  'h1;
         print_transaction(tx, "Enabling tx transfer", cycle);
       end
+      else if (cycle == tx_levl+'d8) begin
+        tx.rst_ni    = 1'b1;  
+        tx.reg_re    = 1'h0;
+        tx.reg_we    = 1'h1;  
+        tx.reg_addr  = 'h1c;
+        tx.reg_wdata =  'h0;
+        print_transaction(tx, "Disabling tx transfer", cycle);
+      end
+      else if (cycle >= tx_levl+'d9 && cycle <= tx_levl+'d18) begin
+        tx.rst_ni    = 1'b1;  
+        tx.reg_re    = 1'h1;
+        tx.reg_we    = 1'h0;  
+        tx.reg_addr  = 'h8;
+        tx.reg_wdata = 'h0;
+        print_transaction(tx, "Reading RX data stored", cycle);
+      end
+      // Read register at address 'h04
+      //else if (cycle >= tx_levl+'d5 && cycle <= 2*tx_levl+'d4) begin
+      //  tx.reg_re   = 1'h1;
+      //  tx.reg_we   = 1'h0;
+      //  tx.reg_addr = 'h04;
+      //  print_transaction(tx, "Reading configured data stored in tx level fifo", cycle);
+      //end
+      
+      ////////////////////////////////////////////////
+      // Enable the FIFO write to transmit the data //
+      ////////////////////////////////////////////////
+      //else if (cycle == 2*tx_levl+'d5) begin
+      ////  //tx.rst_ni    = 1'b1;
+      ////  //tx.reg_re    = 1'h0;
+      ////  //tx.reg_we    = 1'h1;
+      ////  //tx.reg_addr  = 'h14;
+      ////  //tx.reg_wdata =  'h1;
+      ////  tx.reg_re   = 1'h1;
+      ////  tx.reg_we   = 1'h0;
+      ////  tx.reg_addr = 'h04;
+      //  tx.rst_ni    = 1'b1;  
+      //  tx.reg_re    = 1'h0;
+      //  tx.reg_we    = 1'h1;  
+      //  tx.reg_addr  = 'h1c;
+      //  tx.reg_wdata =  'h1;
+      ////  print_transaction(tx, "Enabling tx fifo write", cycle);
+      //end
+      ////else begin
+      ////  tx.rst_ni    = 1'b1;  
+      ////  tx.reg_re    = 1'h0;
+      ////  tx.reg_we    = 1'h1;  
+      ////  tx.reg_addr  = 'h1c;
+      ////  tx.reg_wdata =  'h1;
+      ////  print_transaction(tx, "Enabling tx transfer", cycle);
+      ////end
 
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
