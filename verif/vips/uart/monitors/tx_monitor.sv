@@ -206,7 +206,7 @@ class tx_monitor extends uvm_monitor;
       // Timer
       timer_count= timer_count+1;
       if ( (timer_count >= 2*64*clock_per_bit) && (start_timer == 1))
-        `uvm_fatal("TX_MONITOR::UART TEST",$sformatf("TIME OUT!!\nExpected output should in %0d clock cycles\n Current clock cycle is %0d",8*(tx_level+1)*clock_per_bit, 2*64*clock_per_bit))
+        `uvm_fatal("TIME OUT!!",$sformatf("UART TEST::TIME OUT!!\nExpected output should in %0d clock cycles\n Current clock cycle is %0d",8*(tx_level+1)*clock_per_bit, 2*64*clock_per_bit))
 
       dut_tx_port.write(tx);
     end // forever
