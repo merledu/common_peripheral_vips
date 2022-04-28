@@ -64,12 +64,15 @@ def process_sub_dir(sub_directorires):
             # Print path to log file
             print("Path to log file in", item, "directory = ", path)
             # file a string in log file to check either test pased or not
-            test_status = find_string("[TEST PASSED]", path)
+            test_status= find_string("[TEST PASSED]", path)
+            test_time_out = find_string("[TIME OUT!!]", path)
             # Dump results
-            dump_results(item, test_status)
+            dump_results(item, test_status, test_time_out)
             # Print Test status
             if test_status == 1:
                 print("TEST PASSED")
+            elif test_status == 0 and test_time_out == 1:
+                print("TEST FAILED::TIMEOUT")
             else:
                 print("TEST FAILED")
         else:
@@ -77,16 +80,22 @@ def process_sub_dir(sub_directorires):
 
 
 # Dump the result in test_result file
-def dump_results(item, test_status):
+def dump_results(item, test_status, test_time_out):
     if test_status == 1:
         f = open("test_results.txt", "a")
-        write_data = "Timer   |   Test status: Passed   |   ", item
+        write_data = "UART   |   Test status: Passed   |   ", item
+        f.write(str(write_data))
+        f.write("\n")
+        f.close()
+    elif test_status == 0 and test_time_out == 1:
+        f = open("test_results.txt", "a")
+        write_data = "UART   |   Test status: Time out |   ", item
         f.write(str(write_data))
         f.write("\n")
         f.close()
     else:
         f = open("test_results.txt", "a")
-        write_data = "Timer   |   Test status: Failed   |   ", item
+        write_data = "UART   |   Test status: Failed   |   ", item
         f.write(str(write_data))
         f.write("\n")
         f.close()
