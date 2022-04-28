@@ -42,19 +42,20 @@ class transaction_item extends uvm_sequence_item;
 	rand bit        reg_re         ;
 	rand bit        rx_i           ;
 	rand bit [31:0] reg_rdata      ;
-	rand bit        tx_o           ;
-	rand bit 				intr_tx        ;
-	rand bit 				intr_rx        ;
-	rand bit 				intr_tx_level  ;
-	rand bit 				intr_rx_timeout;
-	rand bit 				intr_tx_full   ;
-	rand bit 				intr_tx_empty  ;
-	rand bit 				intr_rx_full   ;
-	rand bit 				intr_rx_empty  ;
+	     bit        tx_o           ;
+	     bit 				intr_tx        ;
+	     bit 				intr_rx        ;
+	     bit 				intr_tx_level  ;
+	     bit 				intr_rx_timeout;
+	     bit 				intr_tx_full   ;
+	     bit 				intr_tx_empty  ;
+	     bit 				intr_rx_full   ;
+	     bit 				intr_rx_empty  ;
 	rand bit [15:0] baud_rate      ;
-	rand bit [ 3:0] tx_level       ;
+	rand bit [ 2:0] tx_level       ;
 
-	constraint baud_rate_c { baud_rate inside {'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800, 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
+	//constraint baud_rate_c { baud_rate inside {'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800, 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
+	constraint baud_rate_c { baud_rate inside {'d38400};}
 
   /*
 	constraint reg_addr_c { reg_addr inside {'h118, 'h11c, 'h114, 'h110, 'h10c, 'h108, 'h104, 'h100, 'h000};}
