@@ -54,13 +54,8 @@ class transaction_item extends uvm_sequence_item;
 	rand bit [15:0] baud_rate      ;
 	rand bit [ 2:0] tx_level       ;
 
-	//constraint baud_rate_c { baud_rate inside {'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800, 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
-	constraint baud_rate_c { baud_rate inside {'d38400};}
-
-  /*
-	constraint reg_addr_c { reg_addr inside {'h118, 'h11c, 'h114, 'h110, 'h10c, 'h108, 'h104, 'h100, 'h000};}
-	constraint reg_wdata_c { reg_wdata inside {[1:500]};}
-  */
+	constraint baud_rate_c { baud_rate inside {/*'d110, 'd300, 'd600, 'd1200, 'd2400, 'd4800,*/ 'd9600, 'd14400, 'd19200, 'd38400, 'd57600, 'd115200, 'd128000, 'd256000};}
+	//constraint baud_rate_c { baud_rate inside {'d38400};}
 
 	// Declare any transaction specific property or field such as data, address and error connection. here the transaction is random 8 bit number
 	// Class properties hold the values that are send into the DUT and read from the DUT
@@ -70,7 +65,7 @@ class transaction_item extends uvm_sequence_item;
 	rand bit        [ 7:0] data  ;
 	rand bit        [31:0] src   ;
 	rand bit        [31:0] dst   ;
-	     logic      [31:0] result;   // The result is also store here
+	     logic      [31:0] result;     // The result is also store here
 	//rand command_t         cmd   ;
 	//rand tx_payload        pay_h ;   // tx_payload is also extended from uvm_sequence_item
   
