@@ -115,7 +115,7 @@ class read_uart_sequence extends uvm_sequence #(transaction_item);
         tx.addr   = 'h1c;
         tx.wdata  =  'h1;
       end
-      finish_item(tx);                                           // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
+      finish_item(tx);                                          // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
   endtask // body
 

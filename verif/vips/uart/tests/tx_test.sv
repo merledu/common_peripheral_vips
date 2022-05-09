@@ -48,7 +48,7 @@ class tx_test extends uvm_test;
   tx_agent_config tx_agent_config_h; // Declaration of agent configuraton object
   
   // Note that virtual interface is directly store in agent config object so no need to declare it here.
-  // virtual test_ifc        vif_tx;                // Declare the local variable in test to hold virtual interface
+  // virtual test_ifc        vif_tx;                             // Declare the local variable in test to hold virtual interface
   
   // tx_driver_overriding_driver tx_driver_overriding_driver_h;  // this driver will override the tx_driver in present in tx_agent    
   
@@ -58,15 +58,12 @@ class tx_test extends uvm_test;
 	// Build phase (In build phase we have function because components are build at zero time and function are executed at zero time)
 	virtual function void build_phase(uvm_phase phase); 
     `uvm_info("UART_TX_TEST::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
-
     // Create the environment and related configuration objects
     tx_env_h = tx_env::type_id::create("tx_env_h",this);
     env_config_h = env_config::type_id::create("env_config_h",this);
     tx_agent_config_h = tx_agent_config::type_id::create("tx_agent_config_h",this);
-    
     // Link the agent config object present in config environemnt with agent config in this test class
     env_config_h.tx_agent_config_h = tx_agent_config_h;
-  
     // Each test can set configuration values depending upon its needs
     env_config_h.enable_scoreboard =    1;        // Test overides the default values
     env_config_h.enable_coverage   =    0;        // Test overides the default values

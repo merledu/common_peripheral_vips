@@ -48,21 +48,3 @@ class tx_agent_config extends uvm_object;
   uvm_sequencer #(transaction_item) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
 endclass
-
-// Definition of factory registration
-/*
-- How can you add new functionality to your testbench? 
-- In UVM it is recommened to write your testbench only once
-- So you start by wrting a basic functionality like creating good transactions with no error injection or delay for example.
-- Then when you need to test additional functionalities you can extend your original class to create new ones that would apply the new functionalities.
-- Then have the testbench to use these new ones with Polymorphism
-- Using this technique existing test will continue to work beacause they rely on the base code
-
-- In order to do so UVM provides a build in factory to create the testbencg components and transactions.
-- This allow test to "override" the original object with one that has new functionality
-- Other overriding class must be derived from he original class
-- Factory overridees make it possible to write many complex tests that run on the same testbeanch
-- Each test can customize the testbench at run time for the specific needs of that test, without duplicating complex test code, or requiring the top to be recompiled 
-- There is no risk of breakinf due to the addition of new tests
-- For example, we have usb_agent_3.0 having driver_3.0 to check USB_3.0 protocol. Using factory registration we can check USB_3.1 protocol with driver_3.1 with the same agent usb_agent_3.0 without changing anthing in the usb_agent_3.0 or in lower level
-*/

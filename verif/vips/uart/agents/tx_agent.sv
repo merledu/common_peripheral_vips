@@ -49,7 +49,7 @@ class tx_agent extends uvm_agent;
   tx_driver       tx_driver_h      ;                    // Handle to driver
   tx_monitor      tx_monitor_h     ;                    // Handle to monitor
   tx_agent_config tx_agent_config_h;                    // Declaration of agent configuraton object
-  uvm_sequencer#(transaction_item) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
+  uvm_sequencer#(transaction_item) tx_sequencer_h;      // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
   // Analysis port to connect with the analysis port of monitor
   uvm_analysis_port #(transaction_item) dut_txn_port;
@@ -84,8 +84,8 @@ class tx_agent extends uvm_agent;
   // Like driver is connected with sequencer (Connected with TLM ports)
   virtual function void connect_phase(uvm_phase phase);
     `uvm_info("UART_AGENT::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
-  if(tx_agent_config_h.active == UVM_ACTIVE)
-    tx_driver_h.seq_item_port.connect(tx_sequencer_h.seq_item_export);
+    if(tx_agent_config_h.active == UVM_ACTIVE)
+      tx_driver_h.seq_item_port.connect(tx_sequencer_h.seq_item_export);
     tx_monitor_h.dut_tx_port.connect(this.dut_txn_port);
   endfunction
 

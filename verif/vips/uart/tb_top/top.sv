@@ -35,18 +35,21 @@ module top;
 	// Clock generation
 	always #(`CLOCK_PERIOD/2) clk <= ~clk;
 	int frequency = 1/(`CLOCK_PERIOD * 0.000000001);
-
-	// Interface instance
+  
+  /////////////////////////
+	// Interface instance  //
+	/////////////////////////
+	
 	// TX
 	test_ifc test_ifc_tx (
 		.clk_i(clk)
 	);
-  
+
   // RX
 	test_ifc test_ifc_rx (
 		.clk_i(clk)
 	);
-    
+
   // UART TX instance
 	uart_core uart_inst_tx (
 		.clk_i          (clk                        ),

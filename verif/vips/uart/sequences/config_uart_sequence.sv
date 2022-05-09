@@ -141,11 +141,9 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         //tx.reg_wdata = {24'h000000 , tx.reg_wdata[7:0]};
         print_transaction(tx, "Configuring data to be transfered", cycle);
       end
-
       /////////////////////////
       // READ THE CONFIGURED //
       /////////////////////////
-
       // Read register at address 'h0
       else if (cycle == tx_levl+'d4) begin
         tx.reg_re   = 1'h1;
@@ -160,7 +158,6 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.reg_addr = 'h18;
         print_transaction(tx, "Reading configured tx level", cycle);
       end
-
       // Read register at address 'hc
       else if (cycle == tx_levl+'d6) begin
         tx.rst_ni    = 1'b1;  
@@ -170,7 +167,6 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.reg_wdata =  'h1;
         print_transaction(tx, "Enabling uart to receive the data", cycle);
       end
-
       else if (cycle == tx_levl+'d7) begin
         tx.rst_ni    = 1'b1;  
         tx.reg_re    = 1'h0;
@@ -195,41 +191,6 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
         tx.reg_wdata = 'h0;
         print_transaction(tx, "Reading RX data stored", cycle);
       end
-      // Read register at address 'h04
-      //else if (cycle >= tx_levl+'d5 && cycle <= 2*tx_levl+'d4) begin
-      //  tx.reg_re   = 1'h1;
-      //  tx.reg_we   = 1'h0;
-      //  tx.reg_addr = 'h04;
-      //  print_transaction(tx, "Reading configured data stored in tx level fifo", cycle);
-      //end
-      
-      ////////////////////////////////////////////////
-      // Enable the FIFO write to transmit the data //
-      ////////////////////////////////////////////////
-      //else if (cycle == 2*tx_levl+'d5) begin
-      ////  //tx.rst_ni    = 1'b1;
-      ////  //tx.reg_re    = 1'h0;
-      ////  //tx.reg_we    = 1'h1;
-      ////  //tx.reg_addr  = 'h14;
-      ////  //tx.reg_wdata =  'h1;
-      ////  tx.reg_re   = 1'h1;
-      ////  tx.reg_we   = 1'h0;
-      ////  tx.reg_addr = 'h04;
-      //  tx.rst_ni    = 1'b1;  
-      //  tx.reg_re    = 1'h0;
-      //  tx.reg_we    = 1'h1;  
-      //  tx.reg_addr  = 'h1c;
-      //  tx.reg_wdata =  'h1;
-      ////  print_transaction(tx, "Enabling tx fifo write", cycle);
-      //end
-      ////else begin
-      ////  tx.rst_ni    = 1'b1;  
-      ////  tx.reg_re    = 1'h0;
-      ////  tx.reg_we    = 1'h1;  
-      ////  tx.reg_addr  = 'h1c;
-      ////  tx.reg_wdata =  'h1;
-      ////  print_transaction(tx, "Enabling tx transfer", cycle);
-      ////end
 
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end

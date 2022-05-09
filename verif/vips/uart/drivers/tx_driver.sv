@@ -54,7 +54,6 @@ class tx_driver extends uvm_driver #(transaction_item);
     if(!uvm_config_db#(tx_agent_config)::get(this/*Handle to this component*/, ""/*an empty instance name*/, "tx_agent_config_h"/*Name of the object in db*/, tx_agent_config_h/*Handle that the db writes to*/))
       `uvm_fatal("TX_DRIVER::NO vif_tx",$sformatf("No virtual interface in db"))
     // Now you can read the values from config object
-
     // Assigning the virtual interface declared in this class with the one from agent config class
     vif_tx = tx_agent_config_h.vif_tx;
     vif_rx = tx_agent_config_h.vif_rx;
@@ -81,49 +80,46 @@ class tx_driver extends uvm_driver #(transaction_item);
     end
   endtask 
   
+  // Declaration
   bit value;  
   bit [ 63 : 0] data;
   bit [ 76 : 0] cycle_to_get_result;
+
   // Function to transfer the transaction to DUT via interface that is recieved in run phase
   virtual task transfer(transaction_item tr);
-
     // Declaring variables
     bit [ 31: 0] r_data;
-    
     // Assigning signals drived to the DUT 
     @(posedge vif_tx.clk_i);
     // For tx
-    vif_tx.rst_ni    = tr.rst_ni;
-    vif_tx.reg_we    = tr.reg_we;
+    vif_tx.rst_ni    = tr.rst_ni   ;
+    vif_tx.reg_we    = tr.reg_we   ;
     vif_tx.reg_wdata = tr.reg_wdata;
     vif_tx.reg_rdata = tr.reg_rdata;
-    vif_tx.reg_addr  = tr.reg_addr;
-    vif_tx.reg_re    = tr.reg_re;
-    vif_tx.rx_i      = tr.rx_i;
+    vif_tx.reg_addr  = tr.reg_addr ;
+    vif_tx.reg_re    = tr.reg_re   ;
+    vif_tx.rx_i      = tr.rx_i     ;
     // For Reading signals from DUT via interface
     r_data           = vif_tx.reg_rdata;
     // For rx
-    vif_rx.rst_ni    = tr.rst_ni;
-    vif_rx.reg_we    = tr.reg_we;
+    vif_rx.rst_ni    = tr.rst_ni   ;
+    vif_rx.reg_we    = tr.reg_we   ;
     vif_rx.reg_wdata = tr.reg_wdata;
     vif_rx.reg_rdata = tr.reg_rdata;
-    vif_rx.reg_addr  = tr.reg_addr;
-    vif_rx.reg_re    = tr.reg_re;
-    vif_rx.rx_i      = tr.rx_i;
+    vif_rx.reg_addr  = tr.reg_addr ;
+    vif_rx.reg_re    = tr.reg_re   ;
+    vif_rx.rx_i      = tr.rx_i     ;
     // For Reading signals from DUT via interface
     r_data           = vif_rx.reg_rdata;
-
     // Print the signals driven on the virtual interface
     print_tx_fields(vif_tx, "Printing the values on the tx virtual interface");
     print_tx_fields(vif_rx, "Printing the values on the rx virtual interface");
-
     // When the uart tx transfer is activated, following logic waits untils intr_tx is enabled from the DUT, that indicates tx uart has compeletd the count
     if ((tr.rst_ni == 1'b1) && (tr.reg_we == 1'h1) && (tr.reg_addr=='h1c) && (tr.reg_wdata == 'h0)) begin
       `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_tx to be high"), UVM_LOW)
       wait (vif_tx.intr_tx == 1'b1 && vif_rx.intr_rx == 1'b1);
       `uvm_info("UART_DRIVER::",$sformatf("intr_tx is high"), UVM_LOW)
     end
-
   endtask
 
   function void print_tx_fields(virtual test_ifc vif_tx, input string msg);

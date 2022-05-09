@@ -63,25 +63,25 @@ class tx_monitor extends uvm_monitor;
   
   // Declaration
   string msg ="";
-  bit [76:0] cycle_num = 0     ; // NOTE: Change the width w.r.t. uart max cycle
-  bit [15:0] baud_rate         ;
-  bit [ 3:0] tx_level          ;
-  bit [ 3:0] temp_var          ;
-  bit [ 7:0] wdata_in_d[]      ;
-  bit [ 7:0] tx_data_in_d[]    ;
-  bit [ 7:0] rx_read_data_d[]  ;
-  int        frequency         ;
-  int        clock_per_bit     ;
-  int        clock_per_bit_half;
-  bit [31:0] rdata             ;
-  bit        transfer_en       ;
-  int index=0;
-  int sig_bit=0;
-  int counter=0;
-  int counter_cpb =0;
-  int indx;
-  int timer_count=0;
-  int start_timer=0;
+  bit [76:0] cycle_num         = 0; // NOTE: Change the width w.r.t. uart max cycle
+  bit [15:0] baud_rate            ;
+  bit [ 3:0] tx_level             ;
+  bit [ 3:0] temp_var             ;
+  bit [ 7:0] wdata_in_d[]         ;
+  bit [ 7:0] tx_data_in_d[]       ;
+  bit [ 7:0] rx_read_data_d[]     ;
+  int        frequency            ;
+  int        clock_per_bit        ;
+  int        clock_per_bit_half   ;
+  bit [31:0] rdata                ;
+  bit        transfer_en          ;
+  int index                     =0;
+  int sig_bit                   =0;
+  int counter                   =0;
+  int counter_cpb               =0;
+  int indx                        ;
+  int timer_count               =0;
+  int start_timer               =0;
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -128,9 +128,9 @@ class tx_monitor extends uvm_monitor;
       rx.intr_rx_empty   = vif_rx.intr_rx_empty  ;
 
       // Print the transactions
-
       print_transaction(tx, "Capturing the signals from the tx interface");
       print_transaction(rx, "Capturing the signals from the rx interface");
+      
       // Setting baud rate
       if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h0) begin
         //baud_rate = tx.reg_wdata;
@@ -138,6 +138,7 @@ class tx_monitor extends uvm_monitor;
         start_timer=1;
         `uvm_info(get_type_name(), $sformatf("CLOCK PER BIT = %0d", clock_per_bit), UVM_LOW)
       end
+      
       // Setting tx_level
       else if (tx.rst_ni == 1'b1 && tx.reg_re == 1'b0 && tx.reg_we == 1'b1 && tx.reg_addr == 'h18) begin
         tx_level = tx.reg_wdata;
@@ -146,6 +147,7 @@ class tx_monitor extends uvm_monitor;
         rx_read_data_d = new[tx_level+1];
       end
       // Storing input data to be transferred in the dynamic array
+      
       else if (tx.rst_ni == 1'b1 /*&& tx.reg_re == 1'b0*/ && tx.reg_we == 1'b1 && tx.reg_addr == 'h04) begin
         wdata_in_d[temp_var] = tx.reg_wdata[7:0];
         temp_var++;
@@ -154,7 +156,7 @@ class tx_monitor extends uvm_monitor;
           temp_var = 0;
         end
       end
-
+      
       else if (tx.tx_o == 1'b0) begin
         counter_cpb = counter_cpb +1;
         if (counter_cpb == clock_per_bit) begin
@@ -162,7 +164,7 @@ class tx_monitor extends uvm_monitor;
           transfer_en = 1;
         end
       end
-
+      
       if (transfer_en == 1'b1) begin
         bit tx_out = tx.tx_o;
         `uvm_info(get_type_name(), $sformatf("printing tx_o %0d", tx_out), UVM_LOW)
@@ -207,7 +209,6 @@ class tx_monitor extends uvm_monitor;
       timer_count= timer_count+1;
       if ( (timer_count >= 2*64*clock_per_bit) && (start_timer == 1))
         `uvm_fatal("TIME OUT!!",$sformatf("UART TEST::TIME OUT!!\nExpected output should in %0d clock cycles\n Current clock cycle is %0d",8*(tx_level+1)*clock_per_bit, 2*64*clock_per_bit))
-
       dut_tx_port.write(tx);
     end // forever
   endtask
@@ -257,40 +258,6 @@ class tx_monitor extends uvm_monitor;
     `uvm_info("CONFIG_UART_SEQUENCE::",$sformatf("\n"   , msg), UVM_LOW)  
     //`uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
   endfunction : print_transaction
-  
-  //
-  //function void print_num_of_cycles_req(input bit[11:0] prescale, input bit [63:0] data, input bit [23:16] step, input bit [31:0] div_q, input bit [4:0] div_r, input bit [76:0] cycle_to_get_result);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nPRE-SCALE_VALUE___________:: %0d"  , msg, prescale           );
-  //  $sformat(msg, "%s\nDATA VALUE________________:: %0d"  , msg, data               );
-  //  $sformat(msg, "%s\nSTEP VALUE________________:: %0d"  , msg, step               );
-  //  $sformat(msg, "%s\nDIV QUOTIENT______________:: %0d"  , msg, div_q              );
-  //  $sformat(msg, "%s\nDIV REMINDER______________:: %0d"  , msg, div_r              );
-  //  $sformat(msg, "%s\nCYCLE TO GET RESULT_______:: %0d\n", msg, cycle_to_get_result);
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TIMER_DRIVER::",$sformatf("\n\nPrinting the number of cycles to complete the count and related field in monitor\n", msg), UVM_LOW)
-  //endfunction : print_num_of_cycles_req
-  //
-  //function void print_test_passed(input bit [76:0] cycle_to_get_result, input bit[76:0] cycle_num);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nCycle_to_get_result_______:: %0d"  , msg, cycle_to_get_result);
-  //  $sformat(msg, "%s\nCycle_Num_________________:: %0d\n", msg, cycle_num          );
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TEST PASSED",$sformatf("\n\nTimer succesfully counted the configured value\n", msg), UVM_LOW)
-  //  tp();
-  //endfunction : print_test_passed
-  //
-  //function void print_test_failed(input bit [76:0] cycle_to_get_result, input bit[76:0] cycle_num);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nCycle_to_get_result_______:: %0d"  , msg, cycle_to_get_result);
-  //  $sformat(msg, "%s\nCycle_Num_________________:: %0d\n", msg, cycle_num          );
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TEST FAILED::",$sformatf("\n\nTimer failed to count the configured value\n", msg), UVM_LOW)
-  //  tf();
-  //endfunction : print_test_failed
 
   function void tp();
     msg = "";
