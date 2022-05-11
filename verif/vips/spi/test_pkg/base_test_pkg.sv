@@ -66,9 +66,8 @@ package base_test_pkg;
   //`include "./drivers/tx_driver_overriding_driver.sv"
   
   // Scoreboards
-  //`include "./scoreboard/timer_scoreboard.sv"
-  `include "./scoreboard/uart_scoreboard.sv"
-  //`include "./scoreboard/timer_predictor.sv"
+  `include "./scoreboard/spi_scoreboard.sv"
+  //`include "./scoreboard/spi_predictor.sv"
   
   // Agents
   `include "./agents/tx_agent.sv"

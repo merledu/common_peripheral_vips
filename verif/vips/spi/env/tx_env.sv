@@ -45,7 +45,7 @@ class tx_env extends uvm_env;
   
   // Declare handle to the objects agent, scoreboard, env config and agent config.
   tx_agent         tx_agent_h        ;
-  uart_scoreboard  uart_scoreboard_h ;
+  spi_scoreboard  spi_scoreboard_h   ;
   env_config       env_config_h      ;
   tx_agent_config  tx_agent_config_h ;
   // cov_collector   cov_collector_h;
@@ -66,14 +66,14 @@ class tx_env extends uvm_env;
     // if(env_config_h.enable_coverage) TODO
     // 	cov_collector_h    = cov_collector::type_id::create("cov_collector_h",this);
     if(env_config_h.enable_scoreboard)
-      uart_scoreboard_h = uart_scoreboard::type_id::create("uart_scoreboard_h",this);
+      spi_scoreboard_h = spi_scoreboard::type_id::create("spi_scoreboard_h",this);
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
     `uvm_info("UART_ENV::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
     if(env_config_h.enable_scoreboard)
-      tx_agent_h.dut_txn_port.connect(uart_scoreboard_h.ap_imp);
-      //tx_agent_h.spi_monitor_h.dut_tx_port.connect(uart_scoreboard_h.ap_imp);
+      tx_agent_h.dut_txn_port.connect(spi_scoreboard_h.ap_imp);
+      //tx_agent_h.spi_monitor_h.dut_tx_port.connect(spi_scoreboard_h.ap_imp);
   endfunction // connect_phase
 
 endclass // tx_env
