@@ -199,7 +199,7 @@ class config_uart_sequence extends uvm_sequence #(transaction_item);
   
   // Function to print baud rate
   function void print_transaction (transaction_item tx, input string msg, int clk_cycle);
-    $sformat(msg, {1{"\n%s\n========================================="}}, msg                    );
+    $sformat(msg, {1{"\n%s\n========================================="}}, msg                   );
     $sformat(msg, "%s\ncycle_____________:d: %0d"                       , msg, clk_cycle        );
     $sformat(msg, "%s\nREAD_EN___________:h: %0h"                       , msg, tx.reg_re        );
     $sformat(msg, "%s\nWRITE_EN__________:h: %0h"                       , msg, tx.reg_we        );

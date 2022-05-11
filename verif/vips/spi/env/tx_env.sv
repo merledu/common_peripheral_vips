@@ -73,7 +73,7 @@ class tx_env extends uvm_env;
     `uvm_info("UART_ENV::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
     if(env_config_h.enable_scoreboard)
       tx_agent_h.dut_txn_port.connect(uart_scoreboard_h.ap_imp);
-      //tx_agent_h.tx_monitor_h.dut_tx_port.connect(uart_scoreboard_h.ap_imp);
+      //tx_agent_h.spi_monitor_h.dut_tx_port.connect(uart_scoreboard_h.ap_imp);
   endfunction // connect_phase
 
 endclass // tx_env

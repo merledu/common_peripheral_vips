@@ -59,7 +59,7 @@ package base_test_pkg;
   `include "./sequences/tx_v_seq.sv"
   
   // Monitors
-  `include "./monitors/tx_monitor.sv"
+  `include "./monitors/spi_monitor.sv"
   
   // Drivers
   `include "./drivers/tx_driver.sv"

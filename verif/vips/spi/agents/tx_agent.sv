@@ -47,9 +47,9 @@ class tx_agent extends uvm_agent;
 
   // Declare the handle
   tx_driver       tx_driver_h      ;                    // Handle to driver
-  tx_monitor      tx_monitor_h     ;                    // Handle to monitor
+  spi_monitor     spi_monitor_h   ;                    // Handle to monitor
   tx_agent_config tx_agent_config_h;                    // Declaration of agent configuraton object
-  uvm_sequencer#(transaction_item) tx_sequencer_h;    // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
+  uvm_sequencer#(transaction_item) tx_sequencer_h;      // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
   // Analysis port to connect with the analysis port of monitor
   uvm_analysis_port #(transaction_item) dut_txn_port;
@@ -76,7 +76,7 @@ class tx_agent extends uvm_agent;
     // Copy the sequencer handle into the config object tx_agent_config
     tx_agent_config_h.tx_sequencer_h = tx_sequencer_h;
     // Always create the monitor 
-    tx_monitor_h = tx_monitor::type_id::create ("tx_monitor_h"  , this);
+    spi_monitor_h = spi_monitor::type_id::create ("spi_monitor_h"  , this);
   endfunction
   
   // Connect phase
@@ -86,7 +86,7 @@ class tx_agent extends uvm_agent;
     `uvm_info("UART_AGENT::",$sformatf("______CONNECT_PHASE______"), UVM_LOW)
   if(tx_agent_config_h.active == UVM_ACTIVE)
     tx_driver_h.seq_item_port.connect(tx_sequencer_h.seq_item_export);
-    tx_monitor_h.dut_tx_port.connect(this.dut_txn_port);
+    spi_monitor_h.dut_tx_port.connect(this.dut_txn_port);
   endfunction
 
 endclass: tx_agent
