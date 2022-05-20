@@ -29,6 +29,23 @@ The verification IP is build on Universal verification methodology (UVM) that co
 
 Note: Configuration of the UART is completely randomize by UVM testing environment for all internal registers of UART.
 
+For transmitting the data following steps will be done:
+First we have to set configurable registers which are baud, tx_level, tx_data, tx_en_fifo, rd_en_fifo
+To set the baud rate, at address 0x0 we can assign the desired baud rate we have to set.
+Then set tx_level, at address 0x18 we can assign the level of the buffer.
+Then data to be transferred is sent at address 0x4.
+Then transfer is enabled by writing at address 0x1c.
+
+For receiving the data:
+Baud rate will be configured at address 0x0.
+Then to start receiving the data,rx will be enabled at address 0xc.
+At address 0x8, we can read the data that is received.
+Read the configurable registers:
+You can read the all the registers configured by:
+To read the baud_rate set, set the pwrite_i to 0 and set the addr to 0;
+To read the level of fifo set, set the pwrite to 0 and set the addr to 0x18
+To read the data entered into the fifo,set the pwrite_i to 0 and set addr to 4 according to the tx_level set.
+
 #### Configuration the UART
 
 #### Activation the UART
