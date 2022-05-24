@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    06-MARCH-2022                                                                     //
-// Design Name:    UART                                                                              //
+// Create Date:    24-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
 // Module Name:    tx_agent.sv                                                                       //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -65,7 +65,7 @@ class tx_agent extends uvm_agent;
     
     // The agent gets its configuration from uvm_config_db
     if(!uvm_config_db#(tx_agent_config)::get(this/*Handle to this component*/, ""/*an empty instance name*/, "tx_agent_config_h"/*Name of the object in db*/, tx_agent_config_h/*Handle that the db writes to*/))
-      `uvm_fatal("TX_AGENT::NO VIF",$sformatf("No virtual interface in db"))
+      `uvm_fatal("TX_AGENT::NO AGENT CONFIG",$sformatf("No agent config in db"))
     // Now the object has it config object after getting it from uvm_config_db
     
     // If agent config object says it is active agent create driver and sequecer

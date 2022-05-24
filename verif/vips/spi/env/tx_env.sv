@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    05-MARCH-2022                                                                     //
-// Design Name:    UART                                                                              //
+// Create Date:    24-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
 // Module Name:    tx_env.sv                                                                         //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -45,7 +45,7 @@ class tx_env extends uvm_env;
   
   // Declare handle to the objects agent, scoreboard, env config and agent config.
   tx_agent         tx_agent_h        ;
-  spi_scoreboard  spi_scoreboard_h   ;
+  spi_scoreboard   spi_scoreboard_h  ;
   env_config       env_config_h      ;
   tx_agent_config  tx_agent_config_h ;
   // cov_collector   cov_collector_h;
@@ -57,7 +57,7 @@ class tx_env extends uvm_env;
     `uvm_info("UART_ENV::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
     // The environment fetches it config object from uvm_config db
     if (!uvm_config_db#(env_config)::get(this,"", "env_config_h", env_config_h))
-      `uvm_fatal("TX_ENV::NO VIF",$sformatf("No virtual interface in db"))
+      `uvm_fatal("TX_ENV::NO ENV CONFIG",$sformatf("No virtual interface in db"))
     // Put agent tx_agent_config handle into uvm_config_db for agent and sub_components
     uvm_config_db#(tx_agent_config)::set(this, "tx_agent_h*", "tx_agent_config_h", env_config_h.tx_agent_config_h);
     // Buiding Objects

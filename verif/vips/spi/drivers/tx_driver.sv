@@ -5,8 +5,8 @@
 //                                                                                                     //
 // Additional contributions by:                                                                        //
 //                                                                                                     //
-// Create Date:    08-MARCH-2022                                                                       //
-// Design Name:    UART                                                                                //
+// Create Date:    24-MAY-2022                                                                         //
+// Design Name:    SPI                                                                                 //
 // Module Name:    tx_driver.sv                                                                        //
 // Project Name:   VIPs for different peripherals                                                      //
 // Language:       SystemVerilog - UVM                                                                 //
@@ -51,7 +51,7 @@ class tx_driver extends uvm_driver #(transaction_item);
   function void build_phase(uvm_phase phase);
     `uvm_info("UART_DRIVER::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
     if(!uvm_config_db#(tx_agent_config)::get(this/*Handle to this component*/, ""/*an empty instance name*/, "tx_agent_config_h"/*Name of the object in db*/, tx_agent_config_h/*Handle that the db writes to*/))
-      `uvm_fatal("TX_DRIVER::NO VIF",$sformatf("No virtual interface in db"))
+      `uvm_fatal("TX_DRIVER::NO AGENT CONFIG",$sformatf("No agent config in db"))
     // Now you can read the values from config object
 
     // Assigning the virtual interface declared in this class with the one from agent config class
@@ -71,7 +71,7 @@ class tx_driver extends uvm_driver #(transaction_item);
     forever begin
       // Use to get the next item
       seq_item_port.get_next_item (tx);
-      transfer(tx);   
+      transfer(tx);
       //Calling a transfer method to send and recieve data from the DUT
       //vif.transfer(tx);
       // indicates item done
