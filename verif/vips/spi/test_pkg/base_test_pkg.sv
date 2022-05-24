@@ -5,9 +5,9 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    08-JAN-2022                                                                       //
-// Design Name:    TIMER                                                                             //
-// Module Name:    base_test_pkg.sv                                                                       //
+// Create Date:    24-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
+// Module Name:    base_test_pkg.sv                                                                  //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
 //                                                                                                   //
@@ -37,7 +37,6 @@ package base_test_pkg;
   
   // Sequence Items
   `include "./seq_items/tx_item.sv"
-  `include "./seq_items/config_xactn_timer.sv"
   `include "./seq_items/transaction_item.sv"
   
   // Agent configuration
@@ -48,9 +47,8 @@ package base_test_pkg;
   
   // Sequences
   `include "./sequences/tx_sequence.sv"
-  `include "./sequences/config_timer_sequence.sv"
-  `include "./sequences/read_timer_sequence.sv"
-  `include "./sequences/reset_timer_sequence.sv"
+  `include "./sequences/config_spi_sequence.sv"
+  `include "./sequences/reset_spi_sequence.sv"
   
   // Sequencers
   `include "./sequencers/tx_sequencer.sv"
