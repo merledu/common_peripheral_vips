@@ -44,15 +44,15 @@ class tx_v_seq extends uvm_sequence;
   // Sequence to reset the spi
   reset_spi_sequence reset_spi_sequence_h ;
   // Sequence to configure the timer by writing random values to registers present at different addresses
-  config_spi_sequence config_timer_sequence_h;                      
+  config_spi_sequence config_spi_sequence_h;                      
 
   task body();
     // Sequence to reset 
-    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                         // Creating a sequences
+    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                 // Creating a sequences
     reset_spi_sequence_h.start(get_sequencer(), this);
   	//// Sequence to configuring the timer
-  	//config_timer_sequence_h = config_timer_sequence::type_id::create("config_timer_sequence_h");              // Creating a sequences
-  	//config_timer_sequence_h.start(get_sequencer(), this);
+  	config_spi_sequence_h = config_spi_sequence::type_id::create("config_spi_sequence_h");              // Creating a sequences
+  	config_spi_sequence_h.start(get_sequencer(), this);
   endtask
   
 endclass

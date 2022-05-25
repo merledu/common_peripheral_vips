@@ -72,7 +72,7 @@ class reset_spi_sequence extends uvm_sequence #(transaction_item);
     // reset_spi_sequence is going to generate 5 transactions of type transaction_item
     repeat(3) begin
       `uvm_info("reset_spi_sequence::",$sformatf("reset_spi_sequence"), UVM_LOW)
-      tx = transaction_item::type_id::create("tx");            // Factory creation (body task create transactions using factory creation)
+      tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
         `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
