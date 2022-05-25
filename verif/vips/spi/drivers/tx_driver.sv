@@ -77,11 +77,8 @@ class tx_driver extends uvm_driver #(transaction_item);
       // indicates item done
       seq_item_port.item_done();
     end
-  endtask 
-  
-  bit value;  
-  bit [ 63 : 0] data;
-  bit [ 76 : 0] cycle_to_get_result;
+  endtask
+
   // Function to transfer the transaction to DUT via interface that is recieved in run phase
   virtual task transfer(transaction_item tr);
     //uvm_event ev = uvm_event_pool::get_global("ev_ab");
@@ -93,8 +90,16 @@ class tx_driver extends uvm_driver #(transaction_item);
     //bit [ 31:0 ] div_q    = 0;
     //bit [ 4:0 ]  div_r    = 0;  
     //
-    //@(posedge vif.clk_i);
-    //// For driving signals to DUT via interface
+    @(posedge vif.clk_i);
+    // For driving signals to DUT via interface
+    vif.rst_ni  = tr.rst_ni ;        
+    vif.addr_i  = tr.addr_i ;            
+    vif.wdata_i = tr.wdata_i;              
+    vif.be_i    = tr.be_i   ;           
+    vif.we_i    = tr.we_i   ;       
+    vif.re_i    = tr.re_i   ;        
+    vif.sd_i    = tr.sd_i   ;
+    
     //vif.rst_ni    = tr.rst_ni   ;
     //vif.reg_we    = tr.reg_we   ;
     //vif.reg_re    = tr.reg_re   ;
