@@ -66,26 +66,86 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
   // Task can have delays
   // Note: Driver limits how fast the stimulus can be applied to the driver by sequence, since the sequence is connected to driver it can send a new transaction when driver is ready
   virtual task body();
+    
+    // dvider address 0x14
+    // control addr   0x10
+    // tx_reg         0x0
+    // ss             0x18
+    // rx_reg         0x20
+
     // transaction of type transaction_item
-    transaction_item tx               ;
-    int              cycle            ;
-    bit [ 63:0]      data             ;
-    bit              lower_data_en    ;
-    bit [ 31:0]      upper_data       ;
-    bit [ 31:0]      lower_data       ;
-    bit [ 11:0]      prescale      = 0;
-    bit [23:16]      step          = 0;
+    transaction_item tx        ;
+    int              cycle     ;
+    bit      [31:16] reserved_2;
+    bit              rx_en     ;
+    bit              tx_en     ;
+    bit              ass       ;
+    bit              ie        ;
+    bit              lsb       ;
+    bit              tx_neg    ;
+    bit              rx_neg    ;
+    bit              go_bsy    ;
+    bit              reserved_1;
+    bit      [  6:0] char_len  ;
+    bit      [ 31:0] ctrl_reg  ;
     string msg="";
 
     // config_spi_sequence is going to generate 4 transactions of type transaction_item
     repeat(4) begin
-      //cycle = cycle + 1;
-      //tx = transaction_item::type_id::create("tx");            // Factory creation (body task create transactions using factory creation)
-      //start_item(tx);                                            // Waits for a driver to be ready
-      //if(!tx.randomize())                                        // It randomize the transaction
-      //  `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
-      //tx.addr=tx_agent_config_h.base_address;                    // For fetching base address from agent configuration "It can be a run time value"
-      //
+      cycle = cycle + 1;
+      tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
+      start_item(tx);                                            // Waits for a driver to be ready
+      if(!tx.randomize())                                        // It randomize the transaction
+        `uvm_fatal("ID","transaction is not randomize")          // If it not randomize it will through fatal error
+      //tx.addr=tx_agent_config_h.base_address;                  // For fetching base address from agent configuration "It can be a run time value"
+      
+      // De-asserting
+      tx.rst_ni = 1'b1;        
+
+      //Configuring Control and status register
+      // Assigning values TODO: Add fields for tx and rx enables
+      if (cycle == 'd1) begin
+        reserved_2 = 18'd0;
+        rx_en      = 1'b0;
+        tx_en      = 1'b0;
+        ass        = 1'b0;
+        ie         = 1'b1;
+        lsb        = 1'b1;
+        tx_neg     = 1'b0;
+        rx_neg     = 1'b0;
+        go_bsy     = 1'b0;
+        reserved_1 = 1'b0;
+        char_len   = 32'd32;
+        // concatenating ctrl register fields
+        ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
+        `uvm_info ("CONFIG_SPI_SEQUENCES::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
+        // transaction
+        tx.addr_i  = 'h10;            
+        tx.wdata_i = ctrl_reg;              
+        tx.be_i    = 0;           
+        tx.we_i    = 1;       
+        tx.re_i    = 0;        
+        //tx.sd_i    = ;    // miso
+      end 
+      // Configuring TX register
+      else if (cycle == 'd2) begin
+        //tx.addr_i  = ;            
+        //tx.wdata_i = ;              
+        //tx.be_i    = ;           
+        tx.we_i    = 1;       
+        tx.re_i    = 0;        
+        //tx.sd_i    = ;
+      end
+      // Configuring Divider
+      else if (cycle == 'd3) begin
+        tx.addr_i  = 'h14;            
+        tx.wdata_i = 'h0;              
+        //tx.be_i    = ;           
+        tx.we_i    = 1;       
+        tx.re_i    = 0;        
+        //tx.sd_i    = ;
+      end
+
       //// Declaration and initialization
       //tx.rst_ni = 1'b1;
       //tx.reg_we = 1'h1;
