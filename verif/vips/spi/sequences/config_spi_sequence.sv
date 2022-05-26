@@ -67,9 +67,9 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
   // Note: Driver limits how fast the stimulus can be applied to the driver by sequence, since the sequence is connected to driver it can send a new transaction when driver is ready
   virtual task body();
     
-    // dvider address 0x14
     // control addr   0x10
     // tx_reg         0x0
+    // dvider address 0x14
     // ss             0x18
     // rx_reg         0x20
 
@@ -122,7 +122,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         // transaction
         tx.addr_i  = 'h10;            
         tx.wdata_i = ctrl_reg;              
-        tx.be_i    = 0;           
+        tx.be_i    = 'b1111;           
         tx.we_i    = 1;       
         tx.re_i    = 0;        
         //tx.sd_i    = ;    // miso
@@ -132,7 +132,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       else if (cycle == 'd2) begin
         tx.addr_i  = 'h0;            
         //tx.wdata_i = ;              
-        tx.be_i    = 'h0;           
+        tx.be_i    = 'b1111;           
         tx.we_i    = 'h1;       
         tx.re_i    = 'h0;        
         //tx.sd_i    = ;
@@ -141,8 +141,8 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Configuring the Divider
       else if (cycle == 'd3) begin
         tx.addr_i  = 'h14;            
-        tx.wdata_i = 'h0;              
-        tx.be_i    = 'h0;           
+        tx.wdata_i = 'h1;              
+        tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        
         //tx.sd_i    = ;
@@ -151,8 +151,8 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Selecting Slave of 4 slave 
       else if (cycle == 'd4) begin
         tx.addr_i  = 'h18;            
-        tx.wdata_i = 'h0;              
-        tx.be_i    = 'h0;           
+        tx.wdata_i = 'h1001;              
+        tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        
         //tx.sd_i    = ;
@@ -167,7 +167,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         // transaction
         tx.addr_i  = 'h10;           
         tx.wdata_i = ctrl_reg;              
-        tx.be_i    = 0;           
+        tx.be_i    = 'b1111;           
         tx.we_i    = 1;       
         tx.re_i    = 0;        
         //tx.sd_i    = ;    // miso
