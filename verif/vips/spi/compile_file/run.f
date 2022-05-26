@@ -3,7 +3,7 @@
 
 # Include directory of design and verification
 -incdir ../uart
-#-incdir ../../../../common_peripheral_ips/Timer_ip/rtl/ip
+#-incdir ../../../../common_peripheral_ips/spi_ip
 
 # Package and top module to compile and simulate
 #./test_pkg/hello_pkg.sv
@@ -13,14 +13,10 @@
 ./interface/test_ifc.sv
 
 # Design
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/rv_timer_reg_pkg.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/prim_subreg_arb.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/prim_subreg.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/prim_subreg_ext.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/rv_timer_reg_top.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/prim_intr_hw.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/timer_core.sv
-#../../../../common_peripheral_ips/Timer_ip/rtl/ip/rv_timer.sv
+../../../../common_peripheral_ips/spi_ip/rtl/spi_defines.v
+../../../../common_peripheral_ips/spi_ip/rtl/spi_shift.v
+../../../../common_peripheral_ips/spi_ip/rtl/spi_clgen.v
+../../../../common_peripheral_ips/spi_ip/rtl/spi_core.sv
 
 # Add top modules
 ./tb_top/top.sv
