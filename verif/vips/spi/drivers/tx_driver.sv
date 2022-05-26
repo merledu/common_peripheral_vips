@@ -65,6 +65,8 @@ class tx_driver extends uvm_driver #(transaction_item);
   // Connected to sequncer through TLM ports, just for understand consider TLM similar to mail box
   // Note: In a testbench the DUT limits how fast the stimulus can be applied to DUT, since the driver is connected to DUT it can accept a new transaction when DUT is ready
   string msg="";
+  int index;
+
   virtual task run_phase(uvm_phase phase);
     transaction_item tx;
     int cycle;
@@ -89,7 +91,7 @@ class tx_driver extends uvm_driver #(transaction_item);
     //bit [ 23:16] step     = 0;
     //bit [ 31:0 ] div_q    = 0;
     //bit [ 4:0 ]  div_r    = 0;  
-    //
+
     @(posedge vif.clk_i);
     // For driving signals to DUT via interface
     vif.rst_ni  = tr.rst_ni ;        
@@ -99,7 +101,23 @@ class tx_driver extends uvm_driver #(transaction_item);
     vif.we_i    = tr.we_i   ;       
     vif.re_i    = tr.re_i   ;        
     vif.sd_i    = tr.sd_i   ;
+
+    //`uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
+    //if (tr.addr_i == 'h10 && tr.be_i == 'b1111 && tr.re_i == 'b0 && tr.we_i == 'h1) begin
+    //  index = index + 1;
+    //  `uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
+    //end
     
+    if (vif.addr_i == 'h10) begin
+      `uvm_info("SPI_DRIVER::",$sformatf("Entering to check the interrrupt signal"), UVM_LOW)
+      index = index +1;
+      `uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
+      if (index == 2) begin
+        `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt"), UVM_LOW)
+        wait (vif.intr_tx_o == 1'b1);
+      end
+    end
+
     //vif.rst_ni    = tr.rst_ni   ;
     //vif.reg_we    = tr.reg_we   ;
     //vif.reg_re    = tr.reg_re   ;
