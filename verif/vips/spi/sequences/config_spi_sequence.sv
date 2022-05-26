@@ -151,7 +151,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Selecting Slave of 4 slave 
       else if (cycle == 'd4) begin
         tx.addr_i  = 'h18;            
-        tx.wdata_i = 'h1001;              
+        tx.wdata_i = tx.slv_sel/*'b1100*/;              
         tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        
@@ -168,9 +168,8 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         tx.addr_i  = 'h10;           
         tx.wdata_i = ctrl_reg;              
         tx.be_i    = 'b1111;           
-        tx.we_i    = 1;       
-        tx.re_i    = 0;        
-        //tx.sd_i    = ;    // miso
+        tx.we_i    = 1'h1;       
+        tx.re_i    = 1'h0;     
         print_transaction(tx, "Enabing transmission from master");
       end
 
