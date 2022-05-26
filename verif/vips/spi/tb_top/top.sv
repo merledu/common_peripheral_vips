@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    02-MARCH-2022                                                                     //
-// Design Name:    UART                                                                              //
+// Create Date:    26-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
 // Module Name:    top.sv                                                                            //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -39,23 +39,27 @@ module top;
 	test_ifc test_ifc_h (
 		.clk_i(clk)
 	);
+
+  // DUT ports
+  spi_core spi_core_inst(
+  .clk_i    (clk                 ),     
+  .rst_ni   (test_ifc_h.rst_ni   ),     
+  .addr_i   (test_ifc_h.addr_i   ),         
+  .wdata_i  (test_ifc_h.wdata_i  ),            
+  .rdata_o  (test_ifc_h.rdata_o  ),           
+  .be_i     (test_ifc_h.be_i     ),      
+  .we_i     (test_ifc_h.we_i     ),  
+  .re_i     (test_ifc_h.re_i     ),   
+  .error_o  (test_ifc_h.error_o  ),     
+  .intr_rx_o(test_ifc_h.intr_rx_o),
+  .intr_tx_o(test_ifc_h.intr_tx_o),                                              
+  .ss_o     (test_ifc_h.ss_o     ),
+  .sclk_o   (test_ifc_h.sclk_o   ),
+  .sd_o     (test_ifc_h.sd_o     ),
+  .sd_oe    (test_ifc_h.sd_oe    ),
+  .sd_i     (test_ifc_h.sd_i     )
+  );
   
-  // Dut instance
-	// uart_name uart_inst (
-	// 	.clk_i  (clk               ),
-	// 	.rst_ni (test_ifc_h.rst_ni ),
-	// 	.ren    (test_ifc_h.ren    ),
-	// 	.we     (test_ifc_h.we     ),
-	// 	.wdata  (test_ifc_h.wdata  ),
-	// 	.rdata  (test_ifc_h.rdata  ),
-	// 	.addr   (test_ifc_h.addr   ),
-	// 	.tx_o   (test_ifc_h.tx_o   ),
-	// 	.rx_i   (test_ifc_h.rx_i   ),
-	// 	.intr_tx(test_ifc_h.intr_tx),
-	// 	.intr_rx(test_ifc_h.intr_rx)
-	// );
-
-
 	// Also a top level module contains an initial block which contain a call to the uvm run_test method
 	// At time 0, the run_test creates the uvm_root object
 	//   - This fetches the test class name from the command line
