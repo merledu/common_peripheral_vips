@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    10-MARCH-2022                                                                     //
-// Design Name:    UART                                                                              //
+// Create Date:    27-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
 // Module Name:    spi_monitor.sv                                                                    //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //
@@ -48,7 +48,7 @@ class spi_monitor extends uvm_monitor;
     // Creating analysis port TLM analysis ports are not created with factory
     dut_tx_port = new ("dut_tx_port",this);
     if(!uvm_config_db#(tx_agent_config)::get(this/*Handle to this component*/, ""/*an empty instance name*/, "tx_agent_config_h"/*Name of the object in db*/, tx_agent_config_h/*Handle that the db writes to*/))
-      `uvm_fatal("spi_monitor::NO VIF",$sformatf("No virtual interface in db"))
+      `uvm_fatal("spi_monitor::NO AGENT CONFIG",$sformatf("No agent config in db"))
     // Note now you can read the values from config object
     vif = tx_agent_config_h.vif;
     // Display the base address from config object
@@ -62,21 +62,53 @@ class spi_monitor extends uvm_monitor;
   
   // Declaration
   string msg ="";
-  bit [ 63:0] data                   ;
-  bit [ 76:0] cycle_to_get_result    ;
-  bit [ 11:0] prescale            = 0;
-  bit [23:16] step                = 0;
-  bit [ 31:0] div_q               = 0;
-  bit [  4:0] div_r               = 0;
-  bit [ 76:0] cycle_num           = 0;
-  int         set                    ;
+  bit [ 76:0] cycle_num = 0;
+  int         set          ;
+  int         clct_mosi    ;
+  int         count        ;
+  int         data         ;
+  bit         next_data    ;
 
   virtual task get_transaction();
-    //// Transaction Handle declaration
-    //transaction_item tx;
-    //forever begin
-    //  @(posedge vif.clk_i)
-    //    tx = transaction_item::type_id::create("tx");
+    // Transaction Handle declaration
+    transaction_item tx;
+    forever begin
+      @(posedge vif.sclk_o)
+        tx = transaction_item::type_id::create("tx");
+        tx.rst_ni  = vif.rst_ni ;        
+        tx.addr_i  = vif.addr_i ;            
+        tx.wdata_i = vif.wdata_i;              
+        tx.be_i    = vif.be_i   ;           
+        tx.we_i    = vif.we_i   ;       
+        tx.re_i    = vif.re_i   ;        
+        tx.sd_i    = vif.sd_i   ;                       // master in slave out
+
+        clct_mosi[count] = vif.sd_o;
+        count = count + 1;
+
+        if(count == 32) begin
+          data = clct_mosi; 
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
+        end
+
+        if(!vif.ss_o[0] && count == 32) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
+          if(data[1:0] == 2'b11) begin
+            `uvm_info("SPI_MONITIOR::", $sformatf("Next will be tx data"), UVM_LOW)
+          end
+        end
+        if(!vif.ss_o[1] && count == 32) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 2"), UVM_LOW)
+        end
+        if(!vif.ss_o[2] && count == 32) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 3"), UVM_LOW)
+        end
+        if(!vif.ss_o[3] && count == 32) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 4"), UVM_LOW)
+        end
+
     //  tx.rst_ni                   = vif.rst_ni                  ;
     //  tx.reg_we                   = vif.reg_we                  ;
     //  tx.reg_re                   = vif.reg_re                  ;
@@ -128,7 +160,7 @@ class spi_monitor extends uvm_monitor;
     //      set=1;
     //    end // if (set==0)
     //  end // if (tx.intr_timer_expired_0_0_o == 1)
-    //end // forever
+    end // forever
   endtask
 
   //function void print_transaction(transaction_item tx);
