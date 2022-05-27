@@ -91,7 +91,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // config_spi_sequence is going to generate 4 transactions of type transaction_item
-    repeat(5) begin
+    repeat(7) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
@@ -127,11 +127,12 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         tx.re_i    = 0;        
         //tx.sd_i    = ;    // miso
         print_transaction(tx, "Configuring Control Register");
-      end 
+      end
+      // Sending command to a slave that what is operation is to be performed in the coming cycles like tx or rx
       // Configuring TX register
       else if (cycle == 'd2) begin
-        tx.addr_i  = 'h0;            
-        //tx.wdata_i = ;              
+        tx.addr_i  = 'h0;
+        tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
         tx.be_i    = 'b1111;           
         tx.we_i    = 'h1;       
         tx.re_i    = 'h0;        
@@ -141,7 +142,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Configuring the Divider
       else if (cycle == 'd3) begin
         tx.addr_i  = 'h14;            
-        tx.wdata_i = 'h1;              
+        tx.wdata_i = 'h0;              
         tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        
@@ -151,7 +152,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Selecting Slave of 4 slave 
       else if (cycle == 'd4) begin
         tx.addr_i  = 'h18;            
-        tx.wdata_i = tx.slv_sel/*'b1100*/;              
+        tx.wdata_i = /*tx.slv_sel*/'b0011;        
         tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        
@@ -160,6 +161,32 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       end
       // Enabling Transmition
       else if (cycle == 'd5) begin
+        tx_en      = 1'b1;
+        go_bsy     = 1'b1;
+        ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
+        `uvm_info ("CONFIG_SPI_SEQUENCES::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
+        // transaction
+        tx.addr_i  = 'h10;           
+        tx.wdata_i = ctrl_reg;              
+        tx.be_i    = 'b1111;           
+        tx.we_i    = 1'h1;       
+        tx.re_i    = 1'h0;     
+        print_transaction(tx, "Enabing transmission from master");
+      end
+      
+      // Configuring TX register to send data to the register
+      else if (cycle == 'd6) begin
+        tx.addr_i  = 'h0;
+        // Following line is commented that means tx register is configured by a random number
+        //tx.wdata_i =  {{30{1'h0},2'b11}};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
+        tx.be_i    = 'b1111;           
+        tx.we_i    = 'h1;       
+        tx.re_i    = 'h0;        
+        //tx.sd_i    = ;
+        print_transaction(tx, "Configuring TX Register");
+      end
+      // Enabling Transmition
+      else if (cycle == 'd7) begin
         tx_en      = 1'b1;
         go_bsy     = 1'b1;
         ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
