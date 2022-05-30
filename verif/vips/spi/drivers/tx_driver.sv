@@ -102,14 +102,21 @@ class tx_driver extends uvm_driver #(transaction_item);
     vif.we_i    = tr.we_i   ;       
     vif.re_i    = tr.re_i   ;        
     vif.sd_i    = tr.sd_i   ;
-    
+
     if (vif.addr_i == 'h10) begin
+       // Assign the value to be saved on control register in ctrl_reg
        ctrl_reg = vif.wdata_i;
-          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt = %0d", ctrl_reg), UVM_LOW)
-       if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt"), UVM_LOW)
+          `uvm_info("SPI_DRIVER::",$sformatf("Enterred in the waiting interrupt waiting logic = %0d", ctrl_reg), UVM_LOW)
+        // Waiting until intr_tx_o is asserted
+        if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the tx interupt"), UVM_LOW)
           wait (vif.intr_tx_o == 1'b1);
-       end
+        end
+        // Waiting until intr_rx_o is asserted
+        else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1) begin
+          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the rx interupt"), UVM_LOW)
+          wait (vif.intr_rx_o == 1'b1);
+        end 
     end
 
   endtask
