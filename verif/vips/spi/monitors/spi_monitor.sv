@@ -78,6 +78,7 @@ class spi_monitor extends uvm_monitor;
   int         count_clock_cycles ;
   bit  [31:0] tx_data_slv_q[$]   ;
   bit  [31:0] tx_data_driv_q[$]  ;
+  int         counter            ;
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -96,14 +97,18 @@ class spi_monitor extends uvm_monitor;
         clct_mosi[count] = vif.sd_o;
         count = count + 1;
 
+        if (tx.addr_i == 'h10) begin
+          counter = tx.wdata_i[6:0];
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
+        end
         // slave 1
-        if(count == 32) begin
+        if(count == counter) begin
           data = clct_mosi; 
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
         end
 
-        if(!vif.ss_o[0] && count == 32) begin
+        if(!vif.ss_o[0] && count == counter) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
@@ -175,6 +180,7 @@ class spi_monitor extends uvm_monitor;
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_driv_q = %p", tx_data_driv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
+          count_clock_cycles = 0;
         end
 
     end // forever
