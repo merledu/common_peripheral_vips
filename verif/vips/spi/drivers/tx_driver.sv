@@ -66,6 +66,7 @@ class tx_driver extends uvm_driver #(transaction_item);
   // Note: In a testbench the DUT limits how fast the stimulus can be applied to DUT, since the driver is connected to DUT it can accept a new transaction when DUT is ready
   string msg="";
   int index;
+  bit [15:0] ctrl_reg;
 
   virtual task run_phase(uvm_phase phase);
     transaction_item tx;
@@ -101,65 +102,16 @@ class tx_driver extends uvm_driver #(transaction_item);
     vif.we_i    = tr.we_i   ;       
     vif.re_i    = tr.re_i   ;        
     vif.sd_i    = tr.sd_i   ;
-
-    //`uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
-    //if (tr.addr_i == 'h10 && tr.be_i == 'b1111 && tr.re_i == 'b0 && tr.we_i == 'h1) begin
-    //  index = index + 1;
-    //  `uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
-    //end
     
     if (vif.addr_i == 'h10) begin
-      `uvm_info("SPI_DRIVER::",$sformatf("Entering to check the interrrupt signal"), UVM_LOW)
-      index = index +1;
-      `uvm_info("SPI_DRIVER::",$sformatf("Index = %0d", index), UVM_LOW)
-      if (index == 2) begin
-        `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt"), UVM_LOW)
-        wait (vif.intr_tx_o == 1'b1);
-      end
+       ctrl_reg = vif.wdata_i;
+          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt = %0d", ctrl_reg), UVM_LOW)
+       if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+          `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the interupt"), UVM_LOW)
+          wait (vif.intr_tx_o == 1'b1);
+       end
     end
 
-    //vif.rst_ni    = tr.rst_ni   ;
-    //vif.reg_we    = tr.reg_we   ;
-    //vif.reg_re    = tr.reg_re   ;
-    //vif.reg_addr  = tr.reg_addr ;
-    //vif.reg_wdata = tr.reg_wdata;
-    //vif.reg_be    = tr.reg_be   ;
-    //// For Reading signals from DUT via interface
-    //r_data        = vif.reg_rdata;
-    //
-    //// Print the signals driven on the virtual interface
-    //print_tx_fields(vif);
-    //// Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
-    //if (tr.reg_wdata <= 64'h00000000FFFFFFFF && tr.reg_addr == 'h10c && tr.reg_we == 1'b1) begin
-    //  data = tr.reg_wdata;
-    //  `uvm_info("UART_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //end
-    //// Following is the logic to get data to which counter will count, when data is greater than 64'h00000000FFFFFFFF
-    //if (tr.reg_wdata > 64'h00000000FFFFFFFF && tr.reg_addr == 'h110 && tr.reg_we == 1'b1) begin
-    //  data = tr.reg_wdata;
-    //  `uvm_info("UART_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //end
-    //// Following logic is used to find the number of clock cycles required to complete the count depening on prescale and step
-    //// set during the configuratiuon period
-    //else if (tr.reg_addr == 'h100 && tr.reg_we == 1'b1) begin
-    //  prescale = tr.reg_wdata[11:0] ;
-    //  step     = tr.reg_wdata[23:16];
-    //  div_q    = data/step;
-    //  div_r    = data%step;
-    //  // Logic to predict number of cycles required to complete the count.
-    //  if(div_r == 0)
-    //    cycle_to_get_result = ( (div_q) * (prescale + 1) ) + 2;
-    //  else
-    //    cycle_to_get_result = ( (div_q + 1) * (prescale + 1) ) + 2;
-    //  // Printing the number of cycles required to complete the count and its related fields
-    //  print_num_of_cycles_req(prescale, data, step, div_q, div_r, cycle_to_get_result);
-    //end
-    //// When the timer is activated, following logic waits untils intr_timer_expired_0_0_o is enabled from the DUT, that indicates timer has compeletd the count
-    //else if (vif.reg_addr == 'h000 && tr.reg_we == 1'b1) begin
-    //  `uvm_info("UART_DRIVER::",$sformatf("Waiting for intr_timer_expired_0_0_o to be set"), UVM_LOW)
-    //  wait (vif.intr_timer_expired_0_0_o == 1'b1);
-    //  `uvm_info("UART_DRIVER::",$sformatf("intr_timer_expired_0_0_o is one"), UVM_LOW)
-    //end
   endtask
 
   //function void print_tx_fields(virtual test_ifc vif);
