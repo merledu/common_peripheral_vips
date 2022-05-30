@@ -57,17 +57,27 @@ class spi_monitor extends uvm_monitor;
 
   virtual task run_phase(uvm_phase phase);
     // Function to get transaction from virtual interface
-    get_transaction();
+    fork
+      get_transaction();
+      get_tranxaction();
+      count_clk();
+    join_none
+    //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
   endtask
   
   // Declaration
   string msg ="";
-  bit [ 76:0] cycle_num = 0;
-  int         set          ;
-  int         clct_mosi    ;
-  int         count        ;
-  int         data         ;
-  bit         next_data    ;
+  bit [ 76:0] cycle_num = 0      ;
+  int         set                ;
+  int         clct_mosi          ;
+  int         count              ;
+  int         data               ;
+  bit         next_data          ;
+  bit         wr_enble           ;
+  bit         rd_enble           ;
+  int         count_clock_cycles ;
+  bit  [31:0] tx_data_slv_q[$]   ;
+  bit  [31:0] tx_data_driv_q[$]  ;
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -86,6 +96,7 @@ class spi_monitor extends uvm_monitor;
         clct_mosi[count] = vif.sd_o;
         count = count + 1;
 
+        // slave 1
         if(count == 32) begin
           data = clct_mosi; 
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
@@ -95,71 +106,86 @@ class spi_monitor extends uvm_monitor;
         if(!vif.ss_o[0] && count == 32) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
-          if(data[1:0] == 2'b11) begin
+          // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
+          if(data[1:0] == 2'b11 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively. 
             `uvm_info("SPI_MONITIOR::", $sformatf("Next will be tx data"), UVM_LOW)
+            wr_enble = 1'b1;
+            rd_enble = 1'b0;
+            count = 0;
           end
+          // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
+          else if (data[1:0] == 2'b10 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively.
+            `uvm_info("SPI_MONITIOR::", $sformatf("Next will be rx data"), UVM_LOW)
+            wr_enble = 1'b0;
+            rd_enble = 1'b1;
+            count = 0;
+          end
+          
+          // Following else will be executed if data is not a command
+          else begin
+            // Write operation is to be performed
+            if (wr_enble == 1'b1) begin
+               `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
+               tx_data_slv_q.push_front(data);
+               count = 0;
+            end
+            // Read operation is need to be performed
+            else if (wr_enble == 1'b1) begin
+            end 
+          end
+        
         end
+        
+        // slave 2
         if(!vif.ss_o[1] && count == 32) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 2"), UVM_LOW)
         end
+        // slave 3
         if(!vif.ss_o[2] && count == 32) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 3"), UVM_LOW)
         end
+        // slave 3
         if(!vif.ss_o[3] && count == 32) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 4"), UVM_LOW)
         end
 
-    //  tx.rst_ni                   = vif.rst_ni                  ;
-    //  tx.reg_we                   = vif.reg_we                  ;
-    //  tx.reg_re                   = vif.reg_re                  ;
-    //  tx.reg_addr                 = vif.reg_addr                ;
-    //  tx.reg_wdata                = vif.reg_wdata               ;
-    //  tx.reg_be                   = vif.reg_be                  ;
-    //  tx.reg_rdata                = vif.reg_rdata               ;
-    //  tx.reg_error                = vif.reg_error               ;
-    //  tx.intr_timer_expired_0_0_o = vif.intr_timer_expired_0_0_o;
-    //  // Print the transactions
-    //  print_transaction(tx);
-    //  // The monitor reads the transaction from the DUT and passed the handle to TLM analysis port write function
-    //  dut_tx_port.write(tx);
-    //  // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
-    //  if (tx.reg_wdata <= 64'h00000000FFFFFFFF && tx.reg_addr == 'h10c && tx.reg_we == 1'b1) begin
-    //    data = tx.reg_wdata;
-    //    `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //  end
-    //  // Following is the logic to get data to which counter will count, when data is greater than 64'h00000000FFFFFFFF
-    //  if (tx.reg_wdata > 64'h00000000FFFFFFFF && tx.reg_addr == 'h110 && tx.reg_we == 1'b1) begin
-    //    data = tx.reg_wdata;
-    //    `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
-    //  end
-    //  // Following logic is used to find the number of clock cycles required to complete the count depening on prescale and step
-    //  // set during the configuratiuon period
-    //  else if (tx.reg_addr == 'h100 && tx.reg_we == 1'b1) begin
-    //    prescale = tx.reg_wdata[11:0] ;
-    //    step     = tx.reg_wdata[23:16];
-    //    div_q    = data/step;
-    //    div_r    = data%step;
-    //    // Logic to predict number of cycles required to complete the count.
-    //    if(div_r == 0)
-    //      cycle_to_get_result = ( (div_q) * (prescale + 1) ) + 2;
-    //    else
-    //      cycle_to_get_result = ( (div_q + 1) * (prescale + 1) ) + 2;
-    //    // Printing the number of cycles required to complete the count and its related fields
-    //    print_num_of_cycles_req(prescale, data, step, div_q, div_r, cycle_to_get_result);
-    //  end
-    //  // When intr_timer_expired_0_0_o is enabled from the DUT, that indicates timer has compeletd the count.
-    //  // Following logic will check if the timer enabled the intr_timer_expired_0_0_o after correct number of cycle
-    //  else if (tx.intr_timer_expired_0_0_o == 1) begin
-    //    `uvm_info("UART_MONITOR::",$sformatf("TIMER EXPIRED SIGNAL IS SET = %0d", tx.intr_timer_expired_0_0_o), UVM_LOW)
-    //    if((cycle_to_get_result == (cycle_num-12-1)) && set==0) begin // Note initial 12 cycles are for reseting and configuring the timer (3 cycle to reset amd 8 to configure the timer)
-    //      print_test_passed(cycle_to_get_result, cycle_num);
-    //      set=1;
-    //    end  // if((cycle_to_get_result == (cycle_num-12-1)) && set==0)
-    //    else if (set==0) begin
-    //      print_test_failed(cycle_to_get_result, cycle_num);
-    //      set=1;
-    //    end // if (set==0)
-    //  end // if (tx.intr_timer_expired_0_0_o == 1)
+    end // forever
+  endtask
+
+  virtual task get_tranxaction();
+    // Transaction Handle declaration
+    transaction_item tx;
+    forever begin
+      @(posedge vif.clk_i)
+        tx = transaction_item::type_id::create("tx");
+        tx.rst_ni  = vif.rst_ni ;        
+        tx.addr_i  = vif.addr_i ;            
+        tx.wdata_i = vif.wdata_i;              
+        tx.be_i    = vif.be_i   ;           
+        tx.we_i    = vif.we_i   ;       
+        tx.re_i    = vif.re_i   ;        
+        tx.sd_i    = vif.sd_i   ;                       // master in slave out
+
+        if (tx.addr_i  == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
+          if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0)
+            tx_data_driv_q.push_front(tx.wdata_i);
+        end
+
+        if(vif.intr_tx_o) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_driv_q = %p", tx_data_driv_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
+        end
+
+    end // forever
+  endtask
+
+  virtual task count_clk();
+    // Transaction Handle declaration
+    transaction_item tx;
+    forever begin
+      @(posedge vif.sclk_o)
+        count_clock_cycles = count_clock_cycles + 1;
     end // forever
   endtask
 
