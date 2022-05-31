@@ -97,17 +97,20 @@ class spi_monitor extends uvm_monitor;
         clct_mosi[count] = vif.sd_o;
         count = count + 1;
 
+        // Assigning counter the value char length that is present in 7 LSB of control register  
         if (tx.addr_i == 'h10) begin
-          counter = tx.wdata_i[6:0];
+          counter = tx.wdata_i[6:0];                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
-        // slave 1
+
+        // Data collection depending on the char length
         if(count == counter) begin
           data = clct_mosi; 
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
         end
 
+        // slave 1
         if(!vif.ss_o[0] && count == counter) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
@@ -117,6 +120,7 @@ class spi_monitor extends uvm_monitor;
             wr_enble = 1'b1;
             rd_enble = 1'b0;
             count = 0;
+            wait(vif.intr_tx_o == 1'b1);
           end
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
           else if (data[1:0] == 2'b10 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively.
@@ -133,6 +137,7 @@ class spi_monitor extends uvm_monitor;
                `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
                tx_data_slv_q.push_front(data);
                count = 0;
+               wait(vif.intr_tx_o == 1'b1);
             end
             // Read operation is need to be performed
             else if (wr_enble == 1'b1) begin
@@ -157,6 +162,8 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  bit  [31:0] length  ;
+
   virtual task get_tranxaction();
     // Transaction Handle declaration
     transaction_item tx;
@@ -171,9 +178,17 @@ class spi_monitor extends uvm_monitor;
         tx.re_i    = vif.re_i   ;        
         tx.sd_i    = vif.sd_i   ;                       // master in slave out
 
-        if (tx.addr_i  == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
-          if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0)
+
+        if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
+          length = tx.wdata_i[6:0];
+          //`uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
+        end
+
+        if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
+          if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0) begin
+            `uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
             tx_data_driv_q.push_front(tx.wdata_i);
+          end
         end
 
         if(vif.intr_tx_o) begin
