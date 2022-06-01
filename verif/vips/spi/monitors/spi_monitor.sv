@@ -99,7 +99,7 @@ class spi_monitor extends uvm_monitor;
 
         // Assigning counter the value char length that is present in 7 LSB of control register  
         if (tx.addr_i == 'h10) begin
-          counter = tx.wdata_i[6:0];                                                       // TODO always select the randomize data
+          counter = 10/*tx.wdata_i[6:0]*/;                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
 
@@ -135,6 +135,7 @@ class spi_monitor extends uvm_monitor;
             // Write operation is to be performed
             if (wr_enble == 1'b1) begin
                `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
+               `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
                tx_data_slv_q.push_front(data);
                count = 0;
                wait(vif.intr_tx_o == 1'b1);
@@ -162,7 +163,11 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
-  bit  [31:0] length  ;
+  bit  [31:0] length     ;
+  bit  [31:0] data_queued;
+  bit  [31:0] ctrl_reg   ;
+  bit  [31:0] drive_data ;
+  bit         got_intrpt ;
 
   virtual task get_tranxaction();
     // Transaction Handle declaration
@@ -178,20 +183,52 @@ class spi_monitor extends uvm_monitor;
         tx.re_i    = vif.re_i   ;        
         tx.sd_i    = vif.sd_i   ;                       // master in slave out
 
-
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
-          length = tx.wdata_i[6:0];
-          //`uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
+          length = 10/*tx.wdata_i[6:0]*/;
+          ctrl_reg = vif.wdata_i;
+          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing length %d", length), UVM_LOW)
+          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register ctrl_Reg %b", ctrl_reg), UVM_LOW)
+          // if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1)
         end
 
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
-          if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0) begin
-            `uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
-            tx_data_driv_q.push_front(tx.wdata_i);
+          drive_data = tx.wdata_i;
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
+        end
+
+        if (tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1'h1 && tx.re_i == 1'h0) begin
+          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register %b", ctrl_reg), UVM_LOW)
+          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && drive_data[1:0] == 2'b11 && drive_data[2] == 1'b0) begin            
+            for(int index=0; index < length; index=index+1) begin
+              data_queued[index] = drive_data[index];
+            end
+            `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+            tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
+            wait(vif.intr_tx_o);
+            `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
           end
         end
 
-        if(vif.intr_tx_o) begin
+        //if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin            
+        //    for(int index=0; index < length; index=index+1) begin
+        //      data_queued[index] = tx.wdata_i[index];
+        //    end
+        //end
+
+        //if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
+        //  // Pushing the tx data in the queue if it is from 
+        //  if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0) begin
+        //    
+        //    `uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
+        //    // Collecting data depending on the charactar length then storing it in the queue
+        //    for(int index=0; index < length; index=index+1) begin
+        //    data_queued[index] = tx.wdata_i[index];
+        //    end
+        //    tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
+        //  end
+        //end
+
+        if(vif.intr_tx_o || vif.intr_rx_o) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_driv_q = %p", tx_data_driv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
