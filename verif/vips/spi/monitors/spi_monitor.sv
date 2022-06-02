@@ -79,6 +79,7 @@ class spi_monitor extends uvm_monitor;
   bit  [31:0] tx_data_slv_q[$]   ;
   bit  [31:0] tx_data_driv_q[$]  ;
   int         counter            ;
+  bit  [31:0] contrl_reg         ;
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -99,6 +100,7 @@ class spi_monitor extends uvm_monitor;
 
         // Assigning counter the value char length that is present in 7 LSB of control register  
         if (tx.addr_i == 'h10) begin
+          contrl_reg = tx.wdata_i;
           counter = 10/*tx.wdata_i[6:0]*/;                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
@@ -133,7 +135,7 @@ class spi_monitor extends uvm_monitor;
           // Following else will be executed if data is not a command
           else begin
             // Write operation is to be performed
-            if (wr_enble == 1'b1) begin
+            if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
                `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
                `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
                tx_data_slv_q.push_front(data);
@@ -167,7 +169,7 @@ class spi_monitor extends uvm_monitor;
   bit  [31:0] data_queued;
   bit  [31:0] ctrl_reg   ;
   bit  [31:0] drive_data ;
-  bit         got_intrpt ;
+  int         num_of_runs;
 
   virtual task get_tranxaction();
     // Transaction Handle declaration
@@ -199,34 +201,23 @@ class spi_monitor extends uvm_monitor;
         if (tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1'h1 && tx.re_i == 1'h0) begin
           //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register %b", ctrl_reg), UVM_LOW)
           if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && drive_data[1:0] == 2'b11 && drive_data[2] == 1'b0) begin            
+            num_of_runs = num_of_runs + 1'b1;
             for(int index=0; index < length; index=index+1) begin
               data_queued[index] = drive_data[index];
             end
-            `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-            tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
-            wait(vif.intr_tx_o);
-            `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+            
+            if (num_of_runs==1) begin
+              `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+              tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
+              wait(vif.intr_tx_o);
+              `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+              `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
+            end 
+            if (num_of_runs==2) begin
+              num_of_runs=0;
+            end
           end
         end
-
-        //if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin            
-        //    for(int index=0; index < length; index=index+1) begin
-        //      data_queued[index] = tx.wdata_i[index];
-        //    end
-        //end
-
-        //if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
-        //  // Pushing the tx data in the queue if it is from 
-        //  if(tx.wdata_i[1:0] == 2'b11 && tx.wdata_i[2] == 1'b0) begin
-        //    
-        //    `uvm_info("SPI_MONITIOR::", $sformatf("Print length %d", length), UVM_LOW)
-        //    // Collecting data depending on the charactar length then storing it in the queue
-        //    for(int index=0; index < length; index=index+1) begin
-        //    data_queued[index] = tx.wdata_i[index];
-        //    end
-        //    tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
-        //  end
-        //end
 
         if(vif.intr_tx_o || vif.intr_rx_o) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
