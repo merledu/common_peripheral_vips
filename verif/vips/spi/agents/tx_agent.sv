@@ -47,7 +47,7 @@ class tx_agent extends uvm_agent;
 
   // Declare the handle
   tx_driver       tx_driver_h      ;                    // Handle to driver
-  spi_monitor     spi_monitor_h   ;                    // Handle to monitor
+  spi_monitor     spi_monitor_h    ;                    // Handle to monitor
   tx_agent_config tx_agent_config_h;                    // Declaration of agent configuraton object
   uvm_sequencer#(transaction_item) tx_sequencer_h;      // Handle to sequencer   (Never extended) tx_sequencer is parameterize and is specialize with transaction_item transaction
 
