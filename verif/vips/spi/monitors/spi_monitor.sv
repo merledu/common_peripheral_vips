@@ -165,11 +165,12 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
-  bit  [31:0] length     ;
-  bit  [31:0] data_queued;
-  bit  [31:0] ctrl_reg   ;
-  bit  [31:0] drive_data ;
-  int         num_of_runs;
+  bit  [31:0] length            ;
+  bit  [31:0] data_queued       ;
+  bit  [31:0] ctrl_reg          ;
+  bit  [31:0] drive_data        ;
+  int         num_of_runs       ;
+  bit         wr_en_driving_data;
 
   virtual task get_tranxaction();
     // Transaction Handle declaration
@@ -188,19 +189,25 @@ class spi_monitor extends uvm_monitor;
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
           length = 10/*tx.wdata_i[6:0]*/;
           ctrl_reg = vif.wdata_i;
-          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing length %d", length), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing length %d", length), UVM_LOW)
           //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register ctrl_Reg %b", ctrl_reg), UVM_LOW)
-          // if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1)
         end
 
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
           drive_data = tx.wdata_i;
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
+          // Check if driving signal is tx cmd or tx data
+          if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1) begin
+            wr_en_driving_data = 1'b1;
+          end
+          else if (drive_data[1:0] == 2'b10 && drive_data[2] == 1'b1) begin
+            wr_en_driving_data = 1'b0;
+          end
         end
 
         if (tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1'h1 && tx.re_i == 1'h0) begin
-          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register %b", ctrl_reg), UVM_LOW)
-          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && drive_data[1:0] == 2'b11 && drive_data[2] == 1'b0) begin            
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing control register %b", ctrl_reg), UVM_LOW)
+          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && wr_en_driving_data == 1/*&& drive_data[1:0] == 2'b11 && drive_data[2] == 1'b0*/) begin            
             num_of_runs = num_of_runs + 1'b1;
             for(int index=0; index < length; index=index+1) begin
               data_queued[index] = drive_data[index];
