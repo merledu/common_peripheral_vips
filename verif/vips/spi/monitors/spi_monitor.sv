@@ -80,6 +80,8 @@ class spi_monitor extends uvm_monitor;
   bit  [31:0] tx_data_driv_q[$]  ;
   int         counter            ;
   bit  [31:0] contrl_reg         ;
+  bit  [31:0] collected_data_output_q[$]   ;
+  bit  [31:0] drived_data_q[$];
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -108,6 +110,7 @@ class spi_monitor extends uvm_monitor;
         // Data collection depending on the char length
         if(count == counter) begin
           data = clct_mosi; 
+          collected_data_output_q.push_front(clct_mosi);
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
         end
@@ -121,6 +124,7 @@ class spi_monitor extends uvm_monitor;
             `uvm_info("SPI_MONITIOR::", $sformatf("Next will be tx data"), UVM_LOW)
             wr_enble = 1'b1;
             rd_enble = 1'b0;
+            `uvm_info("SPI_MONITIOR::", $sformatf("Printing write enable = %0d", wr_enble), UVM_LOW)
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
           end
@@ -130,22 +134,35 @@ class spi_monitor extends uvm_monitor;
             wr_enble = 1'b0;
             rd_enble = 1'b1;
             count = 0;
+            wait(vif.intr_tx_o == 1'b1);
           end
+
+          // Write operation is to be performed
+          if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b111)) begin
+             `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
+             `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
+             tx_data_slv_q.push_front(data);
+             count = 0;
+             wait(vif.intr_tx_o == 1'b1);
+          end
+          // Read operation is need to be performed
+          else if (wr_enble == 1'b1) begin
+          end 
           
-          // Following else will be executed if data is not a command
-          else begin
-            // Write operation is to be performed
-            if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
-               `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
-               `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
-               tx_data_slv_q.push_front(data);
-               count = 0;
-               wait(vif.intr_tx_o == 1'b1);
-            end
-            // Read operation is need to be performed
-            else if (wr_enble == 1'b1) begin
-            end 
-          end
+          //// Following else will be executed if data is not a command
+          //else begin
+          //  // Write operation is to be performed
+          //  if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
+          //     `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
+          //     `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
+          //     tx_data_slv_q.push_front(data);
+          //     count = 0;
+          //     wait(vif.intr_tx_o == 1'b1);
+          //  end
+          //  // Read operation is need to be performed
+          //  else if (wr_enble == 1'b1) begin
+          //  end 
+          //end
         
         end
         
@@ -195,6 +212,7 @@ class spi_monitor extends uvm_monitor;
 
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
           drive_data = tx.wdata_i;
+          drived_data_q.push_front(drive_data[9:0]);
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
           // Check if driving signal is tx cmd or tx data
           if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1) begin
@@ -207,7 +225,7 @@ class spi_monitor extends uvm_monitor;
 
         if (tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1'h1 && tx.re_i == 1'h0) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing control register %b", ctrl_reg), UVM_LOW)
-          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && wr_en_driving_data == 1/*&& drive_data[1:0] == 2'b11 && drive_data[2] == 1'b0*/) begin            
+          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 && wr_en_driving_data == 1 && (drive_data[2:0] != 3'b111)) begin            
             num_of_runs = num_of_runs + 1'b1;
             for(int index=0; index < length; index=index+1) begin
               data_queued[index] = drive_data[index];
@@ -227,6 +245,8 @@ class spi_monitor extends uvm_monitor;
         end
 
         if(vif.intr_tx_o || vif.intr_rx_o) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print collected_data_output_q = %p", collected_data_output_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print drived_data_q = %p", drived_data_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_driv_q = %p", tx_data_driv_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
