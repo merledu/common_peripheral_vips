@@ -146,7 +146,12 @@ class spi_monitor extends uvm_monitor;
              wait(vif.intr_tx_o == 1'b1);
           end
           // Read operation is need to be performed
-          else if (wr_enble == 1'b1) begin
+          else if (rd_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
+             `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is rx"), UVM_LOW)
+             //`uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
+             //tx_data_slv_q.push_front(data);
+             count = 0;
+             wait(vif.intr_tx_o == 1'b1);
           end 
           
           //// Following else will be executed if data is not a command
