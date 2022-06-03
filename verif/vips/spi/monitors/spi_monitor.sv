@@ -107,12 +107,18 @@ class spi_monitor extends uvm_monitor;
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
 
+
         // Data collection depending on the char length
         if(count == counter) begin
-          data = clct_mosi; 
+          data = clct_mosi;
           collected_data_output_q.push_front(clct_mosi);
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
+          // Check if rx is enabled in conrol register and tx is disabled
+          if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==0) begin
+            wait(vif.intr_rx_o == 1'b1);
+            count = 0;
+          end
         end
 
         // slave 1
