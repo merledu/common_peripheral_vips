@@ -91,7 +91,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // config_spi_sequence is going to generate 4 transactions of type transaction_item
-    repeat(40) begin
+    repeat(60) begin
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
@@ -202,7 +202,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       end
 
       // for rx
-      else if (cycle > 'd20) begin
+      else if (cycle > 'd20 && cycle < 'd41) begin
         if (cycle%2 == 0) begin
           tx.addr_i  = 'h0;
           //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
@@ -215,6 +215,34 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         // Enabling Transmition
         else begin
           tx_en      = 1'b0;
+          rx_en      = 1'b1;
+          go_bsy     = 1'b1;
+          ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
+          `uvm_info ("CONFIG_SPI_SEQUENCES::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
+          // transaction
+          tx.addr_i  = 'h10;           
+          tx.wdata_i = ctrl_reg;              
+          tx.be_i    = 'b1111;           
+          tx.we_i    = 1'h1;       
+          tx.re_i    = 1'h0;     
+          print_transaction(tx, "Enabing transmission from master");
+        end
+      end
+
+      // Enabling rx and tx simultaniously
+      else if (cycle > 'd40) begin
+        if (cycle%2 == 0) begin
+          tx.addr_i  = 'h0;
+          //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
+          tx.be_i    = 'b1111;           
+          tx.we_i    = 'h1;       
+          tx.re_i    = 'h0;        
+          //tx.sd_i    = ;
+          print_transaction(tx, "Configuring TX Register");
+        end
+        // Enabling Transmition
+        else begin
+          tx_en      = 1'b1;
           rx_en      = 1'b1;
           go_bsy     = 1'b1;
           ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
