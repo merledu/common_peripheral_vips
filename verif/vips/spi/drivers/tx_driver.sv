@@ -109,12 +109,12 @@ class tx_driver extends uvm_driver #(transaction_item);
     // if (vif.addr_i == 'h10 && vif.addr_i == 'h10) begin
     // `uvm_info("SPI_DRIVER::",$sformatf("Enterred in the waiting interrupt waiting logic = %0d", ctrl_reg), UVM_LOW)
     // // Waiting until intr_tx_o is asserted
-    if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+    if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 /*&& vif.addr_i == 'h10*/) begin
       `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the tx interupt"), UVM_LOW)
       wait (vif.intr_tx_o == 1'b1);
     end
     // Waiting until intr_rx_o is asserted
-    else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1) begin
+    else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1 /*&& vif.addr_i == 'h10*/) begin
       `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the rx interupt"), UVM_LOW)
       wait (vif.intr_rx_o == 1'b1);
     end 

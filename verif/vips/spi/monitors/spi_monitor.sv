@@ -67,21 +67,27 @@ class spi_monitor extends uvm_monitor;
   
   // Declaration
   string msg ="";
-  bit [ 76:0] cycle_num = 0      ;
-  int         set                ;
-  int         clct_mosi          ;
-  int         count              ;
-  int         data               ;
-  bit         next_data          ;
-  bit         wr_enble           ;
-  bit         rd_enble           ;
-  int         count_clock_cycles ;
-  bit  [31:0] tx_data_slv_q[$]   ;
-  bit  [31:0] tx_data_driv_q[$]  ;
-  int         counter            ;
-  bit  [31:0] contrl_reg         ;
-  bit  [31:0] collected_data_output_q[$]   ;
-  bit  [31:0] drived_data_q[$];
+  bit [ 76:0] cycle_num = 0                           ;
+  int         set                                     ;
+  int         clct_mosi                               ;
+  int         count                                   ;
+  int         data                                    ;
+  bit         next_data                               ;
+  bit         wr_enble                                ;
+  bit         rd_enble                                ;
+  int         count_clock_cycles                      ;
+  bit  [31:0] reg1_slav1_collection_q[$]              ;
+  bit  [31:0] chker_reg1_slav1_collection_q[$]        ;
+  int         counter                                 ;
+  bit  [31:0] contrl_reg                              ;
+  bit  [31:0] mosi_data_collection_q[$]               ;
+  bit  [31:0] tb_driven_tx_config_data_collection_q[$];
+
+
+   //collected_data_output_q mosi_data_collection_q
+   //tx_data_slv_q           reg1_slav1_collection_q
+   //drived_data_q           tb_driven_tx_config_data_collection_q
+   //tx_data_driv_q          chker_reg1_slav1_collection_q
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -111,7 +117,7 @@ class spi_monitor extends uvm_monitor;
         // Data collection depending on the char length
         if(count == counter) begin
           data = clct_mosi;
-          collected_data_output_q.push_front(clct_mosi);
+          mosi_data_collection_q.push_front(clct_mosi);
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
           // Check if rx is enabled in conrol register and tx is disabled
@@ -147,7 +153,7 @@ class spi_monitor extends uvm_monitor;
           if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b111)) begin
              `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
              `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
-             tx_data_slv_q.push_front(data);
+             reg1_slav1_collection_q.push_front(data);
              count = 0;
              wait(vif.intr_tx_o == 1'b1);
           end
@@ -155,7 +161,7 @@ class spi_monitor extends uvm_monitor;
           else if (rd_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
              `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is rx"), UVM_LOW)
              //`uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
-             //tx_data_slv_q.push_front(data);
+             //reg1_slav1_collection_q.push_front(data);
              count = 0;
              wait(vif.intr_tx_o == 1'b1);
           end 
@@ -166,7 +172,7 @@ class spi_monitor extends uvm_monitor;
           //  if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
           //     `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
           //     `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
-          //     tx_data_slv_q.push_front(data);
+          //     reg1_slav1_collection_q.push_front(data);
           //     count = 0;
           //     wait(vif.intr_tx_o == 1'b1);
           //  end
@@ -223,7 +229,7 @@ class spi_monitor extends uvm_monitor;
 
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
           drive_data = tx.wdata_i;
-          drived_data_q.push_front(drive_data[9:0]);
+          tb_driven_tx_config_data_collection_q.push_front(drive_data[9:0]);
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
           // Check if driving signal is tx cmd or tx data
           if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1) begin
@@ -244,7 +250,7 @@ class spi_monitor extends uvm_monitor;
             
             if (num_of_runs==1) begin
               `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-              tx_data_driv_q.push_front(data_queued/*tx.wdata_i*/);
+              chker_reg1_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
               wait(vif.intr_tx_o);
               `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
               `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
@@ -256,10 +262,10 @@ class spi_monitor extends uvm_monitor;
         end
 
         if(vif.intr_tx_o || vif.intr_rx_o) begin
-          `uvm_info("SPI_MONITIOR::", $sformatf("Print collected_data_output_q = %p", collected_data_output_q), UVM_LOW)
-          `uvm_info("SPI_MONITIOR::", $sformatf("Print drived_data_q = %p", drived_data_q), UVM_LOW)
-          `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_slv_q = %p", tx_data_slv_q), UVM_LOW)
-          `uvm_info("SPI_MONITIOR::", $sformatf("Print tx_data_driv_q = %p", tx_data_driv_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print mosi_data_collection_q = %p", mosi_data_collection_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print tb_driven_tx_config_data_collection_q = %p", tb_driven_tx_config_data_collection_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print reg1_slav1_collection_q = %p", reg1_slav1_collection_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg1_slav1_collection_q = %p", chker_reg1_slav1_collection_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
           count_clock_cycles = 0;
         end
