@@ -175,7 +175,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       end
       
       // Configuring TX register (Randomized)
-      else if (cycle > 'd5 && cycle < 'd21) begin
+      else if (cycle > 'd5 && cycle < 'd20/*even number*/) begin
         if (cycle%2 == 0) begin
           tx.addr_i  = 'h0;
           //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
@@ -202,7 +202,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       end
 
       // for rx
-      else if (cycle > 'd20 && cycle < 'd41) begin
+      else if (cycle > 'd19 && cycle < 'd40/*even number*/) begin
         if (cycle%2 == 0) begin
           tx.addr_i  = 'h0;
           //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
@@ -230,7 +230,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       end
 
       // Enabling rx and tx simultaniously
-      else if (cycle > 'd40) begin
+      else if (cycle > 'd39) begin
         if (cycle%2 == 0) begin
           tx.addr_i  = 'h0;
           //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
