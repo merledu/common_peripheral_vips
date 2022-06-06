@@ -124,11 +124,17 @@ class spi_monitor extends uvm_monitor;
           if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==0) begin
             wait(vif.intr_rx_o == 1'b1);
             count = 0;
+            wr_enble = 1'b0;
           end
         end
 
         // slave 1
         if(!vif.ss_o[0] && count == counter) begin
+          
+          if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==1) begin
+            wait(vif.intr_tx_o == 1'b1);
+            count = 0;
+          end
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
