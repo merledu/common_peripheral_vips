@@ -77,6 +77,7 @@ class spi_monitor extends uvm_monitor;
   bit         reg2_slav1_enable                       ;
   int         count_clock_cycles                      ;
   bit  [31:0] reg1_slav1_collection_q[$]              ;
+  bit  [31:0] reg2_slav1_collection_q[$]              ;
   bit  [31:0] chker_reg1_slav1_collection_q[$]        ;
   int         counter                                 ;
   bit  [31:0] contrl_reg                              ;
@@ -125,6 +126,7 @@ class spi_monitor extends uvm_monitor;
             wait(vif.intr_rx_o == 1'b1);
             count = 0;
             reg1_slav1_enable = 1'b0;
+            reg2_slav1_enable = 1'b0;
           end
         end
 
@@ -165,11 +167,11 @@ class spi_monitor extends uvm_monitor;
           end
           // Write operation is to be performed in reg2
           else if (reg2_slav1_enable == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
-             //`uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
-             //`uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
-             //reg1_slav1_collection_q.push_front(data);
-             count = 0;
-             wait(vif.intr_tx_o == 1'b1);
+            `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
+            `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
+            reg2_slav1_collection_q.push_front(data);
+            count = 0;
+            wait(vif.intr_tx_o == 1'b1);
           end
           
           //// Following else will be executed if data is not a command
@@ -315,6 +317,7 @@ class spi_monitor extends uvm_monitor;
           `uvm_info("SPI_MONITIOR::", $sformatf("Print mosi_data_collection_q = %p", mosi_data_collection_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print tb_driven_tx_config_data_collection_q = %p", tb_driven_tx_config_data_collection_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print reg1_slav1_collection_q = %p", reg1_slav1_collection_q), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Print reg2_slav1_collection_q = %p", reg2_slav1_collection_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg1_slav1_collection_q = %p", chker_reg1_slav1_collection_q), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
           count_clock_cycles = 0;
