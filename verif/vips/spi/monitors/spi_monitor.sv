@@ -73,8 +73,8 @@ class spi_monitor extends uvm_monitor;
   int         count                                   ;
   int         data                                    ;
   bit         next_data                               ;
-  bit         wr_enble                                ;
-  bit         rd_enble                                ;
+  bit         reg1_slav1_enable                       ;
+  bit         reg2_slav1_enable                       ;
   int         count_clock_cycles                      ;
   bit  [31:0] reg1_slav1_collection_q[$]              ;
   bit  [31:0] chker_reg1_slav1_collection_q[$]        ;
@@ -124,7 +124,7 @@ class spi_monitor extends uvm_monitor;
           if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==0) begin
             wait(vif.intr_rx_o == 1'b1);
             count = 0;
-            wr_enble = 1'b0;
+            reg1_slav1_enable = 1'b0;
           end
         end
 
@@ -140,42 +140,42 @@ class spi_monitor extends uvm_monitor;
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
           if(data[1:0] == 2'b11 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively. 
             `uvm_info("SPI_MONITIOR::", $sformatf("Next will be tx data"), UVM_LOW)
-            wr_enble = 1'b1;
-            rd_enble = 1'b0;
-            `uvm_info("SPI_MONITIOR::", $sformatf("Printing write enable = %0d", wr_enble), UVM_LOW)
+            reg1_slav1_enable = 1'b1;
+            reg2_slav1_enable = 1'b0;
+            `uvm_info("SPI_MONITIOR::", $sformatf("Printing write enable = %0d", reg1_slav1_enable), UVM_LOW)
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
           end
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
           else if (data[1:0] == 2'b10 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively.
             `uvm_info("SPI_MONITIOR::", $sformatf("Next will be rx data"), UVM_LOW)
-            wr_enble = 1'b0;
-            rd_enble = 1'b1;
+            reg1_slav1_enable = 1'b0;
+            reg2_slav1_enable = 1'b1;
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
           end
 
-          // Write operation is to be performed
-          if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b111)) begin
+          // Write operation is to be performed in reg1
+          if (reg1_slav1_enable == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b111)) begin
              `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
              `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
              reg1_slav1_collection_q.push_front(data);
              count = 0;
              wait(vif.intr_tx_o == 1'b1);
           end
-          // Read operation is need to be performed
-          else if (rd_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
-             `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is rx"), UVM_LOW)
+          // Write operation is to be performed in reg2
+          else if (reg2_slav1_enable == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
+             //`uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
              //`uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
              //reg1_slav1_collection_q.push_front(data);
              count = 0;
              wait(vif.intr_tx_o == 1'b1);
-          end 
+          end
           
           //// Following else will be executed if data is not a command
           //else begin
           //  // Write operation is to be performed
-          //  if (wr_enble == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
+          //  if (reg1_slav1_enable == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1) begin
           //     `uvm_info("SPI_MONITIOR::", $sformatf("Coming data is tx"), UVM_LOW)
           //     `uvm_info("SPI_MONITIOR::", $sformatf("Printing output tx data to be pushed in queue = %0b",data), UVM_LOW)
           //     reg1_slav1_collection_q.push_front(data);
@@ -183,7 +183,7 @@ class spi_monitor extends uvm_monitor;
           //     wait(vif.intr_tx_o == 1'b1);
           //  end
           //  // Read operation is need to be performed
-          //  else if (wr_enble == 1'b1) begin
+          //  else if (reg1_slav1_enable == 1'b1) begin
           //  end 
           //end
         
