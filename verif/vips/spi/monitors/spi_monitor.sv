@@ -293,6 +293,33 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  virtual function void check_phase(uvm_phase phase);
+    int mismatch = 0;
+
+    if (mosi_data_collection_q == tb_driven_tx_config_data_collection_q)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] Drived data & MOSI"), UVM_LOW)
+    else begin
+      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] Drived data and MOSI"))
+      mismatch = mismatch + 1;
+    end
+    if (reg1_slav1_collection_q == chker_reg1_slav1_collection_q)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] slave 1's first storage element & checker of slave 1"), UVM_LOW)
+    else begin
+      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] slave 1's first storage element & checker of slave 1"))
+      mismatch = mismatch + 1;
+    end
+    if (reg2_slav1_collection_q == chker_reg2_slav1_collection_q)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] slave 1's second storage element & checker of slave 1"), UVM_LOW)
+    else begin
+      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] slave 1's second storage element & checker of slave 1"))
+    mismatch = mismatch + 1;
+    end
+    if (mismatch != 0)
+      tf();
+    else
+      tp();
+  endfunction
+
   //function void print_transaction(transaction_item tx);
   //  msg = "";
   //  cycle_num = ++cycle_num;
@@ -346,27 +373,27 @@ class spi_monitor extends uvm_monitor;
   //  tf();
   //endfunction : print_test_failed
   //
-  //function void tp();
-  //  msg = "";
-  //  $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
-  //  $sformat(msg, "%s\n╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗ ", msg);
-  //  $sformat(msg, "%s\n   ██║   █████╗  ███████╗   ██║       ██████╔╝███████║███████╗███████╗█████╗  ██║  ██║ ", msg);
-  //  $sformat(msg, "%s\n   ██║   ██╔══╝  ╚════██║   ██║       ██╔═══╝ ██╔══██║╚════██║╚════██║██╔══╝  ██║  ██║ ", msg);
-  //  $sformat(msg, "%s\n   ██║   ███████╗███████║   ██║       ██║     ██║  ██║███████║███████║███████╗██████╔╝ ", msg);
-  //  $sformat(msg, "%s\n   ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═════╝  \n", msg);
-  //  `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)
-  //endfunction : tp
-  //
-  //function void tf();
-  //  msg = "";
-  //  $sformat(msg, "%s\n\n ████████╗███████╗███████╗████████╗    ███████╗ █████╗ ██╗██╗     ███████╗██████╗ ", msg);
-  //  $sformat(msg, "%s\n ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔════╝██╔══██╗██║██║     ██╔════╝██╔══██╗", msg);
-  //  $sformat(msg, "%s\n    ██║   █████╗  ███████╗   ██║       █████╗  ███████║██║██║     █████╗  ██║  ██║", msg);
-  //  $sformat(msg, "%s\n    ██║   ██╔══╝  ╚════██║   ██║       ██╔══╝  ██╔══██║██║██║     ██╔══╝  ██║  ██║", msg);
-  //  $sformat(msg, "%s\n    ██║   ███████╗███████║   ██║       ██║     ██║  ██║██║███████╗███████╗██████╔╝", msg);
-  //  $sformat(msg, "%s\n    ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝ \n", msg);
-  //   `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)                     
-  //endfunction : tf
+  function void tp();
+    msg = "";
+    $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
+    $sformat(msg, "%s\n╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗ ", msg);
+    $sformat(msg, "%s\n   ██║   █████╗  ███████╗   ██║       ██████╔╝███████║███████╗███████╗█████╗  ██║  ██║ ", msg);
+    $sformat(msg, "%s\n   ██║   ██╔══╝  ╚════██║   ██║       ██╔═══╝ ██╔══██║╚════██║╚════██║██╔══╝  ██║  ██║ ", msg);
+    $sformat(msg, "%s\n   ██║   ███████╗███████║   ██║       ██║     ██║  ██║███████║███████║███████╗██████╔╝ ", msg);
+    $sformat(msg, "%s\n   ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═════╝  \n", msg);
+    `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)
+  endfunction : tp
+  
+  function void tf();
+    msg = "";
+    $sformat(msg, "%s\n\n ████████╗███████╗███████╗████████╗    ███████╗ █████╗ ██╗██╗     ███████╗██████╗ ", msg);
+    $sformat(msg, "%s\n ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝    ██╔════╝██╔══██╗██║██║     ██╔════╝██╔══██╗", msg);
+    $sformat(msg, "%s\n    ██║   █████╗  ███████╗   ██║       █████╗  ███████║██║██║     █████╗  ██║  ██║", msg);
+    $sformat(msg, "%s\n    ██║   ██╔══╝  ╚════██║   ██║       ██╔══╝  ██╔══██║██║██║     ██╔══╝  ██║  ██║", msg);
+    $sformat(msg, "%s\n    ██║   ███████╗███████║   ██║       ██║     ██║  ██║██║███████╗███████╗██████╔╝", msg);
+    $sformat(msg, "%s\n    ╚═╝   ╚══════╝╚══════╝   ╚═╝       ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝ \n", msg);
+     `uvm_info("TEST STATUS::",$sformatf("\n", msg), UVM_LOW)                     
+  endfunction : tf
 
 endclass
 
