@@ -58,6 +58,7 @@ class spi_monitor extends uvm_monitor;
   virtual task run_phase(uvm_phase phase);
     // Function to get transaction from virtual interface
     fork
+      capture_control_register();
       get_transaction();
       get_tranxaction();
       count_clk();
@@ -84,6 +85,32 @@ class spi_monitor extends uvm_monitor;
   bit  [31:0] contrl_reg                              ;
   bit  [31:0] mosi_data_collection_q[$]               ;
   bit  [31:0] tb_driven_tx_config_data_collection_q[$];
+  bit         lock                                    ;
+  bit  [31:0] control_register                        ;
+
+
+  // Task for capturing control register @every posedge of clock
+  virtual task capture_control_register();
+    // Transaction Handle declaration
+    transaction_item tx_ctrl_reg;
+    forever begin
+      @(posedge vif.clk_i)
+        tx_ctrl_reg = transaction_item::type_id::create("tx_ctrl_reg");
+        tx_ctrl_reg.rst_ni  = vif.rst_ni ;        
+        tx_ctrl_reg.addr_i  = vif.addr_i ;            
+        tx_ctrl_reg.wdata_i = vif.wdata_i;              
+        tx_ctrl_reg.be_i    = vif.be_i   ;           
+        tx_ctrl_reg.we_i    = vif.we_i   ;       
+        tx_ctrl_reg.re_i    = vif.re_i   ;        
+        tx_ctrl_reg.sd_i    = vif.sd_i   ;                       // master in slave out
+        
+        // Assigning counter the value char length that is present in 7 LSB of control register  
+        if (tx_ctrl_reg.addr_i == 'h10) begin
+            control_register = tx_ctrl_reg.wdata_i;
+            `uvm_info("SPI_MONITIOR::", $sformatf("Control register = %0b",control_register), UVM_LOW)
+        end
+    end
+  endtask 
 
   virtual task get_transaction();
     // Transaction Handle declaration
@@ -103,16 +130,21 @@ class spi_monitor extends uvm_monitor;
         count = count + 1;
 
         // Assigning counter the value char length that is present in 7 LSB of control register  
-        if (tx.addr_i == 'h10) begin
-          contrl_reg = tx.wdata_i;
-          counter = 10/*tx.wdata_i[6:0]*/;                                                       // TODO always select the randomize data
+        //if (tx.addr_i == 'h10) begin
+        if (lock == 0) begin
+          lock = 1;
+          contrl_reg = control_register;
+          counter = 10/*contrl_reg[6:0]*/;                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
+        //end
 
         // Data collection depending on the char length
         if(count == counter) begin
           data = clct_mosi;
-          mosi_data_collection_q.push_front(clct_mosi);
+          if(contrl_reg[14]==1) begin
+            mosi_data_collection_q.push_front(clct_mosi);
+          end
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected mosi = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
           // Check if rx is enabled in conrol register and tx is disabled
@@ -129,6 +161,7 @@ class spi_monitor extends uvm_monitor;
           if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==1) begin
             wait(vif.intr_tx_o == 1'b1);
             count = 0;
+            lock = 0;
           end
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the collected data = %0b",data), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Enabled Device 1"), UVM_LOW)
@@ -140,6 +173,7 @@ class spi_monitor extends uvm_monitor;
             `uvm_info("SPI_MONITIOR::", $sformatf("Printing write enable = %0d", reg1_slav1_enable), UVM_LOW)
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
+            lock = 0;
           end
           // Check if data send by driver is a command or a data. And if it is command detect either read or write operation is performed
           else if (data[1:0] == 2'b10 && data[2] == 1'b1) begin // data[2] == 1 and data[1:0] == 2'b11, that means command data is command and write is to be performed respectively.
@@ -148,6 +182,7 @@ class spi_monitor extends uvm_monitor;
             reg2_slav1_enable = 1'b1;
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
+            lock = 0;
           end
 
           // Write operation is to be performed in reg1
@@ -157,6 +192,7 @@ class spi_monitor extends uvm_monitor;
              reg1_slav1_collection_q.push_front(data);
              count = 0;
              wait(vif.intr_tx_o == 1'b1);
+             lock = 0;
           end
           // Write operation is to be performed in reg2
           else if (reg2_slav1_enable == 1'b1 && contrl_reg[8]==1 && contrl_reg[14]==1 && (data[2:0] != 3'b110)) begin
@@ -165,6 +201,7 @@ class spi_monitor extends uvm_monitor;
             reg2_slav1_collection_q.push_front(data);
             count = 0;
             wait(vif.intr_tx_o == 1'b1);
+            lock = 0;
           end
         end
         

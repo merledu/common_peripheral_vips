@@ -91,7 +91,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // config_spi_sequence is going to generate 4 transactions of type transaction_item
-    repeat(60) begin
+    repeat(61) begin                                             // It should be an odd number greater then 60
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
