@@ -231,6 +231,8 @@ class spi_monitor extends uvm_monitor;
   bit         wr_en_driving_data           ;
   bit         lock_ctrl_reg                ;
   bit         first_config                 ;
+  bit         locked_2                     ;
+  bit         check_rx                     ;
 
   virtual task get_tranxaction();
     // Transaction Handle declaration
@@ -260,67 +262,76 @@ class spi_monitor extends uvm_monitor;
 
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
           length = 10/*tx.wdata_i[6:0]*/;
+          
+          if (vif.wdata_i[15] == 1) begin
+            //wait(vif.intr_tx_o);
+            lock_ctrl_reg = 1'b0;
+          end
+
           if (lock_ctrl_reg == 0)
             ctrl_reg = vif.wdata_i;
           //`uvm_info("SPI_MONITIOR::", $sformatf("Printing length %d", length), UVM_LOW)
-          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing control register ctrl_Reg %b", ctrl_reg), UVM_LOW)
+          `uvm_info("SPI_MONITIOR::", $sformatf("Printing control register ctrl_Reg %b", ctrl_reg), UVM_LOW)
           
-          if (ctrl_reg[14] == 1'h1) begin
+          //locked_2 = 0;
+          // Check if driving signal is tx cmd or tx data
+          if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+            chkr_reg1_slav1_drive_data_en = 1'b1;
+            chkr_reg2_slav1_drive_data_en = 1'b0;
             lock_ctrl_reg = 1;
-            // Check if driving signal is tx cmd or tx data
-            if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-              chkr_reg1_slav1_drive_data_en = 1'b1;
-              chkr_reg2_slav1_drive_data_en = 1'b0;
+          end
+          else if (drive_data[1:0] == 2'b10 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+            chkr_reg1_slav1_drive_data_en = 1'b0;
+            chkr_reg2_slav1_drive_data_en = 1'b1;
+            lock_ctrl_reg = 1;
+          end
+          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h0) begin
+            chkr_reg1_slav1_drive_data_en = 1'b0;
+            chkr_reg2_slav1_drive_data_en = 1'b0;
+            lock_ctrl_reg = 0;
+          end          
+          
+          // Logic to push data in chker_reg1_slav1_collection_q
+          if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111) begin
+            num_of_runs = num_of_runs + 1'b1;
+            for(int index=0; index < length; index=index+1) begin
+              data_queued[index] = drive_data[index];
             end
-            else if (drive_data[1:0] == 2'b10 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-              chkr_reg1_slav1_drive_data_en = 1'b0;
-              chkr_reg2_slav1_drive_data_en = 1'b1;
-            end
-            if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h0) begin
-              chkr_reg1_slav1_drive_data_en = 1'b0;
-              chkr_reg2_slav1_drive_data_en = 1'b0;
-            end          
-            
-            // Logic to push data in chker_reg1_slav1_collection_q
-            if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111) begin
-              num_of_runs = num_of_runs + 1'b1;
-              for(int index=0; index < length; index=index+1) begin
-                data_queued[index] = drive_data[index];
-              end
-              if (num_of_runs==1) begin
-                `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-                chker_reg1_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
-                wait(vif.intr_tx_o);
-                lock_ctrl_reg = 0;
-                `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
-                `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
-              end 
-              if (num_of_runs==2) begin
-                num_of_runs=0;
-              end
-            end
-
-            // Logic to push data in chker_reg2_slav1_collection_q
-            if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110) begin
-              num_of_runs = num_of_runs + 1'b1;
-              for(int index=0; index < length; index=index+1) begin
-                data_queued[index] = drive_data[index];
-              end
-              if (num_of_runs==1) begin
-                `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-                chker_reg2_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
-                wait(vif.intr_tx_o);
-                lock_ctrl_reg = 0;
-                `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
-                `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
-              end 
-              if (num_of_runs==2) begin
-                num_of_runs=0;
-              end
+            if (num_of_runs==1) begin
+              `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+              chker_reg1_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
+              wait(vif.intr_tx_o);
+              lock_ctrl_reg = 0;
+              `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+              `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
+            end 
+            if (num_of_runs==2 || ctrl_reg[14]==0) begin
+              num_of_runs=0;
             end
           end
-          if (ctrl_reg[14] == 0)
-            tb_driven_tx_config_data_collection_q.delete(0); 
+          
+          // Logic to push data in chker_reg2_slav1_collection_q
+          if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110) begin
+            num_of_runs = num_of_runs + 1'b1;
+            for(int index=0; index < length; index=index+1) begin
+              data_queued[index] = drive_data[index];
+            end
+            if (num_of_runs==1) begin
+              `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+              chker_reg2_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
+              wait(vif.intr_tx_o);
+              lock_ctrl_reg = 0;
+              `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+              `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
+            end 
+            if (num_of_runs==2 || ctrl_reg[14]==0) begin
+              num_of_runs=0;
+            end
+          end
+          if (ctrl_reg[15] == 1 && locked_2 == 0) begin
+            tb_driven_tx_config_data_collection_q.delete(0);
+            locked_2 = 1;
+          end 
         end
 
         //if(vif.intr_tx_o || vif.intr_rx_o) begin
