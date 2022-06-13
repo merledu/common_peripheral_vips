@@ -153,6 +153,7 @@ class spi_monitor extends uvm_monitor;
             count = 0;
             reg1_slav1_enable = 1'b0;
             reg2_slav1_enable = 1'b0;
+            lock = 0;
           end
         end
 
@@ -263,7 +264,7 @@ class spi_monitor extends uvm_monitor;
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
           length = 10/*tx.wdata_i[6:0]*/;
           
-          if (vif.wdata_i[15] == 1) begin
+          if (vif.wdata_i[15] == 1 && vif.wdata_i[14] == 0) begin
             //wait(vif.intr_tx_o);
             lock_ctrl_reg = 1'b0;
           end
@@ -292,7 +293,7 @@ class spi_monitor extends uvm_monitor;
           end          
           
           // Logic to push data in chker_reg1_slav1_collection_q
-          if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111) begin
+          if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111 && ctrl_reg[14] == 1'h1) begin
             num_of_runs = num_of_runs + 1'b1;
             for(int index=0; index < length; index=index+1) begin
               data_queued[index] = drive_data[index];
@@ -311,7 +312,7 @@ class spi_monitor extends uvm_monitor;
           end
           
           // Logic to push data in chker_reg2_slav1_collection_q
-          if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110) begin
+          if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110 && ctrl_reg[14] == 1'h1) begin
             num_of_runs = num_of_runs + 1'b1;
             for(int index=0; index < length; index=index+1) begin
               data_queued[index] = drive_data[index];
