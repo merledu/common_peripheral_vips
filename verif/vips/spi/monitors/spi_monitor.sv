@@ -61,6 +61,7 @@ class spi_monitor extends uvm_monitor;
       capture_control_register();
       get_mosi_tx();
       get_tx_to_be_config();
+      get_rx_signals();
       count_clk();
     join_none
     //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
@@ -420,6 +421,57 @@ class spi_monitor extends uvm_monitor;
       @(posedge vif.sclk_o)
         count_clock_cycles = count_clock_cycles + 1;
     end // forever
+  endtask
+
+
+  //// Task for capturing control register @every posedge of clock
+  //virtual task capture_control_register();
+  //  // Transaction Handle declaration
+  //  transaction_item tx_ctrl_reg;
+  //  forever begin
+  //    @(posedge vif.clk_i)
+  //      tx_ctrl_reg = transaction_item::type_id::create("tx_ctrl_reg");
+  //      tx_ctrl_reg.rst_ni  = vif.rst_ni ;        
+  //      tx_ctrl_reg.addr_i  = vif.addr_i ;            
+  //      tx_ctrl_reg.wdata_i = vif.wdata_i;              
+  //      tx_ctrl_reg.be_i    = vif.be_i   ;           
+  //      tx_ctrl_reg.we_i    = vif.we_i   ;       
+  //      tx_ctrl_reg.re_i    = vif.re_i   ;        
+  //      tx_ctrl_reg.sd_i    = vif.sd_i   ;                       // master in slave out
+  //      
+  //      // Assigning counter the value char length that is present in 7 LSB of control register  
+  //      if (tx_ctrl_reg.addr_i == 'h10) begin
+  //          control_register = tx_ctrl_reg.wdata_i;
+  //          `uvm_info("SPI_MONITIOR::", $sformatf("Control register = %0b",control_register), UVM_LOW)
+  //      end
+  //  end
+  //endtask
+
+  //bit  [31:0] collect_rx_sd_i[$];
+
+  // Task for capturing control register @every posedge of clock
+  virtual task get_rx_signals();
+    // Transaction Handle declaration
+    transaction_item rx;
+    forever begin
+      @(posedge vif.sclk_o)
+        rx = transaction_item::type_id::create("rx");
+        rx.rst_ni  = vif.rst_ni ;        
+        rx.addr_i  = vif.addr_i ;            
+        rx.wdata_i = vif.wdata_i;              
+        rx.be_i    = vif.be_i   ;           
+        rx.we_i    = vif.we_i   ;       
+        rx.re_i    = vif.re_i   ;        
+        rx.sd_i    = vif.sd_i   ;                       // master in slave out
+
+       // counter_rx = 10;
+        
+      // Assigning counter the value char length that is present in 7 LSB of control register  
+      if (control_register[8] == 1 && control_register[14] == 0 && control_register[15] == 1) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Capturing the rx signals = %0b", rx), UVM_LOW)
+          //control_register = rx.wdata_i;
+      end
+    end
   endtask
 
   virtual function void check_phase(uvm_phase phase);
