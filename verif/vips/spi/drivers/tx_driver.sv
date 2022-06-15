@@ -116,7 +116,7 @@ class tx_driver extends uvm_driver #(transaction_item);
     // Waiting until intr_rx_o is asserted
     else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1 /*&& vif.addr_i == 'h10*/) begin
       `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the rx interupt"), UVM_LOW)
-      wait (vif.intr_rx_o == 1'b1);
+      //wait (vif.intr_rx_o == 1'b1);
     end 
 
     //if (vif.addr_i == 'h10) begin
