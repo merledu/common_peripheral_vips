@@ -91,7 +91,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // config_spi_sequence is going to generate 4 transactions of type transaction_item
-    repeat(61) begin                                             // It should be an odd number greater then 60
+    repeat(59) begin                                             // It should be an odd number greater then 60
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
@@ -100,7 +100,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       //tx.addr=tx_agent_config_h.base_address;                  // For fetching base address from agent configuration "It can be a run time value"
       
       // De-asserting
-      tx.rst_ni = 1'b1;        
+      tx.rst_ni = 1'b1;
 
       //Configuring Control and status register
       // Assigning values
