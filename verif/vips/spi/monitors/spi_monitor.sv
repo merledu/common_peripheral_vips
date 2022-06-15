@@ -59,8 +59,8 @@ class spi_monitor extends uvm_monitor;
     // Function to get transaction from virtual interface
     fork
       capture_control_register();
-      get_transaction();
-      get_tranxaction();
+      get_mosi_tx();
+      get_tx_to_be_config();
       count_clk();
     join_none
     //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
@@ -112,7 +112,7 @@ class spi_monitor extends uvm_monitor;
     end
   endtask 
 
-  virtual task get_transaction();
+  virtual task get_mosi_tx();
     // Transaction Handle declaration
     transaction_item tx;
     forever begin
@@ -235,7 +235,7 @@ class spi_monitor extends uvm_monitor;
   bit         locked_2                     ;
   bit         check_rx                     ;
 
-  virtual task get_tranxaction();
+  virtual task get_tx_to_be_config();
     // Transaction Handle declaration
     transaction_item tx;
     forever begin
