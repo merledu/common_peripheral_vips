@@ -149,7 +149,7 @@ class spi_monitor extends uvm_monitor;
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing the slave select output signal = %0b", vif.ss_o), UVM_LOW)
           // Check if rx is enabled in conrol register and tx is disabled
           if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==0) begin
-            wait(vif.intr_rx_o == 1'b1);
+            //wait(vif.intr_rx_o == 1'b1);
             count = 0;
             reg1_slav1_enable = 1'b0;
             reg2_slav1_enable = 1'b0;
