@@ -135,7 +135,7 @@ class spi_monitor extends uvm_monitor;
         if (lock == 0) begin
           lock = 1;
           contrl_reg = control_register;
-          counter = 10/*contrl_reg[6:0]*/;                                                       // TODO always select the randomize data
+          counter = `CHAR_LENGTH_CTRL_REG/*10*//*contrl_reg[6:0]*/;                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
         //end
@@ -253,17 +253,17 @@ class spi_monitor extends uvm_monitor;
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
           drive_data = tx.wdata_i;
           if (first_config == 0 && ctrl_reg[14] == 0 && ctrl_reg[15] == 0) begin
-            tb_driven_tx_config_data_collection_q.push_front(drive_data[9:0]);
+            tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             first_config = 1;
           end
           if (ctrl_reg[14] == 1'h1) begin
-            tb_driven_tx_config_data_collection_q.push_front(drive_data[9:0]);
+            tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
           end
         end
 
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
-          length = 10/*tx.wdata_i[6:0]*/;
+          length = `CHAR_LENGTH_CTRL_REG/*10*//*tx.wdata_i[6:0]*/;
           
           if (vif.wdata_i[15] == 1 && vif.wdata_i[14] == 0) begin
             //wait(vif.intr_tx_o);
@@ -338,7 +338,7 @@ class spi_monitor extends uvm_monitor;
           end
 
           if (first_config == 0 && ctrl_reg[14] == 1 && ctrl_reg[15] == 1) begin
-            tb_driven_tx_config_data_collection_q.push_front(drive_data[9:0]);
+            tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             first_config = 1;
             ////////////////////////////////////////
             // Check if driving signal is tx cmd or tx data
@@ -467,7 +467,7 @@ class spi_monitor extends uvm_monitor;
         rx.re_i    = vif.re_i   ;        
         rx.sd_i    = vif.sd_i   ;                       // master in slave out
 
-       counter_rx_length = 10;
+       counter_rx_length = `CHAR_LENGTH_CTRL_REG;
        //Collecting data
        rx_data[count_rx_i] = vif.sd_i;
        count_rx_i = count_rx_i+1;
