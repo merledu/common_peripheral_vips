@@ -447,7 +447,10 @@ class spi_monitor extends uvm_monitor;
   //  end
   //endtask
 
-  //bit  [31:0] collect_rx_sd_i[$];
+  bit  [31:0] collect_rx_sd_i[$];
+  bit  [31:0] counter_rx_length ;
+  bit  [31:0] count_rx_i        ;
+  bit  [31:0] rx_data           ;
 
   // Task for capturing control register @every posedge of clock
   virtual task get_rx_signals();
@@ -464,14 +467,20 @@ class spi_monitor extends uvm_monitor;
         rx.re_i    = vif.re_i   ;        
         rx.sd_i    = vif.sd_i   ;                       // master in slave out
 
-       // counter_rx = 10;
-        
-      // Assigning counter the value char length that is present in 7 LSB of control register  
-      if (control_register[8] == 1 && control_register[14] == 0 && control_register[15] == 1) begin
-          `uvm_info("SPI_MONITIOR::", $sformatf("Capturing the rx signals = %0b", rx), UVM_LOW)
-          //control_register = rx.wdata_i;
-      end
-    end
+       counter_rx_length = 10;
+       //Collecting data
+       rx_data[count_rx_i] = vif.sd_i;
+       count_rx_i = count_rx_i+1;
+
+      if (count_rx_i == counter_rx_length) begin
+        // Assigning counter the value char length that is present in 7 LSB of control register  
+        if (control_register[8] == 1 && control_register[14] == 0 && control_register[15] == 1) begin
+          collect_rx_sd_i.push_front(rx_data);
+          wait(vif.intr_rx_o);
+          count_rx_i = 0;
+        end
+      end 
+    end // forever
   endtask
 
   virtual function void check_phase(uvm_phase phase);
