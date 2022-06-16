@@ -115,7 +115,8 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         rx_neg     = 1'b0;
         go_bsy     = 1'b0;
         reserved_1 = 1'b0;
-        char_len   = 30/*tx.char_len*/;                                  // TODO SELECT THE randomized char.length.
+        char_len   = `CHAR_LENGTH_CTRL_REG/*30*/ /*tx.char_len*/;                   // TODO SELECT THE randomized char.length.
+        `uvm_info ("CONFIG_SPI_SEQUENCES::", $sformatf("PRINTING char_len = %0b", ctrl_reg), UVM_LOW)
         // concatenating ctrl register fields
         ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
         `uvm_info ("CONFIG_SPI_SEQUENCES::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
