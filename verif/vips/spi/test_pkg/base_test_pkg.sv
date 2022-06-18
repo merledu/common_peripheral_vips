@@ -34,7 +34,7 @@ package base_test_pkg;
   ///////////////////////////////////////////////////////
   // Include UVM objects that are involved in the test //
   ///////////////////////////////////////////////////////
-  `define CHAR_LENGTH_CTRL_REG 30
+  `define CHAR_LENGTH_CTRL_REG 10
   
   // Sequence Items
   `include "./seq_items/tx_item.sv"
@@ -48,8 +48,11 @@ package base_test_pkg;
   
   // Sequences
   `include "./sequences/tx_sequence.sv"
-  `include "./sequences/config_spi_sequence.sv"
   `include "./sequences/reset_spi_sequence.sv"
+  `include "./sequences/config_spi_sequence.sv"
+  `include "./sequences/spi_mosi_sequence.sv"
+  `include "./sequences/spi_miso_sequence.sv"
+  `include "./sequences/spi_miso_mosi_simultaneous_sequence.sv"
   
   // Sequencers
   `include "./sequencers/tx_sequencer.sv"
