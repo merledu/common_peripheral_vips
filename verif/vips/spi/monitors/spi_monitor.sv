@@ -332,7 +332,7 @@ class spi_monitor extends uvm_monitor;
             end
           end
           
-          if (ctrl_reg[15] == 1 && locked_2 == 0) begin
+          if (ctrl_reg[15] == 1 && ctrl_reg[14] == 0 && locked_2 == 0) begin
             tb_driven_tx_config_data_collection_q.delete(0);
             locked_2 = 1;
           end
