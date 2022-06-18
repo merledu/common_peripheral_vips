@@ -44,15 +44,31 @@ class tx_v_seq extends uvm_sequence;
   // Sequence to reset the spi
   reset_spi_sequence reset_spi_sequence_h ;
   // Sequence to configure the timer by writing random values to registers present at different addresses
-  config_spi_sequence config_spi_sequence_h;                      
-
+  config_spi_sequence config_spi_sequence_h;
+  // Sequence for MOSI (tx) stimulus
+  spi_mosi_sequence spi_mosi_sequence_h;
+  // Sequence for MISO (rx) stimulus
+  spi_miso_sequence spi_miso_sequence_h;
+  // Sequence for MISO & MOSI stimulus simultenously                      
+  spi_miso_mosi_simultaneous_sequence spi_miso_mosi_simultaneous_sequence_h;
+  
   task body();
     // Sequence to reset 
-    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                 // Creating a sequences
+    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                                                                  // Creating a sequences
     reset_spi_sequence_h.start(get_sequencer(), this);
   	//// Sequence to configuring the timer
-  	config_spi_sequence_h = config_spi_sequence::type_id::create("config_spi_sequence_h");              // Creating a sequences
+  	config_spi_sequence_h = config_spi_sequence::type_id::create("config_spi_sequence_h");                                                              // Creating a sequences
   	config_spi_sequence_h.start(get_sequencer(), this);
+    // Sequence for MOSI (tx) stimulus
+    spi_mosi_sequence_h = spi_mosi_sequence::type_id::create("spi_mosi_sequence_h");                                                                    // Creating a sequences
+    spi_mosi_sequence_h.start(get_sequencer(), this);
+    // Sequence for MISO (rx) stimulus
+    spi_miso_sequence_h = spi_miso_sequence::type_id::create("spi_miso_sequence_h");                                                                    // Creating a sequences
+    spi_miso_sequence_h.start(get_sequencer(), this);
+    // Sequence for MISO & MOSI stimulus simultenously                      
+    spi_miso_mosi_simultaneous_sequence_h = spi_miso_mosi_simultaneous_sequence::type_id::create("spi_miso_mosi_simultaneous_sequence_h");              // Creating a sequences
+    spi_miso_mosi_simultaneous_sequence_h.start(get_sequencer(), this);
+    
   endtask
   
 endclass
