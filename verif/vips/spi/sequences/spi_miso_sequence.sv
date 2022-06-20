@@ -74,24 +74,27 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
     // rx_reg         0x20
 
     // transaction of type transaction_item
-    transaction_item tx        ;
-    int              cycle     ;
-    bit      [31:16] reserved_2;
-    bit              rx_en     ;
-    bit              tx_en     ;
-    bit              ass       ;
-    bit              ie        ;
-    bit              lsb       ;
-    bit              tx_neg    ;
-    bit              rx_neg    ;
-    bit              go_bsy    ;
-    bit              reserved_1;
-    bit      [  6:0] char_len  ;
-    bit      [ 31:0] ctrl_reg  ;
+    transaction_item tx             ;
+    int              cycle          ;
+    bit      [31:16] reserved_2     ;
+    bit              rx_en          ;
+    bit              tx_en          ;
+    bit              ass            ;
+    bit              ie             ;
+    bit              lsb            ;
+    bit              tx_neg         ;
+    bit              rx_neg         ;
+    bit              go_bsy         ;
+    bit              reserved_1     ;
+    bit      [  6:0] char_len       ;
+    bit      [ 31:0] ctrl_reg       ;
+    bit              send_rx        ;
+    bit      [ 31:0] count_length   ;
+    bit              rd_miso_reg    ;
     string msg="";
 
     // spi_miso_sequence is going to generate 4 transactions of type transaction_item
-    repeat(20) begin                                             // It should be an even number
+    repeat(100) begin                                             // It should be an even number
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
@@ -110,34 +113,79 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
       rx_neg     = 1'b0;
       reserved_1 = 1'b0;
 
-      // for rx
-      if (cycle >= 0) begin
-        if (cycle%2 == 0) begin
-          tx.addr_i  = 'h0;
-          //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
-          tx.be_i    = 'b1111;           
-          tx.we_i    = 'h1;       
-          tx.re_i    = 'h0;        
-          //tx.sd_i    = ;
-          print_transaction(tx, "Configuring TX Register");
-        end
-        // Enabling Transmition
-        else begin
-          tx_en      = 1'b0;
-          rx_en      = 1'b1;
-          go_bsy     = 1'b1;
-          ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
-          `uvm_info ("spi_miso_sequenceS::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
-          // transaction
-          tx.addr_i  = 'h10;           
-          tx.wdata_i = ctrl_reg;              
-          tx.be_i    = 'b1111;           
-          tx.we_i    = 1'h1;       
-          tx.re_i    = 1'h0;     
-          print_transaction(tx, "Enabing transmission from master");
+      //// for rx
+      //if (cycle >= 0) begin
+      //  if (cycle%2 == 0) begin
+      //    tx.addr_i  = 'h0;
+      //    //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
+      //    tx.be_i    = 'b1111;           
+      //    tx.we_i    = 'h1;       
+      //    tx.re_i    = 'h0;        
+      //    //tx.sd_i    = ;
+      //    print_transaction(tx, "Configuring TX Register");
+      //  end
+      //  // Enabling Transmition
+      //  else begin
+      //    tx_en      = 1'b0;
+      //    rx_en      = 1'b1;
+      //    go_bsy     = 1'b1;
+      //    ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
+      //    `uvm_info ("spi_miso_sequenceS::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
+      //    // transaction
+      //    tx.addr_i  = 'h10;           
+      //    tx.wdata_i = ctrl_reg;              
+      //    tx.be_i    = 'b1111;           
+      //    tx.we_i    = 1'h1;       
+      //    tx.re_i    = 1'h0;     
+      //    print_transaction(tx, "Enabing transmission from master");
+      //  end
+      //end
+      //cycle = cycle + 1;
+
+      // for enabling rx
+      if (send_rx == 0) begin
+        send_rx = 1;
+        tx_en      = 1'b0;
+        rx_en      = 1'b1;
+        go_bsy     = 1'b1;
+        ctrl_reg = {reserved_2,rx_en,tx_en,ass,ie,lsb,tx_neg,rx_neg,go_bsy,reserved_1,char_len};
+        `uvm_info ("spi_miso_sequenceS::", $sformatf("ctrl_reg = %0b", ctrl_reg), UVM_LOW)
+        // transaction
+        tx.addr_i  = 'h10;           
+        tx.wdata_i = ctrl_reg;              
+        tx.be_i    = 'b1111;           
+        tx.we_i    = 1'h1;       
+        tx.re_i    = 1'h0;     
+        print_transaction(tx, "Enabing MISO");
+      end
+      // for sending randomized miso
+      else if (send_rx == 1 && rd_miso_reg == 0) begin
+        tx.addr_i  = 'h0;
+        //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
+        tx.be_i    = 'b1111;           
+        tx.we_i    = 'h1;       
+        tx.re_i    = 'h0;        
+        //tx.sd_i    = ;                                                              // Randomized sd_i
+        print_transaction(tx, "Randomly applying MISO");
+        count_length = count_length + 1;
+        // If the serial data is reached its length
+        if (count_length == char_len) begin
+          count_length = 0;
+          rd_miso_reg = 1;
         end
       end
-      cycle = cycle + 1;
+      // for reading the MISO register MISO is completed w.r.t. the length
+      else if (rd_miso_reg == 1) begin
+        send_rx = 0;
+        rd_miso_reg = 0;
+        
+        tx.addr_i  = 'h20;           
+        //tx.wdata_i = ctrl_reg;              
+        tx.be_i    = 'b1111;           
+        tx.we_i    = 1'h0;       
+        tx.re_i    = 1'h1;     
+        print_transaction(tx, "Reading MISO");
+      end
 
       finish_item(tx);  // After randommize send it to the driver and waits for the response from driver to know when the driver is ready again to generate and send the new transaction and so on.
     end
