@@ -396,7 +396,6 @@ class spi_monitor extends uvm_monitor;
             end
           end
             ////////////////////////////////////////
-
           end 
         end
 
@@ -483,6 +482,42 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  bit  [31:0] rd_miso_reg_q[$];
+  bit  [31:0] count_rd_cycle  ;
+  
+  // Task for capturing control register @every posedge of clock
+  virtual task rd_miso_reg();
+    // Transaction Handle declaration
+    transaction_item rd_miso;
+    forever begin
+      @(posedge vif.clk_i)
+        rd_miso = transaction_item::type_id::create("rd_miso");
+        rd_miso.rst_ni  = vif.rst_ni ;        
+        rd_miso.addr_i  = vif.addr_i ;            
+        rd_miso.wdata_i = vif.wdata_i;              
+        rd_miso.be_i    = vif.be_i   ;           
+        rd_miso.we_i    = vif.we_i   ;       
+        rd_miso.re_i    = vif.re_i   ;        
+        rd_miso.sd_i    = vif.sd_i   ;                       // master in slave out
+
+        if (count_rd_cycle == 1)
+          count_rd_cycle = count_rd_cycle + 1; 
+        
+        if (count_rd_cycle == 2) begin
+          rd_miso_reg_q.push_front(rd_miso.wdata_i);
+          count_rd_cycle = 0;
+        end
+
+        if (rd_miso.addr_i  == 'h20 && rd_miso.be_i == 'b1111 && rd_miso.we_i == 1'h0 && rd_miso.re_i == 1'h1) begin
+          count_rd_cycle = count_rd_cycle + 1;          
+        end
+        
+        //if (rd_miso.addr_i  == 'h20 && rd_miso.be_i == 'b1111 && rd_miso.we_i == 1'h0 && rd_miso.re_i == 1'h1) begin
+        //  rd_miso_reg_q.push_front(rd_miso.wdata_i);
+        //end
+    end // forever
+  endtask
+
   virtual function void check_phase(uvm_phase phase);
     int mismatch = 0;
 
@@ -492,6 +527,7 @@ class spi_monitor extends uvm_monitor;
     `uvm_info("SPI_MONITIOR::", $sformatf("Print reg2_slav1_collection_q = %p", reg2_slav1_collection_q), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg1_slav1_collection_q = %p", chker_reg1_slav1_collection_q), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg2_slav1_collection_q = %p", chker_reg2_slav1_collection_q), UVM_LOW)
+    `uvm_info("SPI_MONITIOR::", $sformatf("Print rd_miso_reg_q = %p", rd_miso_reg_q), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
 
     if (mosi_data_collection_q == tb_driven_tx_config_data_collection_q)
