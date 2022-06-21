@@ -62,6 +62,7 @@ class spi_monitor extends uvm_monitor;
       get_mosi_tx();
       get_tx_to_be_config();
       get_rx_signals();
+      rd_miso_reg();
       count_clk();
     join_none
     //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
@@ -528,6 +529,7 @@ class spi_monitor extends uvm_monitor;
     `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg1_slav1_collection_q = %p", chker_reg1_slav1_collection_q), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg2_slav1_collection_q = %p", chker_reg2_slav1_collection_q), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print rd_miso_reg_q = %p", rd_miso_reg_q), UVM_LOW)
+    `uvm_info("SPI_MONITIOR::", $sformatf("Print collect_rx_sd_i = %p", collect_rx_sd_i), UVM_LOW)
     `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
 
     if (mosi_data_collection_q == tb_driven_tx_config_data_collection_q)
