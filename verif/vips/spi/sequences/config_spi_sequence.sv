@@ -143,7 +143,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
       // Configuring the Divider
       else if (cycle == 'd3) begin
         tx.addr_i  = 'h14;            
-        tx.wdata_i = 'h0;              
+        tx.wdata_i = `DIVIDER_REG/*'h0*/;              
         tx.be_i    = 'b1111;           
         tx.we_i    = 1'h1;       
         tx.re_i    = 1'h0;        

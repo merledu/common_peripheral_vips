@@ -35,6 +35,7 @@ package base_test_pkg;
   // Include UVM objects that are involved in the test //
   ///////////////////////////////////////////////////////
   `define CHAR_LENGTH_CTRL_REG 10
+  `define DIVIDER_REG 0
   
   // Sequence Items
   `include "./seq_items/tx_item.sv"
