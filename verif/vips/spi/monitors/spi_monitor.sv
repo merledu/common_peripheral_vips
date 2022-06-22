@@ -473,10 +473,18 @@ class spi_monitor extends uvm_monitor;
        count_rx_i = count_rx_i+1;
 
       if (count_rx_i == counter_rx_length) begin
+        `uvm_info("SPI_MONITIOR::", $sformatf("Entering condition when count_rx_i == counter_rx_length\n Printing control register = %0b", control_register), UVM_LOW)
         // Assigning counter the value char length that is present in 7 LSB of control register  
+        count_rx_i = 0;
+
         if (control_register[8] == 1 && control_register[14] == 0 && control_register[15] == 1) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
           collect_rx_sd_i.push_front(rx_data);
           wait(vif.intr_rx_o);
+        end
+
+        if (control_register[8] == 1 && control_register[14] == 1 && control_register[15] == 1) begin
+          `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
           count_rx_i = 0;
         end
       end 
@@ -505,7 +513,7 @@ class spi_monitor extends uvm_monitor;
           count_rd_cycle = count_rd_cycle + 1; 
         
         if (count_rd_cycle == 2) begin
-          rd_miso_reg_q.push_front(rd_miso.wdata_i);
+          rd_miso_reg_q.push_front(vif.rdata_o);
           count_rd_cycle = 0;
         end
 
