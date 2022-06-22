@@ -87,6 +87,7 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
     bit              go_bsy         ;
     bit              reserved_1     ;
     bit      [  6:0] char_len       ;
+    bit      [31:0]  divider        ;
     bit      [ 31:0] ctrl_reg       ;
     bit              send_rx        ;
     bit      [ 31:0] count_length   ;
@@ -94,7 +95,7 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // spi_miso_sequence is going to generate 4 transactions of type transaction_item
-    repeat(100) begin                                             // It should be an even number
+    repeat(208) begin                                             // It should be an even number
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
@@ -103,7 +104,8 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
       
       // De-asserting
       tx.rst_ni = 1'b1;
-      char_len   = `CHAR_LENGTH_CTRL_REG/*30*/ /*tx.char_len*/;
+      char_len  = `CHAR_LENGTH_CTRL_REG/*30*/ /*tx.char_len*/;
+      divider   = `DIVIDER_REG;
 
       reserved_2 = 18'd0;
       ass        = 1'b0;
@@ -169,7 +171,7 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
         print_transaction(tx, "Randomly applying MISO");
         count_length = count_length + 1;
         // If the serial data is reached its length
-        if (count_length == char_len) begin
+        if (count_length == (char_len* (divider+2)+4)) begin
           count_length = 0;
           rd_miso_reg = 1;
         end
