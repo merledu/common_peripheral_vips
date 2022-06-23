@@ -64,6 +64,7 @@ class spi_monitor extends uvm_monitor;
       get_rx_signals();
       rd_miso_reg();
       count_clk();
+      check_tx_interrupt();
     join_none
     //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
   endtask
@@ -334,7 +335,7 @@ class spi_monitor extends uvm_monitor;
           end
           
           if (ctrl_reg[15] == 1 && ctrl_reg[14] == 0 && locked_2 == 0) begin
-            tb_driven_tx_config_data_collection_q.delete(0);
+            //tb_driven_tx_config_data_collection_q.delete(0);
             locked_2 = 1;
           end
 
@@ -414,6 +415,19 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  // Task to check tx interrupt after MOSI is disabled
+  virtual task check_tx_interrupt();
+  // Transaction Handle declaration
+    transaction_item tx_intrpt;
+    forever begin
+      @(posedge vif.clk_i)
+      if (control_register[8]==1 && control_register[14]== 0 && vif.intr_tx_o) begin
+        tf();
+        `uvm_fatal("FATAL_ID",$sformatf("tx Interrpt when MOSI is disbaled"))
+      end
+    end // forever
+  endtask
+
   virtual task count_clk();
     // Transaction Handle declaration
     transaction_item tx;
@@ -483,10 +497,10 @@ class spi_monitor extends uvm_monitor;
           wait(vif.intr_rx_o);
         end
 
-        if (control_register[8] == 1 && control_register[14] == 1 && control_register[15] == 1) begin
-          `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
-          count_rx_i = 0;
-        end
+        //if (control_register[8] == 1 && control_register[14] == 1 && control_register[15] == 1) begin
+        //  `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
+        //  count_rx_i = 0;
+        //end
       end 
     end // forever
   endtask
