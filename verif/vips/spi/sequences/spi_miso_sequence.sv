@@ -92,10 +92,16 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
     bit              send_rx        ;
     bit      [ 31:0] count_length   ;
     bit              rd_miso_reg    ;
+    bit previous_sd_i               ;
+    int count_divider_clk           ;
+    int divider_clk_cycle           ;
+    int count_clk_cycles_b4_clk_o   ;
+    int first_time                  ;
+    int counter                     ;
     string msg="";
 
     // spi_miso_sequence is going to generate 4 transactions of type transaction_item
-    repeat(208) begin                                             // It should be an even number
+    repeat(223) begin                                             // It should be an even number
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction
@@ -144,6 +150,7 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
       //end
       //cycle = cycle + 1;
 
+      cycle = cycle + 1;
       // for enabling rx
       if (send_rx == 0) begin
         send_rx = 1;
@@ -160,26 +167,87 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
         tx.re_i    = 1'h0;     
         print_transaction(tx, "Enabing MISO");
       end
-      // for sending randomized miso
       else if (send_rx == 1 && rd_miso_reg == 0) begin
         tx.addr_i  = 'h0;
         //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
         tx.be_i    = 'b1111;           
         tx.we_i    = 'h1;       
         tx.re_i    = 'h0;        
-        //tx.sd_i    = ;                                                              // Randomized sd_i
+        
+        // Generating the same value of sd_i at positive to poistive edge of sclk_o 
+        /////////////////////////////////////////////////////
+        /////////////// IMPORTANT CODE /////////////////////
+        ////////////////////////////////////////////////////
+        //if (count_divider_clk == 0) begin
+        //  previous_sd_i = tx.sd_i;                                                             // Randomized sd_i
+        //  `uvm_info("spi_miso_sequenceS::",$sformatf("Printing previous value = %0d", previous_sd_i), UVM_LOW)
+        //end
+        //// previous_sd_i = tx.sd_i;
+        //divider_clk_cycle = (divider)*2 + 2;
+        //count_divider_clk = count_divider_clk + 1;  
+        //if (count_divider_clk <= divider_clk_cycle) begin
+        //  tx.sd_i = previous_sd_i;
+        //  `uvm_info("spi_miso_sequenceS::",$sformatf("Printing updated tx_sd_i = %0d", tx.sd_i), UVM_LOW)
+        //  if (count_divider_clk == divider_clk_cycle)
+        //    count_divider_clk = 0;
+        //end
+
+        ////////////////////////////////
+        ///////////////////////////////
+        counter = counter + 1;
+        if (counter <= 23) begin
+          if (count_divider_clk == 0) begin
+            previous_sd_i = tx.sd_i;                                                             // Randomized sd_i
+            `uvm_info("spi_miso_sequenceS::",$sformatf("Printing previous value = %0d", previous_sd_i), UVM_LOW)
+          end
+          // previous_sd_i = tx.sd_i;
+          divider_clk_cycle = (divider)*2 + 2;
+          count_divider_clk = count_divider_clk + 1;  
+          if (count_divider_clk <= divider_clk_cycle) begin
+            tx.sd_i = previous_sd_i;
+            `uvm_info("spi_miso_sequenceS::",$sformatf("Printing updated tx_sd_i = %0d", tx.sd_i), UVM_LOW)
+            if (count_divider_clk == divider_clk_cycle)
+              count_divider_clk = 0;
+          end
+        end
+        else begin
+          ////////////////
+          if (count_divider_clk == 1 && first_time == 1) begin
+            previous_sd_i = tx.sd_i;                                                             // Randomized sd_i
+            `uvm_info("spi_miso_sequenceS::",$sformatf("Printing previous value = %0d", previous_sd_i), UVM_LOW)
+          end
+          first_time = 1;
+          // previous_sd_i = tx.sd_i;
+          divider_clk_cycle = (divider)*2 + 2;
+          count_divider_clk = count_divider_clk + 1;  
+          if (count_divider_clk <= divider_clk_cycle) begin
+            tx.sd_i = previous_sd_i;
+            `uvm_info("spi_miso_sequenceS::",$sformatf("Printing updated tx_sd_i = %0d", tx.sd_i), UVM_LOW)
+            if (count_divider_clk == divider_clk_cycle)
+              count_divider_clk = 0;
+          end
+        end
+        /////////////////////////////////////
+        /////////////////////////////////////
+
+        ///////
         print_transaction(tx, "Randomly applying MISO");
         count_length = count_length + 1;
         // If the serial data is reached its length
-        if (count_length == (char_len* (divider+2)+4)) begin
+        if (count_length == (char_len * ((divider*2)+2)+3/*extra 3 cycles*/ ) ) begin
+          `uvm_info("spi_miso_sequenceS::",$sformatf("Print (char_len * ((divider*2)+2)) = %0d", count_length), UVM_LOW)
           count_length = 0;
           rd_miso_reg = 1;
         end
       end
+      
+
       // for reading the MISO register MISO is completed w.r.t. the length
       else if (rd_miso_reg == 1) begin
         send_rx = 0;
         rd_miso_reg = 0;
+        count_divider_clk = 0;
+        count_clk_cycles_b4_clk_o = 0;
         
         tx.addr_i  = 'h20;           
         //tx.wdata_i = ctrl_reg;              
