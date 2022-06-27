@@ -42,7 +42,8 @@ class spi_monitor extends uvm_monitor;
   
   // TLM analysis port
   uvm_analysis_port #(transaction_item) dut_tx_port;
-
+  
+  // Build Phase
   function void build_phase(uvm_phase phase);
     `uvm_info("UART_MONITOR::",$sformatf("______BUILD_PHASE______"), UVM_LOW)
     // Creating analysis port TLM analysis ports are not created with factory
@@ -54,7 +55,8 @@ class spi_monitor extends uvm_monitor;
     // Display the base address from config object
     `uvm_info(get_type_name(), $sformatf("config base adddress = %0x", tx_agent_config_h.base_address), UVM_LOW)
   endfunction : build_phase
-
+  
+  // Run phase
   virtual task run_phase(uvm_phase phase);
     // Function to get transaction from virtual interface
     fork
@@ -66,7 +68,6 @@ class spi_monitor extends uvm_monitor;
       count_clk();
       check_tx_interrupt();
     join_none
-    //`uvm_info(get_type_name(), $sformatf("count_clock_cycles = %0d", count_clock_cycles), UVM_LOW)
   endtask
   
   // Declaration
@@ -92,7 +93,7 @@ class spi_monitor extends uvm_monitor;
   bit  [31:0] control_register                        ;
 
 
-  // Task for capturing control register @every posedge of clock
+  // Task for capturing control register at every posedge of clock
   virtual task capture_control_register();
     // Transaction Handle declaration
     transaction_item tx_ctrl_reg;
@@ -109,12 +110,13 @@ class spi_monitor extends uvm_monitor;
         
         // Assigning counter the value char length that is present in 7 LSB of control register  
         if (tx_ctrl_reg.addr_i == 'h10) begin
-            control_register = tx_ctrl_reg.wdata_i;
-            `uvm_info("SPI_MONITIOR::", $sformatf("Control register = %0b",control_register), UVM_LOW)
+          control_register = tx_ctrl_reg.wdata_i;
+          `uvm_info("SPI_MONITIOR::", $sformatf("Control register = %0b",control_register), UVM_LOW)
         end
     end
   endtask 
-
+  
+  // Task for MOSI (This logic is behaving as a SPI slave devices)
   virtual task get_mosi_tx();
     // Transaction Handle declaration
     transaction_item tx;
@@ -128,21 +130,20 @@ class spi_monitor extends uvm_monitor;
         tx.we_i    = vif.we_i   ;       
         tx.re_i    = vif.re_i   ;        
         tx.sd_i    = vif.sd_i   ;                       // master in slave out
-
+        
+        // Collecting tx serial output data on sd_o pin
         clct_mosi[count] = vif.sd_o;
         count = count + 1;
 
         // Assigning counter the value char length that is present in 7 LSB of control register  
-        //if (tx.addr_i == 'h10) begin
         if (lock == 0) begin
           lock = 1;
           contrl_reg = control_register;
           counter = `CHAR_LENGTH_CTRL_REG/*10*//*contrl_reg[6:0]*/;                                                       // TODO always select the randomize data
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing Counter = %0d",counter), UVM_LOW)
         end
-        //end
 
-        // Data collection depending on the char length
+        // Data collection depending on the char length and pushing it in the queue if tx is enabled
         if(count == counter) begin
           data = clct_mosi;
           if(contrl_reg[14]==1) begin
@@ -160,8 +161,9 @@ class spi_monitor extends uvm_monitor;
           end
         end
 
-        // slave 1
+        // SPI device slave 1
         if(!vif.ss_o[0] && count == counter) begin
+          // Checking if rx and tx are enabled simultanously
           if(contrl_reg[8]==1 && contrl_reg[15]==1 && contrl_reg[14]==1) begin
             wait(vif.intr_tx_o == 1'b1);
             count = 0;
@@ -225,6 +227,7 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  // Declaration
   bit  [31:0] length                       ;
   bit  [31:0] data_queued                  ;
   bit  [31:0] ctrl_reg                     ;
@@ -237,7 +240,9 @@ class spi_monitor extends uvm_monitor;
   bit         first_config                 ;
   bit         locked_2                     ;
   bit         check_rx                     ;
-
+  
+  // This task is basically a checker logic for MOSI(tx), it captured data from the interface then store in 
+  // the queue that is compared afterward with the data store in the slave device
   virtual task get_tx_to_be_config();
     // Transaction Handle declaration
     transaction_item tx;
@@ -252,34 +257,36 @@ class spi_monitor extends uvm_monitor;
         tx.re_i    = vif.re_i   ;        
         tx.sd_i    = vif.sd_i   ;                       // master in slave out
         
+        // Check if the address is 0x00 that means it is data to be configured in the tx register
         if (tx.addr_i == 'h0 && tx.be_i == 'b1111 && tx.we_i == 'h1 && tx.re_i == 'h0) begin
           drive_data = tx.wdata_i;
+          // If tx and rx are disabled in control register then do not push data in the queue
           if (first_config == 0 && ctrl_reg[14] == 0 && ctrl_reg[15] == 0) begin
             tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             first_config = 1;
           end
+          // If tx is enabled in the control register then push data in the queue
           if (ctrl_reg[14] == 1'h1) begin
             tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             `uvm_info("SPI_MONITIOR::", $sformatf("Printing drive_data %0b", drive_data), UVM_LOW)
           end
         end
-
+        
+        // Check if the address is 0x10, that means control register is configured
         if(tx.addr_i == 'h10 && tx.be_i == 'b1111 && tx.we_i == 1 && tx.re_i == 0) begin
           length = `CHAR_LENGTH_CTRL_REG/*10*//*tx.wdata_i[6:0]*/;
-          
+          // Dependent logic to push data in the queue
           if (vif.wdata_i[15] == 1 && vif.wdata_i[14] == 0) begin
-            //wait(vif.intr_tx_o);
             lock_ctrl_reg = 1'b0;
             first_config = 0;
           end
-
           if (lock_ctrl_reg == 0)
             ctrl_reg = vif.wdata_i;
-          //`uvm_info("SPI_MONITIOR::", $sformatf("Printing length %d", length), UVM_LOW)
           `uvm_info("SPI_MONITIOR::", $sformatf("Printing control register ctrl_Reg %b", ctrl_reg), UVM_LOW)
           
-          //locked_2 = 0;
-          // Check if driving signal is tx cmd or tx data
+          // This logic is to check the data store in the slave's registers/queues specifically tx register/queue
+          // First data is a command for a slave device, if command data has 2 lsb equals 'b11 or 'b10, coming data depending on these command
+          // will be stored in chker_reg1_slav1_collection_q and chker_reg2_slav1_collection_q respectively
           if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
             chkr_reg1_slav1_drive_data_en = 1'b1;
             chkr_reg2_slav1_drive_data_en = 1'b0;
@@ -334,6 +341,7 @@ class spi_monitor extends uvm_monitor;
             end
           end
           
+          // Depended Logic/signals to push data in tb_driven_tx_config_data_collection_q
           if (ctrl_reg[15] == 1 && ctrl_reg[14] == 0 && locked_2 == 0) begin
             //tb_driven_tx_config_data_collection_q.delete(0);
             locked_2 = 1;
@@ -342,75 +350,64 @@ class spi_monitor extends uvm_monitor;
           if (first_config == 0 && ctrl_reg[14] == 1 && ctrl_reg[15] == 1) begin
             tb_driven_tx_config_data_collection_q.push_front(drive_data[(`CHAR_LENGTH_CTRL_REG)-1:0]);
             first_config = 1;
-            ////////////////////////////////////////
-            // Check if driving signal is tx cmd or tx data
-          if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-            chkr_reg1_slav1_drive_data_en = 1'b1;
-            chkr_reg2_slav1_drive_data_en = 1'b0;
-            lock_ctrl_reg = 1;
-          end
-          else if (drive_data[1:0] == 2'b10 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-            chkr_reg1_slav1_drive_data_en = 1'b0;
-            chkr_reg2_slav1_drive_data_en = 1'b1;
-            lock_ctrl_reg = 1;
-          end
-          if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h0) begin
-            chkr_reg1_slav1_drive_data_en = 1'b0;
-            chkr_reg2_slav1_drive_data_en = 1'b0;
-            lock_ctrl_reg = 0;
-          end          
-          
-          // Logic to push data in chker_reg1_slav1_collection_q
-          if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111 && ctrl_reg[14] == 1'h1) begin
-            num_of_runs = num_of_runs + 1'b1;
-            for(int index=0; index < length; index=index+1) begin
-              data_queued[index] = drive_data[index];
+            // This logic is to check the data store in the slave's registers/queues specifically tx register/queue
+            // First data is a command for a slave device, if command data has 2 lsb equals 'b11 or 'b10, coming data depending on these command
+            // will be stored in chker_reg1_slav1_collection_q and chker_reg2_slav1_collection_q respectively
+            if (drive_data[1:0] == 2'b11 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+              chkr_reg1_slav1_drive_data_en = 1'b1;
+              chkr_reg2_slav1_drive_data_en = 1'b0;
+              lock_ctrl_reg = 1;
             end
-            if (num_of_runs==1) begin
-              `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-              chker_reg1_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
-              wait(vif.intr_tx_o);
+            else if (drive_data[1:0] == 2'b10 && drive_data[2] == 1'b1 && ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
+              chkr_reg1_slav1_drive_data_en = 1'b0;
+              chkr_reg2_slav1_drive_data_en = 1'b1;
+              lock_ctrl_reg = 1;
+            end
+            if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h0) begin
+              chkr_reg1_slav1_drive_data_en = 1'b0;
+              chkr_reg2_slav1_drive_data_en = 1'b0;
               lock_ctrl_reg = 0;
-              `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
-              `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
-            end 
-            if (num_of_runs==2 || ctrl_reg[14]==0) begin
-              num_of_runs=0;
-            end
-          end
+            end          
           
-          // Logic to push data in chker_reg2_slav1_collection_q
-          if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110 && ctrl_reg[14] == 1'h1) begin
-            num_of_runs = num_of_runs + 1'b1;
-            for(int index=0; index < length; index=index+1) begin
-              data_queued[index] = drive_data[index];
+            // Logic to push data in chker_reg1_slav1_collection_q
+            if (chkr_reg1_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b111 && ctrl_reg[14] == 1'h1) begin
+              num_of_runs = num_of_runs + 1'b1;
+              for(int index=0; index < length; index=index+1) begin
+                data_queued[index] = drive_data[index];
+              end
+              if (num_of_runs==1) begin
+                `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+                chker_reg1_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
+                wait(vif.intr_tx_o);
+                lock_ctrl_reg = 0;
+                `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+                `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
+              end 
+              if (num_of_runs==2 || ctrl_reg[14]==0) begin
+                num_of_runs=0;
+              end
             end
-            if (num_of_runs==1) begin
-              `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
-              chker_reg2_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
-              wait(vif.intr_tx_o);
-              lock_ctrl_reg = 0;
-              `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
-              `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
-            end 
-            if (num_of_runs==2 || ctrl_reg[14]==0) begin
-              num_of_runs=0;
+          
+            // Logic to push data in chker_reg2_slav1_collection_q
+            if (chkr_reg2_slav1_drive_data_en == 1 && drive_data[2:0] != 3'b110 && ctrl_reg[14] == 1'h1) begin
+              num_of_runs = num_of_runs + 1'b1;
+              for(int index=0; index < length; index=index+1) begin
+                data_queued[index] = drive_data[index];
+              end
+              if (num_of_runs==1) begin
+                `uvm_info("SPI_MONITIOR::", $sformatf("Printing data queue %0h", data_queued), UVM_LOW)
+                chker_reg2_slav1_collection_q.push_front(data_queued/*tx.wdata_i*/);
+                wait(vif.intr_tx_o);
+                lock_ctrl_reg = 0;
+                `uvm_info("SPI_MONITIOR::", $sformatf("tx_adress %0h", tx.addr_i), UVM_LOW)
+                `uvm_info("SPI_MONITIOR::", $sformatf("second run value %0d", num_of_runs), UVM_LOW)
+              end 
+              if (num_of_runs==2 || ctrl_reg[14]==0) begin
+                num_of_runs=0;
+              end
             end
-          end
-            ////////////////////////////////////////
           end 
         end
-
-        //if(vif.intr_tx_o || vif.intr_rx_o) begin
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print mosi_data_collection_q = %p", mosi_data_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print tb_driven_tx_config_data_collection_q = %p", tb_driven_tx_config_data_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print reg1_slav1_collection_q = %p", reg1_slav1_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print reg2_slav1_collection_q = %p", reg2_slav1_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg1_slav1_collection_q = %p", chker_reg1_slav1_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print chker_reg2_slav1_collection_q = %p", chker_reg2_slav1_collection_q), UVM_LOW)
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Print Number of clock = %d", count_clock_cycles), UVM_LOW)
-        //  count_clock_cycles = 0;
-        //end
 
     end // forever
   endtask
@@ -428,6 +425,7 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
+  // Task to count the number of output clock cycles
   virtual task count_clk();
     // Transaction Handle declaration
     transaction_item tx;
@@ -437,36 +435,13 @@ class spi_monitor extends uvm_monitor;
     end // forever
   endtask
 
-
-  //// Task for capturing control register @every posedge of clock
-  //virtual task capture_control_register();
-  //  // Transaction Handle declaration
-  //  transaction_item tx_ctrl_reg;
-  //  forever begin
-  //    @(posedge vif.clk_i)
-  //      tx_ctrl_reg = transaction_item::type_id::create("tx_ctrl_reg");
-  //      tx_ctrl_reg.rst_ni  = vif.rst_ni ;        
-  //      tx_ctrl_reg.addr_i  = vif.addr_i ;            
-  //      tx_ctrl_reg.wdata_i = vif.wdata_i;              
-  //      tx_ctrl_reg.be_i    = vif.be_i   ;           
-  //      tx_ctrl_reg.we_i    = vif.we_i   ;       
-  //      tx_ctrl_reg.re_i    = vif.re_i   ;        
-  //      tx_ctrl_reg.sd_i    = vif.sd_i   ;                       // master in slave out
-  //      
-  //      // Assigning counter the value char length that is present in 7 LSB of control register  
-  //      if (tx_ctrl_reg.addr_i == 'h10) begin
-  //          control_register = tx_ctrl_reg.wdata_i;
-  //          `uvm_info("SPI_MONITIOR::", $sformatf("Control register = %0b",control_register), UVM_LOW)
-  //      end
-  //  end
-  //endtask
-
+  // Declaration
   bit  [31:0] collect_rx_sd_i[$];
   bit  [31:0] counter_rx_length ;
   bit  [31:0] count_rx_i        ;
   bit  [31:0] rx_data           ;
 
-  // Task for capturing control register @every posedge of clock
+  // Task to capture the MISO (rx siganls)
   virtual task get_rx_signals();
     // Transaction Handle declaration
     transaction_item rx;
@@ -480,35 +455,32 @@ class spi_monitor extends uvm_monitor;
         rx.we_i    = vif.we_i   ;       
         rx.re_i    = vif.re_i   ;        
         rx.sd_i    = vif.sd_i   ;                       // master in slave out
-
+       
+       // Assigning the char length in the control register
        counter_rx_length = `CHAR_LENGTH_CTRL_REG;
-       //Collecting data
+       // Collecting input data on sd_i pin that is completely randomize
        rx_data[count_rx_i] = vif.sd_i;
        count_rx_i = count_rx_i+1;
-
+      
+      // Collecting the data until counter_rx_length bits are recieved
       if (count_rx_i == counter_rx_length) begin
         `uvm_info("SPI_MONITIOR::", $sformatf("Entering condition when count_rx_i == counter_rx_length\n Printing control register = %0b", control_register), UVM_LOW)
-        // Assigning counter the value char length that is present in 7 LSB of control register  
         count_rx_i = 0;
-
+        // Push the collected data in queue if tx is enabled and rx is disabled in the control register
         if (control_register[8] == 1 && control_register[14] == 0 && control_register[15] == 1) begin
           `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
           collect_rx_sd_i.push_front(rx_data);
           wait(vif.intr_rx_o);
         end
-
-        //if (control_register[8] == 1 && control_register[14] == 1 && control_register[15] == 1) begin
-        //  `uvm_info("SPI_MONITIOR::", $sformatf("Pushing data in queue collect_rx_sd_i"), UVM_LOW)
-        //  count_rx_i = 0;
-        //end
-      end 
+      end // count_rx_i == counter_rx_length
     end // forever
   endtask
 
+  // Declaration
   bit  [31:0] rd_miso_reg_q[$];
   bit  [31:0] count_rd_cycle  ;
   
-  // Task for capturing control register @every posedge of clock
+  // Task to capture the read data from the MISO (rx) register
   virtual task rd_miso_reg();
     // Transaction Handle declaration
     transaction_item rd_miso;
@@ -522,22 +494,18 @@ class spi_monitor extends uvm_monitor;
         rd_miso.we_i    = vif.we_i   ;       
         rd_miso.re_i    = vif.re_i   ;        
         rd_miso.sd_i    = vif.sd_i   ;                       // master in slave out
-
+        
+        // Logic to push the rx regieter read data from the queue
         if (count_rd_cycle == 1)
           count_rd_cycle = count_rd_cycle + 1; 
-        
         if (count_rd_cycle == 2) begin
           rd_miso_reg_q.push_front(vif.rdata_o);
           count_rd_cycle = 0;
         end
-
         if (rd_miso.addr_i  == 'h20 && rd_miso.be_i == 'b1111 && rd_miso.we_i == 1'h0 && rd_miso.re_i == 1'h1) begin
           count_rd_cycle = count_rd_cycle + 1;          
         end
         
-        //if (rd_miso.addr_i  == 'h20 && rd_miso.be_i == 'b1111 && rd_miso.we_i == 1'h0 && rd_miso.re_i == 1'h1) begin
-        //  rd_miso_reg_q.push_front(rd_miso.wdata_i);
-        //end
     end // forever
   endtask
 
