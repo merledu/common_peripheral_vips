@@ -48,34 +48,6 @@ interface test_ifc  #(
   logic                     sd_oe 	 ;       // master out slave in
   logic                     sd_i  	 ;       // master in slave out
 
-	//// Modport for DUT i.e. UART
-	//modport uart_mp_dut (
-	//	input  rst_ni ,
-	//	input  ren    ,
-	//	input  we     ,
-	//	input  wdata  ,
-	//	output rdata  ,
-	//	input  addr   ,
-	//	output tx_o   ,
-	//	input  rx_i   ,
-	//	output intr_tx,
-	//	output intr_rx
-	//);
-  //
-	//// Modport for testbench
-	//modport timer_mp_tb (
-	// 	output rst_ni ,
-	// 	output ren    ,
-	// 	output we     ,
-	// 	output wdata  ,
-	// 	input  rdata  ,
-	// 	output addr   ,
-	// 	input  tx_o   ,
-	// 	output rx_i   ,
-	// 	input  intr_tx,
-	// 	input  intr_rx
-	//);
-
   string msg;
 	task automatic transfer(transaction_item tx);
 	endtask // transfer
