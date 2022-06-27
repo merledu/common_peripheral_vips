@@ -5,8 +5,8 @@
 //                                                                                                   //
 // Additional contributions by:                                                                      //
 //                                                                                                   //
-// Create Date:    03-MARCH-2022                                                                     //
-// Design Name:    UART                                                                              //
+// Create Date:    23-MAY-2022                                                                       //
+// Design Name:    SPI                                                                               //
 // Module Name:    tx_agent_config.sv                                                                //
 // Project Name:   VIPs for different peripherals                                                    //
 // Language:       SystemVerilog - UVM                                                               //

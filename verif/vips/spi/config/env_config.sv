@@ -5,8 +5,8 @@
 //                                                                                                     //
 // Additional contributions by:                                                                        //
 //                                                                                                     //
-// Create Date:    04-MARCH-2022                                                                       //
-// Design Name:    UART                                                                                //
+// Create Date:    24-MAY-2022                                                                         //
+// Design Name:    SPI                                                                                 //
 // Module Name:    env_config.sv                                                                       //
 // Project Name:   VIPs for different peripherals                                                      //
 // Language:       SystemVerilog - UVM                                                                 //

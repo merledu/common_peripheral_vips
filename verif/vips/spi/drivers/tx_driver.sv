@@ -84,15 +84,6 @@ class tx_driver extends uvm_driver #(transaction_item);
 
   // Function to transfer the transaction to DUT via interface that is recieved in run phase
   virtual task transfer(transaction_item tr);
-    //uvm_event ev = uvm_event_pool::get_global("ev_ab");
-    //
-    //// Declaring variables
-    //bit [ 31: 0] r_data      ;
-    //bit [ 11: 0] prescale = 0;
-    //bit [ 23:16] step     = 0;
-    //bit [ 31:0 ] div_q    = 0;
-    //bit [ 4:0 ]  div_r    = 0;  
-
     @(posedge vif.clk_i);
     // For driving signals to DUT via interface
     vif.rst_ni  = tr.rst_ni ;        
@@ -102,38 +93,20 @@ class tx_driver extends uvm_driver #(transaction_item);
     vif.we_i    = tr.we_i   ;       
     vif.re_i    = tr.re_i   ;        
     vif.sd_i    = tr.sd_i   ;
-
+    
+    // Checking the address and assign the value of control register
     if (vif.addr_i == 'h10)
       ctrl_reg = vif.wdata_i;
     
-    // if (vif.addr_i == 'h10 && vif.addr_i == 'h10) begin
-    // `uvm_info("SPI_DRIVER::",$sformatf("Enterred in the waiting interrupt waiting logic = %0d", ctrl_reg), UVM_LOW)
-    // // Waiting until intr_tx_o is asserted
+    // Driving logic for MOSI
     if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1 /*&& vif.addr_i == 'h10*/) begin
       `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the tx interupt"), UVM_LOW)
       wait (vif.intr_tx_o == 1'b1);
     end
-    // Waiting until intr_rx_o is asserted
+    // Driving logic for MISO
     else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1 /*&& vif.addr_i == 'h10*/) begin
       `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the rx interupt"), UVM_LOW)
-      //wait (vif.intr_rx_o == 1'b1);
     end 
-
-    //if (vif.addr_i == 'h10) begin
-    //  // Assign the value to be saved on control register in ctrl_reg
-    //  ctrl_reg = vif.wdata_i;
-    //  `uvm_info("SPI_DRIVER::",$sformatf("Enterred in the waiting interrupt waiting logic = %0d", ctrl_reg), UVM_LOW)
-    //  // Waiting until intr_tx_o is asserted
-    //  if (ctrl_reg[8] == 1'h1 && ctrl_reg[14] == 1'h1) begin
-    //    `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the tx interupt"), UVM_LOW)
-    //    wait (vif.intr_tx_o == 1'b1);
-    //  end
-    //  // Waiting until intr_rx_o is asserted
-    //  else if (ctrl_reg[8] == 1'h1 && ctrl_reg[15] == 1'h1) begin
-    //    `uvm_info("SPI_DRIVER::",$sformatf("Waiting for the rx interupt"), UVM_LOW)
-    //    wait (vif.intr_rx_o == 1'b1);
-    //  end 
-    //end
 
   endtask
 
@@ -153,17 +126,5 @@ class tx_driver extends uvm_driver #(transaction_item);
   //  `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the values on the virtual interface\n", msg), UVM_LOW)
   //endfunction : print_tx_fields
   //
-  //function void print_num_of_cycles_req(input bit[11:0] prescale, input bit [63:0] data, input bit [23:16] step, input bit [31:0] div_q, input bit [4:0] div_r, input bit [76:0] cycle_to_get_result);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nPRE-SCALE_VALUE___________:: %0d"  , msg, prescale           );
-  //  $sformat(msg, "%s\nDATA VALUE________________:: %0d"  , msg, data               );
-  //  $sformat(msg, "%s\nSTEP VALUE________________:: %0d"  , msg, step               );
-  //  $sformat(msg, "%s\nDIV QUOTIENT______________:: %0d"  , msg, div_q              );
-  //  $sformat(msg, "%s\nDIV REMINDER______________:: %0d"  , msg, div_r              );
-  //  $sformat(msg, "%s\nCYCLE TO GET RESULT_______:: %0d\n", msg, cycle_to_get_result);
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("UART_DRIVER::",$sformatf("\n\nPrinting the number of cycles to complete the count and related field\n", msg), UVM_LOW)
-  //endfunction : print_num_of_cycles_req
 
 endclass
