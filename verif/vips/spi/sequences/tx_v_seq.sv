@@ -54,7 +54,7 @@ class tx_v_seq extends uvm_sequence;
   
   task body();
     // Sequence to reset 
-    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                                                                  // Creating a sequences
+    reset_spi_sequence_h = reset_spi_sequence::type_id::create("reset_spi_sequence_h");                                                                 // Creating a sequences
     reset_spi_sequence_h.start(get_sequencer(), this);
   	//// Sequence to configuring the timer
   	config_spi_sequence_h = config_spi_sequence::type_id::create("config_spi_sequence_h");                                                              // Creating a sequences
@@ -68,7 +68,6 @@ class tx_v_seq extends uvm_sequence;
     // Sequence for MISO & MOSI stimulus simultenously                      
     spi_miso_mosi_simultaneous_sequence_h = spi_miso_mosi_simultaneous_sequence::type_id::create("spi_miso_mosi_simultaneous_sequence_h");              // Creating a sequences
     spi_miso_mosi_simultaneous_sequence_h.start(get_sequencer(), this);
-    
   endtask
   
 endclass

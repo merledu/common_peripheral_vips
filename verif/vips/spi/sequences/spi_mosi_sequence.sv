@@ -67,12 +67,6 @@ class spi_mosi_sequence extends uvm_sequence #(transaction_item);
   // Note: Driver limits how fast the stimulus can be applied to the driver by sequence, since the sequence is connected to driver it can send a new transaction when driver is ready
   virtual task body();
     
-    // control addr   0x10
-    // tx_reg         0x0
-    // dvider address 0x14
-    // ss             0x18
-    // rx_reg         0x20
-
     // transaction of type transaction_item
     transaction_item tx        ;
     int              cycle     ;
@@ -127,15 +121,15 @@ class spi_mosi_sequence extends uvm_sequence #(transaction_item);
         print_transaction(tx, "Enabing transmission from master");
       end
       
-      // Configuring TX register (Randomized)
+      // Configuring TX register and enabling transmission
       else if (cycle > 'd1) begin
+        // Configuring TX Register
         if (cycle%2 == 0) begin
           tx.addr_i  = 'h0;
           //tx.wdata_i =  { 31'b101000110111010010101010111001/*{30{1'h0}}*/,2'b11};    // Let assume for all connected slaves, 2'b10 and 2'b11 are read and write respectively (That means comming tx data will be a write or read operation)
           tx.be_i    = 'b1111;           
           tx.we_i    = 'h1;       
           tx.re_i    = 'h0;        
-          //tx.sd_i    = ;
           print_transaction(tx, "Configuring TX Register");
         end
         // Enabling Transmition
@@ -173,3 +167,10 @@ class spi_mosi_sequence extends uvm_sequence #(transaction_item);
   endfunction : print_transaction        
 
 endclass // spi_mosi_sequence
+    
+  // Address
+  // control addr   0x10
+  // tx_reg         0x0
+  // dvider address 0x14
+  // ss             0x18
+  // rx_reg         0x20

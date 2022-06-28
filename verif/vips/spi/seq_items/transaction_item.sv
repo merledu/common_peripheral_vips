@@ -46,21 +46,6 @@ class transaction_item extends uvm_sequence_item;
   rand bit [31:0] char_len;
   
   constraint char_len_c { char_len inside {[1:32]};}
-  
-  //output reg   [31:0] rdata_o  ;             
-  //output reg          error_o  ;       
-  //output reg          intr_rx_o;
-  //output reg          intr_tx_o;                                             
-  // SPI signals                                     
-  //output logic    [`SPI_SS_NB-1:0] ss_o,         // slave select
-  //output logic                     sclk_o,       // serial clock
-  //output logic                     sd_o,
-  //output reg                       sd_oe,        // master out slave in
-  
-  /*
-	constraint reg_addr_c { reg_addr inside {'h118, 'h11c, 'h114, 'h110, 'h10c, 'h108, 'h104, 'h100, 'h000};}
-	constraint reg_wdata_c { reg_wdata inside {[1:500]};}
-  */
 
 	// Declare any transaction specific property or field such as data, address and error connection. here the transaction is random 8 bit number
 	// Class properties hold the values that are send into the DUT and read from the DUT

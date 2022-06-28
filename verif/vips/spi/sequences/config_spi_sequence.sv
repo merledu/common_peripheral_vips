@@ -66,12 +66,6 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
   // Task can have delays
   // Note: Driver limits how fast the stimulus can be applied to the driver by sequence, since the sequence is connected to driver it can send a new transaction when driver is ready
   virtual task body();
-    
-    // control addr   0x10
-    // tx_reg         0x0
-    // dvider address 0x14
-    // ss             0x18
-    // rx_reg         0x20
 
     // transaction of type transaction_item
     transaction_item tx        ;
@@ -129,6 +123,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         //tx.sd_i    = ;    // miso
         print_transaction(tx, "Configuring Control Register");
       end
+
       // Sending command to a slave that what is operation is to be performed in the coming cycles like tx or rx
       // Configuring TX register
       else if (cycle == 'd2) begin
@@ -140,6 +135,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         //tx.sd_i    = ;
         print_transaction(tx, "Configuring TX Register");
       end
+
       // Configuring the Divider
       else if (cycle == 'd3) begin
         tx.addr_i  = 'h14;            
@@ -150,6 +146,7 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
         //tx.sd_i    = ;
         print_transaction(tx, "Configuring Divider");
       end
+      
       // Selecting Slave of 4 slave 
       else if (cycle == 'd4) begin
         tx.addr_i  = 'h18;            
@@ -180,3 +177,9 @@ class config_spi_sequence extends uvm_sequence #(transaction_item);
   endfunction : print_transaction        
 
 endclass // config_spi_sequence
+
+  // control addr   0x10
+  // tx_reg         0x0
+  // dvider address 0x14
+  // ss             0x18
+  // rx_reg         0x20
