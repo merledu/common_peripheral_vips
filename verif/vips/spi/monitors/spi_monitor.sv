@@ -505,7 +505,7 @@ class spi_monitor extends uvm_monitor;
         if (rd_miso.addr_i  == 'h20 && rd_miso.be_i == 'b1111 && rd_miso.we_i == 1'h0 && rd_miso.re_i == 1'h1) begin
           count_rd_cycle = count_rd_cycle + 1;          
         end
-        
+
     end // forever
   endtask
 
@@ -525,21 +525,28 @@ class spi_monitor extends uvm_monitor;
     if (mosi_data_collection_q == tb_driven_tx_config_data_collection_q)
       `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] Drived data & MOSI"), UVM_LOW)
     else begin
-      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] Drived data and MOSI"))
+      `uvm_error("ERROR_1",$sformatf("COMPARISON FAILED] Drived data and MOSI"))
       mismatch = mismatch + 1;
     end
     if (reg1_slav1_collection_q == chker_reg1_slav1_collection_q)
-      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] slave 1's first storage element & checker of slave 1"), UVM_LOW)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] :: reg1_slav1_collection_q == chker_reg1_slav1_collection_q "), UVM_LOW)
     else begin
-      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] slave 1's first storage element & checker of slave 1"))
+      `uvm_error("ERROR_2",$sformatf("COMPARISON FAILED] :: reg1_slav1_collection_q != chker_reg1_slav1_collection_q "))
       mismatch = mismatch + 1;
     end
     if (reg2_slav1_collection_q == chker_reg2_slav1_collection_q)
-      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] slave 1's second storage element & checker of slave 1"), UVM_LOW)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] :: reg2_slav1_collection_q == chker_reg2_slav1_collection_q "), UVM_LOW)
     else begin
-      `uvm_fatal("FATAL_ID",$sformatf("COMPARISON FAILED] slave 1's second storage element & checker of slave 1"))
-    mismatch = mismatch + 1;
+      `uvm_error("ERROR_3",$sformatf("COMPARISON FAILED] :: reg2_slav1_collection_q != chker_reg2_slav1_collection_q"))
+      mismatch = mismatch + 1;
     end
+    if (rd_miso_reg_q == collect_rx_sd_i)
+      `uvm_info(get_type_name(), $sformatf("[COMPARISON PASSED] :: rd_miso_reg_q == collect_rx_sd_i "), UVM_LOW)
+    else begin
+      `uvm_error("ERROR_4",$sformatf("COMPARISON FAILED] :: rd_miso_reg_q != collect_rx_sd_i "))
+      mismatch = mismatch + 1;
+    end
+    
     if (mismatch != 0)
       tf();
     else
@@ -565,40 +572,7 @@ class spi_monitor extends uvm_monitor;
   //  $sformat(msg, {2{"%s============================"}}, msg                             );
   //  `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
   //endfunction : print_transaction
-  //
-  //function void print_num_of_cycles_req(input bit[11:0] prescale, input bit [63:0] data, input bit [23:16] step, input bit [31:0] div_q, input bit [4:0] div_r, input bit [76:0] cycle_to_get_result);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nPRE-SCALE_VALUE___________:: %0d"  , msg, prescale           );
-  //  $sformat(msg, "%s\nDATA VALUE________________:: %0d"  , msg, data               );
-  //  $sformat(msg, "%s\nSTEP VALUE________________:: %0d"  , msg, step               );
-  //  $sformat(msg, "%s\nDIV QUOTIENT______________:: %0d"  , msg, div_q              );
-  //  $sformat(msg, "%s\nDIV REMINDER______________:: %0d"  , msg, div_r              );
-  //  $sformat(msg, "%s\nCYCLE TO GET RESULT_______:: %0d\n", msg, cycle_to_get_result);
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TIMER_DRIVER::",$sformatf("\n\nPrinting the number of cycles to complete the count and related field in monitor\n", msg), UVM_LOW)
-  //endfunction : print_num_of_cycles_req
-  //
-  //function void print_test_passed(input bit [76:0] cycle_to_get_result, input bit[76:0] cycle_num);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nCycle_to_get_result_______:: %0d"  , msg, cycle_to_get_result);
-  //  $sformat(msg, "%s\nCycle_Num_________________:: %0d\n", msg, cycle_num          );
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TEST PASSED",$sformatf("\n\nTimer succesfully counted the configured value\n", msg), UVM_LOW)
-  //  tp();
-  //endfunction : print_test_passed
-  //
-  //function void print_test_failed(input bit [76:0] cycle_to_get_result, input bit[76:0] cycle_num);
-  //  msg = "";
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  $sformat(msg, "%s\nCycle_to_get_result_______:: %0d"  , msg, cycle_to_get_result);
-  //  $sformat(msg, "%s\nCycle_Num_________________:: %0d\n", msg, cycle_num          );
-  //  $sformat(msg, {2{"%s============================"}}   , msg                     );
-  //  `uvm_info("TEST FAILED::",$sformatf("\n\nTimer failed to count the configured value\n", msg), UVM_LOW)
-  //  tf();
-  //endfunction : print_test_failed
-  //
+
   function void tp();
     msg = "";
     $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
