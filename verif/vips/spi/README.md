@@ -1,4 +1,4 @@
-# Verification IP of SPI
+# Verification IP of SPI Master Core
 
 ## Verification Hierarchy of SPI
 
@@ -27,11 +27,12 @@ The verification IP is build on Universal verification methodology (UVM) that co
 
 ## Working of verification IP
 
-Note: Configuration and testing of the is completely randomize by UVM testing environment for all internal registers of the core.
+Note: Configuration and testing of the SPI master core is completely randomize by UVM testing environment for all internal registers of the DUT.
 
-#### Configuration the timer
+#### Configuration/Testing of the core
 
 1. Reset the SPI master core.
+2. 
 
 #### Activation the timer
 
