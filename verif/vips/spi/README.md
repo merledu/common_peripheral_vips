@@ -17,12 +17,9 @@ This repository contains the verification IP of a SPI master core
 - Fully synthesizable
 
 ###### Description
+The serial interface consists of slave select lines, serial clock lines, as well as input and output data lines. All transfers are full duplex transfers of a programmable number of bits per transfer (up to 32 bits). Compared to the SPI/Microwire protocol, SPI master core has some additional functionality. It can drive data to the output data line in respect to the falling (SPI/Microwire compliant) or rising edge of the serial clock, and it can latch data on an input data line on the rising (SPI/Microwire compliant) or falling edge of a serial clock line. It also can transmit (receive) the MSB first (SPI/Microwire compliant) or the LSB first.
 
-
-###### Compatibility
-The timer IP provides memory-mapped registers mtime and mtimecmp which can be used as the machine-mode timer registers defined in the RISC-V privileged spec. Additional features such as prescaler, step, and a configurable number of timers and harts have been added.
-
-
+For more details please this document.
 
 # Features of a Timer verification IP
 
