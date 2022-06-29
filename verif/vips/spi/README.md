@@ -21,7 +21,7 @@ The serial interface consists of slave select lines, serial clock lines, as well
 
 For more details please [this](https://github.com/merledu/common_peripheral_vips/tree/main/verif/vips/spi/docs) document.
 
-# Features of a Timer verification IP
+# Features of a SPI verification IP
 
 The verification IP is build on Universal verification methodology (UVM) that contain `Constrained Random Testbenches`.
 
@@ -32,21 +32,21 @@ Note: Configuration and testing of the SPI master core is completely randomize b
 #### Configuration/Testing of the core
 
 1. Reset the SPI master core
-2. Configure the Control and status register located at address `0x10`. Initially, this register is configured so RX and TX are disabled.
-3. Configure the MOSI register i.e. TX register located at address `0x0`
+2. Configure the Control and status register located at address `0x10`. Initially, this register is configured as `RX` and `TX` are disabled and other field like `ie`, `lsb` and `char_length`
+3. Configure the MOSI register (TX register) located at address `0x0`
 4. Configure the Divider located at address `0x14`
 5. Configure the slave select register located at address `0x18`. Note slave select register is configured randomly
 6. `TX` is enabled by reconfiguring the control and status register located at `0x10`
 8. Testing the functionality of `TX` (MOSI pin) by configuring `TX` register and enabling it multiple times to through data on `sd_o` pin
 9. Storing the `sd_o` 32 bit serial data in the `TX` queue to be compare with respective `TX` queue present in the checker logic
 10. Testing the functionality of `RX` (MISO pin) by applying the random one bit stimulus (i.e. serial input data) on `sd_i` pin and `RX` is enabled multiple times and serial data is collected in the `RX` register located at address `0x20` in the DUT.
-11. Note that the rx (MISO) is enabled to collect the `sd_i` bit on internal register of DUT by reconfiguring the control and status register located at `0x10`
-12. Then read the 32 bit data stored in rx register whenever rx interrupt is asserted and store that in rx queue that rx queue compared with the rx queue implemented in the checker logic
-13. After tx and rx are checked independently. Verification environment check the full duplex mode by enabling the tx and rx simultaneously and store there results in their respective queues.
+11. Note that the rx (MISO) is enabled by reconfiguring the control and status register located at `0x10` to collect the serial data on `sd_i` pin in the internal `RX` register located at address `0x20` of DUT
+12. Then read the 32 bit data stored in `RX` register whenever `rx_interrupt` is asserted on the output and store that in `RX` queue that is compared with the `RX` queue implemented in the checker logic
+13. After `TX` and `RX` are checked independently. Verification environment check the full duplex mode by enabling the tx and rx simultaneously and store the results in their respective queues.
 
 #### Result
 
-14. Finally the actual data tx and rx queues are compared with the expected result queue to find out wheather the test passed or not
+14. Finally the actual `tx_data` and `rx_data` queues are compared with the expected `RX` and `TX` queues to find out either the test `passed` or `failed`
 
 # How to run the verification IP?
 
@@ -83,9 +83,9 @@ Note you can observe the test results in `test_result.txt` file
 
 #### Can also run the single test by following steps
 
-Redirect to the following `path` for testing `timer`
+Redirect to the following `path` for testing `spi`
 ```
-cd common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/spi/
 ```
 Excecute the `command`
 ```
