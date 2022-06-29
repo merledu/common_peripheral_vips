@@ -8,7 +8,7 @@ This repository contains the verification IP of a SPI master core
 # Features of a SPI Master Core IP
 
 - Full duplex synchronous serial data transfer
-- Variable length of transfer word up to 128 bits
+- Length of transfer word is upto 32 bits
 - MSB or LSB first data transfer
 - Rx and Tx on both rising or falling edge of serial clock independently
 - 4 slave select lines
@@ -32,24 +32,21 @@ Note: Configuration and testing of the SPI master core is completely randomize b
 #### Configuration/Testing of the core
 
 1. Reset the SPI master core
-2. Configure the Control and status register located at address `0x10`. Initially, this register is configured so rx and tx are disabled.
+2. Configure the Control and status register located at address `0x10`. Initially, this register is configured so RX and TX are disabled.
 3. Configure the MOSI register i.e. TX register located at address `0x0`
 4. Configure the Divider located at address `0x14`
-5. Configure the slave select register located at address `0x18`. Note slave select register is randomly configured
-6. `Tx` is enabled by reconfiguring the control and status register located at `0x10`
-8. Testing the functionality of `tx` (MOSI pin) by configuring tx register and enabling it multiple times.
-9. Storing the `sd_o` data in the tx queue to be compare with respective queue present in the checker logic
-10. Testing the functionality of `rx` (MISO pin) by applying the random 1 bit stimulus on `sd_i` pin and `rx` is enabled multiple times to collect that random single bit input on rx register in DUT.
-11. Note that the rx (MISO) is enabled to collect the sd_i bit on internal register of DUT by reconfiguring the control and status register located at `0x10` 
-
+5. Configure the slave select register located at address `0x18`. Note slave select register is configured randomly
+6. `TX` is enabled by reconfiguring the control and status register located at `0x10`
+8. Testing the functionality of `TX` (MOSI pin) by configuring `TX` register and enabling it multiple times to through data on `sd_o` pin
+9. Storing the `sd_o` 32 bit serial data in the `TX` queue to be compare with respective `TX` queue present in the checker logic
+10. Testing the functionality of `RX` (MISO pin) by applying the random one bit stimulus (i.e. serial input data) on `sd_i` pin and `RX` is enabled multiple times and serial data is collected in the `RX` register located at address `0x20` in the DUT.
+11. Note that the rx (MISO) is enabled to collect the `sd_i` bit on internal register of DUT by reconfiguring the control and status register located at `0x10`
+12. Then read the 32 bit data stored in rx register whenever rx interrupt is asserted and store that in rx queue that rx queue compared with the rx queue implemented in the checker logic
+13. After tx and rx are checked independently. Verification environment check the full duplex mode by enabling the tx and rx simultaneously and store there results in their respective queues.
 
 #### Result
 
-9. Waits until `intr_timer_expired_0_0_o` signal is enabled from the DUT (timer), that indicates timer has compeletd the counting.
-10. Compare the number of clock cycles after which `intr_timer_expired_0_0_o` signal is enabled with the predicted clock cycle calculated before (mentioned in point 7).
-11. If comparison is succussful then contrained random UVM test is `PASSED`.
-
-
+14. Finally the actual data tx and rx queues are compared with the expected result queue to find out wheather the test passed or not
 
 # How to run the verification IP?
 
@@ -67,9 +64,9 @@ git clone https://github.com/merledu/common_peripheral_vips.git
 ```
 
 ### For running verification IP with different number of contraint random test
-Redirect to the following `path` for testing `timer`
+Redirect to the following `path` for testing `SPI`
 ```
-cd common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/spi/
 ```
 
 Excecute the `command` python run_test.py < enter number of test to run >
