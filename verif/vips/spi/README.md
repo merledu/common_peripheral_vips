@@ -19,7 +19,7 @@ This repository contains the verification IP of a SPI master core
 ###### Description
 The serial interface consists of slave select lines, serial clock lines, as well as input and output data lines. All transfers are full duplex transfers of a programmable number of bits per transfer (up to 32 bits). Compared to the SPI/Microwire protocol, SPI master core has some additional functionality. It can drive data to the output data line in respect to the falling (SPI/Microwire compliant) or rising edge of the serial clock, and it can latch data on an input data line on the rising (SPI/Microwire compliant) or falling edge of a serial clock line. It also can transmit (receive) the MSB first (SPI/Microwire compliant) or the LSB first.
 
-For more details please this document.
+For more details please [this](https://github.com/merledu/common_peripheral_vips/tree/main/verif/vips/spi/docs) document.
 
 # Features of a Timer verification IP
 
@@ -27,17 +27,11 @@ The verification IP is build on Universal verification methodology (UVM) that co
 
 ## Working of verification IP
 
-Note: Configuration of the timer is completely randomize by UVM testing environment for all internal registers of timer.
+Note: Configuration and testing of the is completely randomize by UVM testing environment for all internal registers of the core.
 
 #### Configuration the timer
 
-1. Reset the Timer.
-2. First, verification IP generates randomized 64 bit `data` that configure the `COMPARE_REGISTERS` of timer to set the value that timer counts.
-3. If `data` to be counted is less than or equal to `64'h00000000FFFFFFFF` then set 32 bit register `COMPARE_UPPER_REGISTER` to zero located at address `0x110`, and also set 32 bit register `COMPARE_LOWER_REGISTER` located at address `0x10c` to value to be counted i.e `data`.
-4. If `data` to be counted is greater than `64'h00000000FFFFFFFF` then set 32 bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at `0x110` & `0x10c` respectively.
-5. Randomize prescale bits and step bits in the register `CFG0` located at address `0x100`.
-6. Enable interrupt by setting zeroth bit of register `INTR_ENABLE0` located at address `0x114`.
-7. Verification IP calculates and predicts the number of clock cycles required to complete the counting. The prediction of clock cycle is calculated depening on prescale and step assigned in register `0x100` as mentioned in point 4.
+1. Reset the SPI master core.
 
 #### Activation the timer
 
