@@ -1,25 +1,25 @@
-# Verification IP of Timer
+# Verification IP of SPI
 
-## Verification Hierarchy of Timer
-![uvm_components_of_tx_test](https://user-images.githubusercontent.com/42897240/150805003-e5d2cca9-1e23-4c0e-ba3f-f01f544bb75a.png)
+## Verification Hierarchy of SPI
 
-This repository contains the verification IP of a Timer
+This repository contains the verification IP of a SPI master core
+![spi_uvm_components_of_tx_test](https://user-images.githubusercontent.com/42897240/176407637-41314d83-a286-4bd0-b1f5-c4ec35f544a4.png)
 
+# Features of a SPI Master Core IP
 
-
-# Features of a Timer IP
-
-1. 64-bit timer with 12-bit prescaler and 8-bit step register
-2. Compliant with RISC-V privileged specification v1.11
-3. Configurable number of timers per hart and number of harts
+- Full duplex synchronous serial data transfer
+- Variable length of transfer word up to 128 bits
+- MSB or LSB first data transfer
+- Rx and Tx on both rising or falling edge of serial clock independently
+- 4 slave select lines
+- Fully static synchronous design with one clock domain
+- Technology independent Verilog
+- Fully synthesizable
 
 ###### Description
-The timer module provides a configurable number of 64-bit counters where each counter increments by a step value whenever the prescaler times out. Each timer generates an interrupt if the counter reaches (or is above) a programmed value. The timer is intended to be used by the processors to check the current time relative to the reset or the system power-on.
+The serial interface consists of slave select lines, serial clock lines, as well as input and output data lines. All transfers are full duplex transfers of a programmable number of bits per transfer (up to 32 bits). Compared to the SPI/Microwire protocol, SPI master core has some additional functionality. It can drive data to the output data line in respect to the falling (SPI/Microwire compliant) or rising edge of the serial clock, and it can latch data on an input data line on the rising (SPI/Microwire compliant) or falling edge of a serial clock line. It also can transmit (receive) the MSB first (SPI/Microwire compliant) or the LSB first.
 
-###### Compatibility
-The timer IP provides memory-mapped registers mtime and mtimecmp which can be used as the machine-mode timer registers defined in the RISC-V privileged spec. Additional features such as prescaler, step, and a configurable number of timers and harts have been added.
-
-
+For more details please this document.
 
 # Features of a Timer verification IP
 
