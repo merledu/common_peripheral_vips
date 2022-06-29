@@ -31,12 +31,17 @@ Note: Configuration and testing of the SPI master core is completely randomize b
 
 #### Configuration/Testing of the core
 
-1. Reset the SPI master core.
-2. 
+1. Reset the SPI master core
+2. Configure the Control and status register located at address `0x10`. Initially, this register is configured so rx and tx are disabled.
+3. Configure the MOSI register i.e. TX register located at address `0x0`
+4. Configure the Divider located at address `0x14`
+5. Configure the slave select register located at address `0x18`. Note slave select register is randomly configured
+6. `Tx` is enabled by reconfiguring the control and status register located at `0x10`
+8. Testing the functionality of `tx` (MOSI pin) by configuring tx register and enabling it multiple times.
+9. Storing the `sd_o` data in the tx queue to be compare with respective queue present in the checker logic
+10. Testing the functionality of `rx` (MISO pin) by applying the random 1 bit stimulus on `sd_i` pin and `rx` is enabled multiple times to collect that random single bit input on rx register in DUT.
+11. Note that the rx (MISO) is enabled to collect the sd_i bit on internal register of DUT by reconfiguring the control and status register located at `0x10` 
 
-#### Activation the timer
-
-8. Acticate the timer by setting zeroth bit of register `ALERT_TEST` located at address `0x0`.
 
 #### Result
 
