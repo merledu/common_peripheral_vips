@@ -1,6 +1,3 @@
-
-# Documentation in progress
-
 # Verification IP of UART
 
 ## Verification Hierarchy of UART
@@ -10,17 +7,13 @@
 This repository contains the verification IP of a UART
 
 
-
 # Features of a UART IP
 
 UART stands for Universal Asynchronous Receiver/Transmitter. It’s not a communication protocol like SPI and I2C, but a physical circuit in a microcontroller, or a stand-alone IC. A UART’s main purpose is to transmit and receive serial data.
 
 ###### Description
 
-In UART communication, two UARTs communicate directly with each other. The transmitting UART converts parallel data from a controlling device like a CPU into serial form, transmits it in serial to the receiving UART, which then converts the serial data back into parallel data for the receiving device. Only two wires are needed to transmit data between two UARTs. Data flows from the Tx pin of the transmitting UART to the Rx pin of the receiving UART:
-
-###### Compatibility
-
+In UART communication, two UARTs communicate directly with each other. The transmitting UART converts parallel data from a controlling device like a CPU into serial form, transmits it in serial to the receiving UART, which then converts the serial data back into parallel data for the receiving device. Only two wires are needed to transmit data between two UARTs. Data flows from the Tx pin of the transmitting UART to the Rx pin of the receiving UART.
 
 # Features of a UART verification IP
 
@@ -32,30 +25,20 @@ Note: Configuration of the UART is completely randomize by UVM testing environme
 
 [This link](https://www.circuitbasics.com/basics-uart-communication/#:~:text=UART%20stands%20for%20Universal%20Asynchronous,transmit%20and%20receive%20serial%20data) points to the working and behaviour of UART
 
-#### Configuration the UART
+#### Configuration and Testing UART
 
-For transmitting the data following steps will be done:
-First we have to set configurable registers which are baud, tx_level, tx_data, tx_en_fifo, rd_en_fifo
-To set the baud rate, at address 0x0 we can assign the desired baud rate we have to set.
-Then set tx_level, at address 0x18 we can assign the level of the buffer.
-Then data to be transferred is sent at address 0x4.
-Then transfer is enabled by writing at address 0x1c.
-
-For receiving the data:
-Baud rate will be configured at address 0x0.
-Then to start receiving the data,rx will be enabled at address 0xc.
-At address 0x8, we can read the data that is received.
-Read the configurable registers:
-You can read the all the registers configured by:
-To read the baud_rate set, set the pwrite_i to 0 and set the addr to 0;
-To read the level of fifo set, set the pwrite to 0 and set the addr to 0x18
-To read the data entered into the fifo,set the pwrite_i to 0 and set addr to 4 according to the tx_level set.
-
-#### Activation the UART
+1. First, we have to set configurable registers which are `baud rate`, `tx_level` and `tx_data` located at addresses `0x0`, `0x18` and `0x04` respectively
+2. Enable the `RX` by writing in register at address `0xc`
+3. Enabled the `TX` (transfer) by writing in register at address `0x1c`
+4. Then disable the transfer
+5. And read data that is stored in the `RX` register at address `0x8` of the recieving UART
+6. To read the baud_rate set, set the pwrite_i to 0 and set the addr to 0;
+7. To read the level of fifo set, set the pwrite to 0 and set the addr to 0x18
+8. To read the data entered into the fifo,set the pwrite_i to 0 and set addr to 4 according to the tx_level set.
 
 #### Result
 
-
+9. Compare the data that is transfered from the `TX` UART with the data received in `RX` UART
 
 # How to run the verification IP?
 
