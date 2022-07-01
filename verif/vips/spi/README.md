@@ -1,4 +1,4 @@
-# Verification IP of SPI
+# Verification IP of SPI Master Core
 
 ## Verification Hierarchy of SPI
 
@@ -8,7 +8,7 @@ This repository contains the verification IP of a SPI master core
 # Features of a SPI Master Core IP
 
 - Full duplex synchronous serial data transfer
-- Variable length of transfer word up to 128 bits
+- Length of transfer word is upto 32 bits
 - MSB or LSB first data transfer
 - Rx and Tx on both rising or falling edge of serial clock independently
 - 4 slave select lines
@@ -19,37 +19,34 @@ This repository contains the verification IP of a SPI master core
 ###### Description
 The serial interface consists of slave select lines, serial clock lines, as well as input and output data lines. All transfers are full duplex transfers of a programmable number of bits per transfer (up to 32 bits). Compared to the SPI/Microwire protocol, SPI master core has some additional functionality. It can drive data to the output data line in respect to the falling (SPI/Microwire compliant) or rising edge of the serial clock, and it can latch data on an input data line on the rising (SPI/Microwire compliant) or falling edge of a serial clock line. It also can transmit (receive) the MSB first (SPI/Microwire compliant) or the LSB first.
 
-For more details please this document.
+For more details please [this](https://github.com/merledu/common_peripheral_vips/tree/main/verif/vips/spi/docs) document.
 
-# Features of a Timer verification IP
+# Features of a SPI verification IP
 
 The verification IP is build on Universal verification methodology (UVM) that contain `Constrained Random Testbenches`.
 
 ## Working of verification IP
 
-Note: Configuration of the timer is completely randomize by UVM testing environment for all internal registers of timer.
+Note: Configuration and testing of the SPI master core is completely randomize by UVM testing environment for all internal registers of the DUT.
 
-#### Configuration the timer
+#### Configuration/Testing of the core
 
-1. Reset the Timer.
-2. First, verification IP generates randomized 64 bit `data` that configure the `COMPARE_REGISTERS` of timer to set the value that timer counts.
-3. If `data` to be counted is less than or equal to `64'h00000000FFFFFFFF` then set 32 bit register `COMPARE_UPPER_REGISTER` to zero located at address `0x110`, and also set 32 bit register `COMPARE_LOWER_REGISTER` located at address `0x10c` to value to be counted i.e `data`.
-4. If `data` to be counted is greater than `64'h00000000FFFFFFFF` then set 32 bit registers `COMPARE_UPPER_REGISTER` & `COMPARE_LOWER_REGISTER` to upper 32 bits of `data` and lower 32 bits of `data` located at `0x110` & `0x10c` respectively.
-5. Randomize prescale bits and step bits in the register `CFG0` located at address `0x100`.
-6. Enable interrupt by setting zeroth bit of register `INTR_ENABLE0` located at address `0x114`.
-7. Verification IP calculates and predicts the number of clock cycles required to complete the counting. The prediction of clock cycle is calculated depening on prescale and step assigned in register `0x100` as mentioned in point 4.
-
-#### Activation the timer
-
-8. Acticate the timer by setting zeroth bit of register `ALERT_TEST` located at address `0x0`.
+1. Reset the SPI master core
+2. Configure the Control and status register located at address `0x10`. Initially, this register is configured as `RX` and `TX` are disabled and other field like `ie`, `lsb` and `char_length`
+3. Configure the MOSI register (TX register) located at address `0x0`
+4. Configure the Divider located at address `0x14`
+5. Configure the slave select register located at address `0x18`. Note slave select register is configured randomly
+6. `TX` is enabled by reconfiguring the control and status register located at `0x10`
+8. Testing the functionality of `TX` (MOSI pin) by configuring `TX` register and enabling it multiple times to through data on `sd_o` pin
+9. Storing the `sd_o` 32 bit serial data in the `TX` queue to be compare with respective `TX` queue present in the checker logic
+10. Testing the functionality of `RX` (MISO pin) by applying the random one bit stimulus (i.e. serial input data) on `sd_i` pin and `RX` is enabled multiple times and serial data is collected in the `RX` register located at address `0x20` in the DUT.
+11. Note that the rx (MISO) is enabled by reconfiguring the control and status register located at `0x10` to collect the serial data on `sd_i` pin in the internal `RX` register located at address `0x20` of DUT
+12. Then read the 32 bit data stored in `RX` register whenever `rx_interrupt` is asserted on the output and store that in `RX` queue that is compared with the `RX` queue implemented in the checker logic
+13. After `TX` and `RX` are checked independently. Verification environment check the full duplex mode by enabling the tx and rx simultaneously and store the results in their respective queues.
 
 #### Result
 
-9. Waits until `intr_timer_expired_0_0_o` signal is enabled from the DUT (timer), that indicates timer has compeletd the counting.
-10. Compare the number of clock cycles after which `intr_timer_expired_0_0_o` signal is enabled with the predicted clock cycle calculated before (mentioned in point 7).
-11. If comparison is succussful then contrained random UVM test is `PASSED`.
-
-
+14. Finally the actual `tx_data` and `rx_data` queues are compared with the expected `RX` and `TX` queues to find out either the test `passed` or `failed`
 
 # How to run the verification IP?
 
@@ -67,9 +64,9 @@ git clone https://github.com/merledu/common_peripheral_vips.git
 ```
 
 ### For running verification IP with different number of contraint random test
-Redirect to the following `path` for testing `timer`
+Redirect to the following `path` for testing `SPI`
 ```
-cd common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/spi/
 ```
 
 Excecute the `command` python run_test.py < enter number of test to run >
@@ -86,9 +83,9 @@ Note you can observe the test results in `test_result.txt` file
 
 #### Can also run the single test by following steps
 
-Redirect to the following `path` for testing `timer`
+Redirect to the following `path` for testing `spi`
 ```
-cd common_peripheral_vips/verif/vips/timer/
+cd common_peripheral_vips/verif/vips/spi/
 ```
 Excecute the `command`
 ```
