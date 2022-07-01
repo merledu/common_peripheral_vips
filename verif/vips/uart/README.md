@@ -32,9 +32,9 @@ Note: Configuration of the UART is completely randomize by UVM testing environme
 3. Enabled the `TX` (transfer) by writing in register at address `0x1c`
 4. Then disable the transfer
 5. And read data that is stored in the `RX` register at address `0x8` of the recieving UART
-6. To read the baud_rate set, set the pwrite_i to 0 and set the addr to 0;
-7. To read the level of fifo set, set the pwrite to 0 and set the addr to 0x18
-8. To read the data entered into the fifo,set the pwrite_i to 0 and set addr to 4 according to the tx_level set.
+6. To read the `baud_rate` set, set the `pwrite_i` to `0` and set the addr to `0x0`
+7. To read the level of `fifo` set, set the `pwrite` to `0` and set the addr to `0x18`
+8. To read the data entered into the `fifo`,set the `pwrite_i` to `0` and set `addr` to `4` according to the `tx_level` set.
 
 #### Result
 
