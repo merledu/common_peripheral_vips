@@ -67,7 +67,7 @@ class tx_monitor extends uvm_monitor;
   bit [ 11:0] prescale            = 0;
   bit [23:16] step                = 0;
   bit [ 31:0] div_q               = 0;
-  bit [  4:0] div_r               = 0;
+  bit [ 32:0] div_r               = 0;
   bit [ 76:0] cycle_num           = 0;
   int         set                    ;
 
@@ -93,12 +93,12 @@ class tx_monitor extends uvm_monitor;
       // Following is the logic to get data to which counter will count, when the data is less than 64'h00000001FFFFFFFF
       if (tx.reg_wdata <= 64'h00000000FFFFFFFF && tx.reg_addr == 'h10c && tx.reg_we == 1'b1) begin
         data = tx.reg_wdata;
-        `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
+        `uvm_info("TIMER_MONITOR::",$sformatf("DATA::____ %0d", data), UVM_LOW)
       end
       // Following is the logic to get data to which counter will count, when data is greater than 64'h00000000FFFFFFFF
       if (tx.reg_wdata > 64'h00000000FFFFFFFF && tx.reg_addr == 'h110 && tx.reg_we == 1'b1) begin
         data = tx.reg_wdata;
-        `uvm_info("TIMER_DRIVER::",$sformatf("DATA::____ %0d", data), UVM_LOW)
+        `uvm_info("TIMER_MONITOR::",$sformatf("DATA::____ %0d", data), UVM_LOW)
       end
       // Following logic is used to find the number of clock cycles required to complete the count depening on prescale and step
       // set during the configuratiuon period
@@ -107,24 +107,27 @@ class tx_monitor extends uvm_monitor;
         step     = tx.reg_wdata[23:16];
         div_q    = data/step;
         div_r    = data%step;
+      
+        `uvm_info("TIMER_MONITOR::",$sformatf("Just checking if it is comming in this condition"), UVM_LOW)
         // Logic to predict number of cycles required to complete the count.
-        if(div_r == 0)
+        if(div_r == 0 /*&& div_q != 2 && div_q != 1 && div_q != 0*/)
           cycle_to_get_result = ( (div_q) * (prescale + 1) ) + 2;
         else
           cycle_to_get_result = ( (div_q + 1) * (prescale + 1) ) + 2;
-        // Printing the number of cycles required to complete the count and its related fields
+
         print_num_of_cycles_req(prescale, data, step, div_q, div_r, cycle_to_get_result);
+        // Printing the number of cycles required to complete the count and its related fields
       end
       // When intr_timer_expired_0_0_o is enabled from the DUT, that indicates timer has compeletd the count.
       // Following logic will check if the timer enabled the intr_timer_expired_0_0_o after correct number of cycle
       else if (tx.intr_timer_expired_0_0_o == 1) begin
         `uvm_info("TIMER_MONITOR::",$sformatf("TIMER EXPIRED SIGNAL IS SET = %0d", tx.intr_timer_expired_0_0_o), UVM_LOW)
         if((cycle_to_get_result == (cycle_num-12-1)) && set==0) begin // Note initial 12 cycles are for reseting and configuring the timer (3 cycle to reset amd 8 to configure the timer)
-          print_test_passed(cycle_to_get_result, cycle_num);
+          print_test_passed(cycle_to_get_result, cycle_num-12-1);
           set=1;
         end  // if((cycle_to_get_result == (cycle_num-12-1)) && set==0)
         else if (set==0) begin
-          print_test_failed(cycle_to_get_result, cycle_num);
+          print_test_failed(cycle_to_get_result, cycle_num-12-1);
           set=1;
         end // if (set==0)
       end // if (tx.intr_timer_expired_0_0_o == 1)
