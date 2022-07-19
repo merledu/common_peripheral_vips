@@ -181,6 +181,7 @@ interface pwm_interface;
 					wdata_i_q[3] = 0;
           $display("Condition3 true");
         end //(wdata_i_q[2] == 0)
+
         else begin //(wdata_i_q[2] != 0)
            $display("Condition4 true");
            if(wdata_i_q[2] < wdata_i_q[3]) begin
@@ -189,12 +190,16 @@ interface pwm_interface;
              $display("wdata_i = 0x%0h",wdata_i);
              wdata_i_q[3] = wdata_i;
            end //(wdata_i_q[2] < wdata_i_q[3])
+           
 				end //(wdata_i_q[2] != 0)
+
 			end //((wdata_i_q[2] < wdata_i_q[3]) || wdata_i_q[2] ==0)
+
 			else //!((wdata_i_q[2] < wdata_i_q[3]) || wdata_i_q[2] ==0)
 				wdata_i = wdata_i_q[3];
 				//wdata_i = tx.wdata_i;	
 		end	//(tx.dc_seq_en)
+
     else begin //!(tx.dc_seq_en)
       $display("Condition1 false");
       wdata_i = tx.wdata_i;
