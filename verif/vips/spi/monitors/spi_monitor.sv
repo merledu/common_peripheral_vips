@@ -553,26 +553,6 @@ class spi_monitor extends uvm_monitor;
       tp();
   endfunction
 
-  //function void print_transaction(transaction_item tx);
-  //  msg = "";
-  //  cycle_num = ++cycle_num;
-  //  $sformat(msg, {2{"%s============================"}}, msg                             );
-  //  $sformat(msg, "%s\nCYCLE_NUMBER___________:: %0d"  , msg, cycle_num                  );
-  //  $sformat(msg, "%s\nRESRT__________________:: %0h"  , msg, tx.rst_ni                  );
-  //  $sformat(msg, "%s\nADDRESS________________:: %0h"  , msg, tx.reg_addr                );
-  //  $sformat(msg, "%s\nWRITE_EN_______________:: %0b"  , msg, tx.reg_we                  );
-  //  $sformat(msg, "%s\nBYTE_EN________________:: %0b"  , msg, tx.reg_be                  );
-  //  $sformat(msg, "%s\nW_DATA_________________:: %0d"  , msg, tx.reg_wdata               );
-  //  $sformat(msg, "%s\nREAD_EN________________:: %0b"  , msg, tx.reg_re                  );
-  //  $sformat(msg, "%s\nR_DATA_________________:: %0d"  , msg, tx.reg_rdata               );
-  //  $sformat(msg, "%s\nERROR__________________:: %0d"  , msg, tx.reg_error               );
-  //  $sformat(msg, "%s\nTIMER EXPIRED__________:: %0d\n", msg, tx.intr_timer_expired_0_0_o);
-  //  $sformat(msg, "%s\nASSIGNED PRE-SCALE_____:: %0d"  , msg, tx.reg_wdata[11:0]         );
-  //  $sformat(msg, "%s\nASSIGNED STEP__________:: %0d\n", msg, tx.reg_wdata[23:16]        );
-  //  $sformat(msg, {2{"%s============================"}}, msg                             );
-  //  `uvm_info("UART_MONITOR::",$sformatf("\n\nCapturing the signals from the interface\n", msg), UVM_LOW)
-  //endfunction : print_transaction
-
   function void tp();
     msg = "";
     $sformat(msg, "%s\n\n████████╗███████╗███████╗████████╗    ██████╗  █████╗ ███████╗███████╗███████╗██████╗  ", msg);
