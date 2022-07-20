@@ -95,7 +95,7 @@ class spi_miso_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // spi_miso_sequence is going to generate 4 transactions of type transaction_item
-    repeat(223) begin                                             // It should be an even number
+    repeat(225) begin                                             // It should be an even number
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
       if(!tx.randomize())                                        // It randomize the transaction

@@ -85,7 +85,7 @@ class spi_mosi_sequence extends uvm_sequence #(transaction_item);
     string msg="";
 
     // spi_mosi_sequence is going to generate 4 transactions of type transaction_item
-    repeat(19) begin                                             // It should be an odd number
+    repeat(20) begin                                             // It should be an odd number
       cycle = cycle + 1;
       tx = transaction_item::type_id::create("tx");              // Factory creation (body task create transactions using factory creation)
       start_item(tx);                                            // Waits for a driver to be ready
