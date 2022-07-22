@@ -21,7 +21,7 @@
 -uvmhome $UVMHOME
 
 //For simulating on Xcelium SimVision GUI mode, uncomment the below line
--access +rwc -gui
+//-access +rwc -gui
 
 //TEST_NAME
 +UVM_TESTNAME=pwm_test 
